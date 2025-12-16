@@ -1,125 +1,137 @@
-/**
- * Individual provider tests
- * Tests each provider independently to ensure they work correctly
- */
+// Test each LLM provider individually to diagnose issues
 
-const http = require('http');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+const Anthropic = require('@anthropic-ai/sdk').default;
 
-const colors = {
-    reset: '\x1b[0m',
-    bright: '\x1b[1m',
-    green: '\x1b[32m',
-    red: '\x1b[31m',
-    yellow: '\x1b[33m',
-    blue: '\x1b[34m',
-    cyan: '\x1b[36m',
-};
+async function testGemini() {
+    console.log('\n🔍 Testing Gemini...');
+    console.log('='.repeat(50));
 
-async function makeRequest(task, testName) {
-    return new Promise((resolve, reject) => {
-        const startTime = Date.now();
-        const data = JSON.stringify({ task });
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+        console.log('❌ GEMINI_API_KEY not set');
+        return false;
+    }
 
-        const options = {
-            hostname: 'localhost',
-            port: 3000,
-            path: '/api/agents/run',
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Content-Length': data.length
+    console.log('✓ API Key: SET');
+
+    try {
+        const genAI = new GoogleGenerativeAI(apiKey);
+
+        // Try current model
+        console.log('\nTrying: gemini-1.5-flash...');
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const result = await model.generateContent('Say hello');
+        const response = await result.response;
+        console.log('✅ gemini-1.5-flash WORKS!');
+        console.log(`   Response: ${response.text().substring(0, 50)}...`);
+        return true;
+    } catch (error) {
+        console.log(`❌ gemini-1.5-flash FAILED: ${error.message.substring(0, 100)}`);
+
+        // Try alternative models
+        const alternativeModels = [
+            'gemini-1.5-pro',
+            'gemini-pro',
+            'gemini-1.0-pro'
+        ];
+
+        for (const modelName of alternativeModels) {
+            try {
+                console.log(`\nTrying alternative: ${modelName}...`);
+                const genAI = new GoogleGenerativeAI(apiKey);
+                const model = genAI.getGenerativeModel({ model: modelName });
+                const result = await model.generateContent('Say hello');
+                const response = await result.response;
+                console.log(`✅ ${modelName} WORKS!`);
+                console.log(`   Response: ${response.text().substring(0, 50)}...`);
+                console.log(`\n💡 SOLUTION: Update config.ts model to "${modelName}"`);
+                return true;
+            } catch (err) {
+                console.log(`❌ ${modelName} failed: ${err.message.substring(0, 80)}...`);
             }
-        };
+        }
 
-        console.log(`\n${colors.cyan}${colors.bright}Test: ${testName}${colors.reset}`);
-        console.log(`${colors.blue}Task: ${task}${colors.reset}`);
+        return false;
+    }
+}
 
-        const req = http.request(options, (res) => {
-            let responseData = '';
+async function testAnthropic() {
+    console.log('\n🔍 Testing Anthropic...');
+    console.log('='.repeat(50));
 
-            res.on('data', (chunk) => {
-                responseData += chunk;
-            });
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) {
+        console.log('❌ ANTHROPIC_API_KEY not set');
+        return false;
+    }
 
-            res.on('end', () => {
-                const latency = Date.now() - startTime;
-                try {
-                    const parsed = JSON.parse(responseData);
-                    const status = parsed.success ?
-                        `${colors.green}✓ SUCCESS${colors.reset}` :
-                        `${colors.red}✗ FAILED${colors.reset}`;
+    console.log('✓ API Key: SET');
 
-                    console.log(`${status} - ${latency}ms`);
+    try {
+        const client = new Anthropic({ apiKey });
 
-                    if (parsed.success && parsed.data) {
-                        console.log(`${colors.green}Provider: ${parsed.data.provider}${colors.reset}`);
-                        console.log(`${colors.green}Model: ${parsed.data.model}${colors.reset}`);
-                        console.log(`${colors.green}Tokens: ${parsed.data.tokensUsed || 'N/A'}${colors.reset}`);
-                    } else if (parsed.error) {
-                        console.log(`${colors.red}Error Type: ${parsed.error.type}${colors.reset}`);
-                        console.log(`${colors.red}Details: ${parsed.error.details?.substring(0, 100)}...${colors.reset}`);
-                    }
-
-                    resolve({ success: parsed.success, latency, data: parsed });
-                } catch (error) {
-                    console.log(`${colors.red}✗ PARSE ERROR${colors.reset}`);
-                    reject(error);
-                }
-            });
+        // Try current model
+        console.log('\nTrying: claude-3-5-sonnet-20241022...');
+        const message = await client.messages.create({
+            model: 'claude-3-5-sonnet-20241022',
+            max_tokens: 100,
+            messages: [{ role: 'user', content: 'Say hello' }],
         });
+        console.log('✅ claude-3-5-sonnet-20241022 WORKS!');
+        console.log(`   Response: ${message.content[0].text.substring(0, 50)}...`);
+        return true;
+    } catch (error) {
+        console.log(`❌ claude-3-5-sonnet-20241022 FAILED: ${error.message.substring(0, 100)}`);
 
-        req.on('error', (error) => {
-            console.log(`${colors.red}✗ REQUEST ERROR${colors.reset}`, error.message);
-            reject(error);
-        });
+        // Try alternative models
+        const alternativeModels = [
+            'claude-3-5-sonnet-20240620',
+            'claude-3-sonnet-20240229',
+            'claude-3-haiku-20240307'
+        ];
 
-        req.write(data);
-        req.end();
-    });
+        for (const modelName of alternativeModels) {
+            try {
+                console.log(`\nTrying alternative: ${modelName}...`);
+                const client = new Anthropic({ apiKey });
+                const message = await client.messages.create({
+                    model: modelName,
+                    max_tokens: 100,
+                    messages: [{ role: 'user', content: 'Say hello' }],
+                });
+                console.log(`✅ ${modelName} WORKS!`);
+                console.log(`   Response: ${message.content[0].text.substring(0, 50)}...`);
+                console.log(`\n💡 SOLUTION: Update config.ts model to "${modelName}"`);
+                return true;
+            } catch (err) {
+                console.log(`❌ ${modelName} failed: ${err.message.substring(0, 80)}...`);
+            }
+        }
+
+        return false;
+    }
 }
 
 async function runTests() {
-    console.log(`${colors.bright}${colors.cyan}========================================${colors.reset}`);
-    console.log(`${colors.bright}  Provider Tests${colors.reset}`);
-    console.log(`${colors.bright}${colors.cyan}========================================${colors.reset}`);
+    console.log('\n🧪 PROVIDER DIAGNOSTIC TEST');
+    console.log('='.repeat(50));
 
-    const tests = [
-        {
-            name: 'Simple Question',
-            task: 'What is 2+2?',
-        },
-        {
-            name: 'Creative Task',
-            task: 'Write a haiku about coding',
-        },
-        {
-            name: 'Complex Reasoning',
-            task: 'Explain why the sky is blue in 2 sentences',
-        },
-    ];
+    const geminiWorks = await testGemini();
+    const anthropicWorks = await testAnthropic();
 
-    for (const test of tests) {
-        try {
-            await makeRequest(test.task, test.name);
-            await new Promise(resolve => setTimeout(resolve, 1000));
-        } catch (error) {
-            console.error(`${colors.red}Test failed:${colors.reset}`, error.message);
-        }
+    console.log('\n\n📊 RESULTS:');
+    console.log('='.repeat(50));
+    console.log(`Gemini: ${geminiWorks ? '✅ WORKING' : '❌ NOT WORKING'}`);
+    console.log(`Anthropic: ${anthropicWorks ? '✅ WORKING' : '❌ NOT WORKING'}`);
+
+    if (!geminiWorks && !anthropicWorks) {
+        console.log('\n❌ CRITICAL: No providers working!');
+        console.log('   Check API keys in .env.local');
+    } else if (geminiWorks || anthropicWorks) {
+        console.log('\n✅ At least one provider works!');
+        console.log('   Update config.ts with working model names');
     }
-
-    console.log(`\n${colors.bright}${colors.cyan}========================================${colors.reset}`);
-    console.log(`${colors.bright}  Tests Complete${colors.reset}`);
-    console.log(`${colors.bright}${colors.cyan}========================================${colors.reset}\n`);
 }
 
-// Check server and run tests
-console.log(`${colors.yellow}Connecting to http://localhost:3000...${colors.reset}\n`);
-const testReq = http.request({ hostname: 'localhost', port: 3000, path: '/', method: 'GET' }, (res) => {
-    console.log(`${colors.green}Server is running!${colors.reset}\n`);
-    runTests().catch(console.error);
-});
-testReq.on('error', (e) => {
-    console.error(`${colors.red}Server is not running. Please start with: npm run dev${colors.reset}`);
-    process.exit(1);
-});
-testReq.end();
+runTests().catch(console.error);

@@ -176,12 +176,20 @@ export async function runOrchestrator(
         logger.info("Routing to Zenthia Content Factory");
         const factoryResult = await runZenthiaContentFactory(task, context || {}, mode);
 
-        if (factoryResult.success && factoryResult.data?.result) {
-            const hooks = factoryResult.data.result.hooks;
-            const platform = factoryResult.data.result.meta?.platform || context?.platform || 'TikTok';
+        if (factoryResult.success) {
+            // Parse JSON from message (same pattern as ZGO)
+            let parsedResult;
+            try {
+                parsedResult = JSON.parse(factoryResult.message);
+            } catch (e) {
+                logger.warn("Failed to parse Content Factory JSON", {}, { error: e instanceof Error ? e.message : String(e) });
+                parsedResult = null;
+            }
 
-            if (hooks && Array.isArray(hooks)) {
-                saveAllHooks(hooks, platform).catch(err =>
+            // Save hooks if parsing succeeded
+            if (parsedResult?.hooks && Array.isArray(parsedResult.hooks)) {
+                const platform = parsedResult.meta?.platform || context?.platform || 'TikTok';
+                saveAllHooks(parsedResult.hooks, platform).catch(err =>
                     logger.warn("Failed to save hooks", {}, { error: String(err) })
                 );
             }
@@ -191,12 +199,12 @@ export async function runOrchestrator(
                 message: "Content batch generated",
                 data: {
                     agent: 'zenthia_content_factory',
-                    mode: factoryResult.data.mode,
-                    provider: factoryResult.data.provider,
-                    model: factoryResult.data.model,
+                    provider: factoryResult.metadata?.provider || 'unknown',
+                    model: factoryResult.metadata?.model || 'unknown',
                     timestamp: new Date().toISOString(),
                     latencyMs: Date.now() - startTime,
-                    result: factoryResult.data.result
+                    tokensUsed: factoryResult.metadata?.tokensUsed,
+                    result: parsedResult
                 }
             };
         }
