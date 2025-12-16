@@ -1,4 +1,5 @@
 import { executeWithFallback } from "./fallback";
+import { AgentMode } from "./types";
 
 type ZenthiaContext = {
   brandName?: string;
@@ -10,7 +11,11 @@ type ZenthiaContext = {
   primaryGoal?: string; // e.g. "first 20 sales"
 };
 
-export async function runZenthiaGrowthOperator(task: string, ctx: ZenthiaContext = {}) {
+export async function runZenthiaGrowthOperator(
+  task: string,
+  ctx: ZenthiaContext = {},
+  mode: AgentMode = "balanced"
+) {
   const prompt = `
 You are the "Zenthia Growth Operator" (ZGO).
 Your job: convert the user's task into a high-leverage growth execution pack for a DTC supplements brand.
@@ -70,8 +75,8 @@ If you cannot comply, return a JSON error object with a helpful reason.
 `;
 
 
-  // Use your fallback system (Gemini → OpenAI → Anthropic) to get a response
-  const result = await executeWithFallback(prompt);
+  // Use your fallback system with mode-based provider priority
+  const result = await executeWithFallback(prompt, mode);
 
   // If the request failed, return the error as-is
   if (!result.success) {
@@ -79,12 +84,22 @@ If you cannot comply, return a JSON error object with a helpful reason.
   }
 
   // Extract and validate JSON from the response
-  let rawResponse = result.message;
+  let rawResponse = result.message.trim();
 
-  // Strip markdown code fences if present (```json ... ``` or ``` ... ```)
-  const codeBlockMatch = rawResponse.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
-  if (codeBlockMatch) {
-    rawResponse = codeBlockMatch[1].trim();
+  // Strip markdown code fences if present - try multiple patterns
+  const patterns = [
+    /```json\s*\n([\s\S]*?)\n```/,
+    /```\s*\n([\s\S]*?)\n```/,
+    /```json([\s\S]*?)```/,
+    /```([\s\S]*?)```/
+  ];
+
+  for (const pattern of patterns) {
+    const match = rawResponse.match(pattern);
+    if (match) {
+      rawResponse = match[1].trim();
+      break;
+    }
   }
 
   // Try to parse the JSON
@@ -97,13 +112,16 @@ If you cannot comply, return a JSON error object with a helpful reason.
       message: JSON.stringify(parsed, null, 2)
     };
   } catch (jsonError) {
-    // If JSON parsing fails, return an error
+    // If JSON parsing fails, return an error with more details
+    const errorMessage = jsonError instanceof Error ? jsonError.message : String(jsonError);
+    const preview = rawResponse.substring(0, 500);
+
     return {
       success: false,
       message: "Failed to parse LLM response as JSON",
       error: {
         type: result.error?.type || "UNKNOWN_ERROR" as any,
-        details: `JSON parse error: ${jsonError instanceof Error ? jsonError.message : String(jsonError)}. Raw response: ${rawResponse.substring(0, 200)}...`
+        details: `JSON parse error: ${errorMessage}\n\nRaw response (first 500 chars):\n${preview}...`
       },
       attempts: result.attempts || []
     };

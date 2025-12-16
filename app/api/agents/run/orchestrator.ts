@@ -8,6 +8,7 @@ import { executeWithFallback } from "./fallback";
 import { CONFIG } from "./config";
 import { calculateCost } from "./cost";
 import { runZenthiaGrowthOperator } from "./zenthia-growth-operator";
+import { runDailyBrief } from "./zenthia-daily-brief";
 
 /**
  * Validate input task
@@ -63,19 +64,30 @@ export async function runOrchestrator(
     // 2. Route to appropriate agent
     if (agent === "zenthia_growth_operator") {
         logger.info("Routing to Zenthia Growth Operator", { taskSummary });
-        const zenthiaResult = await runZenthiaGrowthOperator(task, context || {});
+        const zenthiaResult = await runZenthiaGrowthOperator(task, context || {}, mode);
 
-        // Transform FallbackResult to AgentResult
+        // Transform FallbackResult to AgentResult with structured data
         if (zenthiaResult.success) {
+            // Parse the JSON message and put it in data.result
+            let parsedResult;
+            try {
+                parsedResult = JSON.parse(zenthiaResult.message);
+            } catch (e) {
+                // If parsing fails, log warning but don't fail the request
+                logger.warn("Failed to parse ZGO JSON response", {}, { error: e instanceof Error ? e.message : String(e) });
+                parsedResult = null;
+            }
+
             return {
                 success: true,
-                message: zenthiaResult.message,
+                message: "Growth plan generated successfully",
                 data: {
                     provider: zenthiaResult.metadata?.provider || "zenthia",
                     model: zenthiaResult.metadata?.model || "unknown",
                     timestamp: new Date().toISOString(),
                     latencyMs: Date.now() - startTime,
                     tokensUsed: zenthiaResult.metadata?.tokensUsed,
+                    result: parsedResult  // Structured JSON here
                 },
             };
         } else {
@@ -85,6 +97,52 @@ export async function runOrchestrator(
                 error: {
                     type: zenthiaResult.error?.type || ErrorType.UNKNOWN_ERROR,
                     details: zenthiaResult.error?.details || "Unknown error",
+                    timestamp: new Date().toISOString(),
+                },
+                data: {
+                    provider: "zenthia",
+                    model: "none",
+                    timestamp: new Date().toISOString(),
+                    latencyMs: Date.now() - startTime,
+                },
+            };
+        }
+    }
+
+    // 2.5. Check for daily_brief special task
+    if (agent === "zenthia_growth_operator" && (task.toLowerCase() === "daily_brief" || task.toLowerCase().includes("daily brief"))) {
+        logger.info("Routing to Daily Growth Brief", { taskSummary });
+        const briefResult = await runDailyBrief(context || {}, mode);
+
+        // Transform result similar to ZGO
+        if (briefResult.success) {
+            let parsedResult;
+            try {
+                parsedResult = JSON.parse(briefResult.message);
+            } catch (e) {
+                logger.warn("Failed to parse daily brief JSON response", {}, { error: e instanceof Error ? e.message : String(e) });
+                parsedResult = null;
+            }
+
+            return {
+                success: true,
+                message: "Daily brief generated successfully",
+                data: {
+                    provider: briefResult.metadata?.provider || "zenthia",
+                    model: briefResult.metadata?.model || "unknown",
+                    timestamp: new Date().toISOString(),
+                    latencyMs: Date.now() - startTime,
+                    tokensUsed: briefResult.metadata?.tokensUsed,
+                    result: parsedResult
+                },
+            };
+        } else {
+            return {
+                success: false,
+                message: briefResult.message,
+                error: {
+                    type: briefResult.error?.type || ErrorType.UNKNOWN_ERROR,
+                    details: briefResult.error?.details || "Unknown error",
                     timestamp: new Date().toISOString(),
                 },
                 data: {
