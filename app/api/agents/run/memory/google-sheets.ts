@@ -250,3 +250,40 @@ export async function saveOfferExperiment(offer: string, hypothesis: string) {
     ];
     return await appendRow(TABS.OFFERS_EXPERIMENTS, row);
 }
+
+/**
+ * Batch save all hooks from Content Factory
+ * All hooks are marked as posted=no, winner=no (scheduled content)
+ */
+export async function saveAllHooks(hooks: any[], platform: string = 'TikTok') {
+    if (!hooks || !Array.isArray(hooks) || hooks.length === 0) {
+        logger.warn('saveAllHooks called with empty or invalid hooks array');
+        return false;
+    }
+
+    logger.info(`Batch saving ${hooks.length} hooks from Content Factory`);
+
+    let successCount = 0;
+    for (let i = 0; i < hooks.length; i++) {
+        const hook = hooks[i];
+        const hookText = hook.hook_text || hook.text || hook;
+
+        if (typeof hookText === 'string' && hookText.length > 0) {
+            const saved = await saveHook(
+                hookText,
+                platform,
+                {
+                    posted: false,
+                    winner: false,
+                    notes: `Content Factory batch #${i + 1} - ${hook.angle || 'generated'}`
+                }
+            );
+
+            if (saved) successCount++;
+        }
+    }
+
+    logger.info(`Successfully saved ${successCount}/${hooks.length} hooks to Content_Library`);
+    return successCount === hooks.length;
+}
+

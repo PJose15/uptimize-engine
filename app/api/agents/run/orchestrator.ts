@@ -9,7 +9,8 @@ import { CONFIG } from "./config";
 import { calculateCost } from "./cost";
 import { runZenthiaGrowthOperator } from "./zenthia-growth-operator";
 import { runDailyBrief } from "./zenthia-daily-brief";
-import { saveContentPlan, saveDailyBrief } from "./memory/google-sheets";
+import { runZenthiaContentFactory } from "./zenthia-content-factory";
+import { saveContentPlan, saveDailyBrief, saveAllHooks } from "./memory/google-sheets";
 
 /**
  * Validate input task
@@ -170,7 +171,48 @@ export async function runOrchestrator(
         }
     }
 
-    // 3. Default: Execute with fallback (current orchestrator behavior)
+    // 3. Zenthia Content Factory
+    if (agent === "zenthia_content_factory") {
+        logger.info("Routing to Zenthia Content Factory");
+        const factoryResult = await runZenthiaContentFactory(task, context || {}, mode);
+
+        if (factoryResult.success && factoryResult.data?.result) {
+            const hooks = factoryResult.data.result.hooks;
+            const platform = factoryResult.data.result.meta?.platform || context?.platform || 'TikTok';
+
+            if (hooks && Array.isArray(hooks)) {
+                saveAllHooks(hooks, platform).catch(err =>
+                    logger.warn("Failed to save hooks", {}, { error: String(err) })
+                );
+            }
+
+            return {
+                success: true,
+                message: "Content batch generated",
+                data: {
+                    agent: 'zenthia_content_factory',
+                    mode: factoryResult.data.mode,
+                    provider: factoryResult.data.provider,
+                    model: factoryResult.data.model,
+                    timestamp: new Date().toISOString(),
+                    latencyMs: Date.now() - startTime,
+                    result: factoryResult.data.result
+                }
+            };
+        }
+
+        return {
+            success: false,
+            message: factoryResult.message || "Content Factory failed",
+            error: {
+                type: ErrorType.MODEL_ERROR,
+                details: factoryResult.message,
+                timestamp: new Date().toISOString(),
+            },
+        };
+    }
+
+    // 4. Default: Execute with fallback (current orchestrator behavior)
     const result = await executeWithFallback(task, mode, CONFIG.DEFAULT_TIMEOUT_MS);
 
     // 4. Calculate cost tracking if successful

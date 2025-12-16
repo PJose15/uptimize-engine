@@ -26,6 +26,7 @@ export interface RequestMetadata {
 }
 
 export interface ResponseMetadata {
+    agent?: string;
     provider: string;
     model: string;
     timestamp: string;
