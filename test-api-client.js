@@ -1,26 +1,23 @@
-// Simple test for JSON parsing with quality mode
-async function testQualityModeSimple() {
-    console.log("Testing Quality Mode with Simple Task...\n");
+// Test script for Memory Layer integration
+async function testMemoryLayer() {
+    console.log("🧠 Testing Memory Layer Integration...\n");
+    console.log("Note: Expecting mock data usage since no Google Credentials are set.\n");
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30000);
+    const timeout = setTimeout(() => controller.abort(), 40000);
 
     try {
         const response = await fetch("http://localhost:3000/api/agents/run", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                task: "Create 1 Instagram post idea about sleep support",
+                task: "Create a TikTok script based on our best performing hooks",
                 agent: "zenthia_growth_operator",
-                mode: "balanced",  // Use balanced instead of quality to avoid timeouts
+                mode: "fast", // Use fast for quick test
                 context: {
                     brandName: "Zenthia",
-                    channels: ["IG"],
-                    products: [{
-                        name: "Sleep Blend",
-                        benefits: ["promotes restful sleep"],
-                        price: "$29"
-                    }]
+                    channels: ["TikTok"],
+                    products: [{ name: "Focus Blend", price: "$35" }]
                 }
             }),
             signal: controller.signal
@@ -32,32 +29,36 @@ async function testQualityModeSimple() {
 
         if (response.ok) {
             const data = await response.json();
-            console.log("\n✅ SUCCESS!");
-            console.log("Provider:", data.data.provider);
-            console.log("Model:", data.data.model);
-            console.log("Latency:", data.data.latencyMs + "ms");
+            const result = data.data.result;
 
-            if (data.data.result) {
-                console.log("\n📋 Result Keys:", Object.keys(data.data.result));
-                console.log("\nFull result:");
-                console.log(JSON.stringify(data.data.result, null, 2));
-            } else {
-                console.log("\n⚠️ No structured result in response");
+            console.log("\n✅ SUCCESS: Agent ran with memory!");
+
+            // Inspect the content to see if it mentions the hooks
+            // (We can't easily see the prompt, but if the output references "top performing" or specifics from mock data, it worked)
+            // Mock data has: "Stop buying [Product Category] until you read this..."
+
+            if (result && result.content_plan_7_days) {
+                console.log("\nGenerated Hook (Day 1):");
+                const hook = result.content_plan_7_days[0].video_hook;
+                console.log(`"${hook}"`);
+
+                // Check if it looks similar to mock data pattern
+                if (hook.toLowerCase().includes("stop buying") || hook.toLowerCase().includes("signs")) {
+                    console.log("\n✨ Verification: Output seems influenced by memory/mock hooks!");
+                } else {
+                    console.log("\nℹ️ Output might vary, but memory injection didn't crash.");
+                }
             }
+
         } else {
             const errorText = await response.text();
-            console.log("\n❌ Error:");
-            const errorData = JSON.parse(errorText);
-            console.log("Message:", errorData.message);
-            if (errorData.error) {
-                console.log("\nError details:");
-                console.log(errorData.error.details);
-            }
+            console.log("\n❌ Error Response:", errorText);
         }
+
     } catch (e) {
         clearTimeout(timeout);
         console.error("\n❌ Request failed:", e.message);
     }
 }
 
-testQualityModeSimple();
+testMemoryLayer();

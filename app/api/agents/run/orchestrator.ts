@@ -9,6 +9,7 @@ import { CONFIG } from "./config";
 import { calculateCost } from "./cost";
 import { runZenthiaGrowthOperator } from "./zenthia-growth-operator";
 import { runDailyBrief } from "./zenthia-daily-brief";
+import { saveContentPlan, saveDailyBrief } from "./memory/google-sheets";
 
 /**
  * Validate input task
@@ -78,6 +79,13 @@ export async function runOrchestrator(
                 parsedResult = null;
             }
 
+            // Save to memory (async, don't await to avoid slowing response)
+            if (parsedResult) {
+                saveContentPlan(parsedResult).catch(err =>
+                    logger.warn("Failed to save content plan to memory", {}, { error: String(err) })
+                );
+            }
+
             return {
                 success: true,
                 message: "Growth plan generated successfully",
@@ -122,6 +130,13 @@ export async function runOrchestrator(
             } catch (e) {
                 logger.warn("Failed to parse daily brief JSON response", {}, { error: e instanceof Error ? e.message : String(e) });
                 parsedResult = null;
+            }
+
+            // Save brief to memory
+            if (parsedResult) {
+                saveDailyBrief(parsedResult).catch(err =>
+                    logger.warn("Failed to save daily brief to memory", {}, { error: String(err) })
+                );
             }
 
             return {

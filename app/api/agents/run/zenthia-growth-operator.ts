@@ -1,5 +1,6 @@
 import { executeWithFallback } from "./fallback";
 import { AgentMode } from "./types";
+import { getBestHooks } from "./memory/google-sheets";
 
 type ZenthiaContext = {
   brandName?: string;
@@ -16,6 +17,12 @@ export async function runZenthiaGrowthOperator(
   ctx: ZenthiaContext = {},
   mode: AgentMode = "balanced"
 ) {
+  // Get best hooks from memory (defaults to mock if no DB)
+  const bestHooks = await getBestHooks(3);
+  const hooksContext = bestHooks.length > 0
+    ? `\nMEMORY - USE THESE PROVEN ANGLES:\nHere are your top performing hooks recently:\n${bestHooks.map(h => `- "${h.text}" (${h.platform}: ${h.engagement_rate}% engagement)`).join('\n')}\nConsider reusing similar angles or structures.\n`
+    : "";
+
   const prompt = `
 You are the "Zenthia Growth Operator" (ZGO).
 Your job: convert the user's task into a high-leverage growth execution pack for a DTC supplements brand.
@@ -33,6 +40,7 @@ Brand context:
 - Budget: ${ctx.budget ?? "unknown"}
 - Time per day: ${ctx.timePerDayMins ?? 60} minutes
 - Products: ${JSON.stringify(ctx.products ?? [], null, 2)}
+${hooksContext}
 
 User task:
 "${task}"
@@ -76,7 +84,8 @@ If you cannot comply, return a JSON error object with a helpful reason.
 
 
   // Use your fallback system with mode-based provider priority
-  const result = await executeWithFallback(prompt, mode);
+  const strictPrompt = prompt + "\n\nCRITICAL: Return ONLY valid JSON. No markdown code fences. No trailing commas. Check your JSON validity before outputting.";
+  const result = await executeWithFallback(strictPrompt, mode);
 
   // If the request failed, return the error as-is
   if (!result.success) {
