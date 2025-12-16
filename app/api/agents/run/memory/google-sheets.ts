@@ -3,7 +3,8 @@ import { logger } from '../logger';
 
 // Configuration for Sheets
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
-const SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID; // The ID of the "Zenthia Brain" sheet
+const SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID; // The ID of the "Zenthia Brain" sheet (1C-gOS7MgygKaHo9Hyh7q9VrQ1yiW7xneEFvwbp2yQ6c)
+
 
 // Tab names (standardized structure)
 const TABS = {
@@ -27,11 +28,7 @@ async function getSheetsClient() {
     try {
         const credentialsJson = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
 
-        if (!credentialsJson && !process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-            logger.warn("No Google Sheets credentials found. Using mock memory.");
-            return null;
-        }
-
+        // Try explicit credentials first, then fallback to application default credentials (from gcloud auth)
         const auth = new google.auth.GoogleAuth({
             credentials: credentialsJson ? JSON.parse(credentialsJson) : undefined,
             scopes: SCOPES,
@@ -98,32 +95,48 @@ async function appendRow(tabName: string, row: any[]): Promise<boolean> {
 
 export interface BestHook {
     text: string;
-    engagement_rate: number;
     platform: string;
+    impressions?: number;
+    views?: number;
+    watch_time?: number;
+    clicks?: number;
+    engagement_rate: number;
+    posted?: boolean;
+    winner?: boolean;
 }
 
 /**
  * Get best performing hooks from Content_Library
  */
 export async function getBestHooks(limit: number = 5): Promise<BestHook[]> {
-    const rows = await readLastNRows(TABS.CONTENT_LIBRARY, 20);
+    const rows = await readLastNRows(TABS.CONTENT_LIBRARY, 50); // Read more for better data
 
     if (rows.length === 0) {
         // Fallback to mock
         return MOCK_BEST_HOOKS.slice(0, limit);
     }
 
-    // Assume columns: [Date, Platform, Hook, Engagement%, ...]
+    // Columns: [timestamp, platform, hook, impressions, views, watch_time, clicks, engagement_rate, posted, winner, notes]
     const hooks = rows
         .map(row => ({
             text: row[2] || '',
             platform: row[1] || '',
-            engagement_rate: parseFloat(row[3]) || 0
+            impressions: parseInt(row[3]) || 0,
+            views: parseInt(row[4]) || 0,
+            watch_time: parseFloat(row[5]) || 0,
+            clicks: parseInt(row[6]) || 0,
+            engagement_rate: parseFloat(row[7]) || 0,
+            posted: row[8] === 'yes' || row[8] === 'true',
+            winner: row[9] === 'yes' || row[9] === 'true'
         }))
         .filter(h => h.text.length > 0);
 
+    // Prioritize winners first, then by engagement rate
     return hooks
-        .sort((a, b) => b.engagement_rate - a.engagement_rate)
+        .sort((a, b) => {
+            if (a.winner !== b.winner) return (b.winner ? 1 : 0) - (a.winner ? 1 : 0);
+            return b.engagement_rate - a.engagement_rate;
+        })
         .slice(0, limit);
 }
 
@@ -156,15 +169,34 @@ export async function getWeeklyResults() {
 // ============================================================================
 
 /**
- * Save a hook to Content_Library
+ * Save a hook to Content_Library with full performance tracking
  */
-export async function saveHook(hook: string, platform: string, engagement: number = 0) {
+export async function saveHook(
+    hook: string,
+    platform: string,
+    metrics?: {
+        impressions?: number;
+        views?: number;
+        watch_time?: number;
+        clicks?: number;
+        engagement_rate?: number;
+        posted?: boolean;
+        winner?: boolean;
+        notes?: string;
+    }
+) {
     const row = [
         new Date().toISOString(),
         platform,
         hook,
-        engagement,
-        'auto-logged'
+        metrics?.impressions || 0,
+        metrics?.views || 0,
+        metrics?.watch_time || 0,
+        metrics?.clicks || 0,
+        metrics?.engagement_rate || 0,
+        metrics?.posted ? 'yes' : 'no',
+        metrics?.winner ? 'yes' : 'no',
+        metrics?.notes || 'auto-generated'
     ];
     return await appendRow(TABS.CONTENT_LIBRARY, row);
 }
@@ -193,7 +225,13 @@ export async function saveContentPlan(plan: any) {
     let success = true;
     for (const day of plan.content_plan_7_days) {
         if (day.video_hook) {
-            const saved = await saveHook(day.video_hook, day.platform || 'unknown', 0);
+            const saved = await saveHook(
+                day.video_hook,
+                day.platform || 'unknown',
+                {
+                    notes: `Day ${day.day || '?'} - ${day.format || 'video'}`
+                }
+            );
             success = success && saved;
         }
     }
