@@ -41,7 +41,7 @@ export class OpenAIProvider implements Provider {
             const completion = await client.chat.completions.create({
                 model: config.model,
                 messages: [{ role: "user", content: task }],
-                max_tokens: config.maxTokens,
+                max_completion_tokens: config.maxTokens, // Updated for newer models (gpt-4o, etc)
                 temperature: config.temperature,
             }, {
                 signal: controller.signal,  // OpenAI SDK supports AbortSignal
