@@ -1,6 +1,5 @@
 // Test script for Zenthia Content Factory
-
-const fetch = require('node-fetch');
+// Note: Uses global fetch (available in Node 18+)
 
 async function testContentFactory() {
     console.log('🏭 Testing Zenthia Content Factory\n');
