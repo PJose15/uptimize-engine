@@ -1,6 +1,6 @@
-import { executeWithFallback } from "./fallback";
-import { AgentMode } from "./types";
-import { getBestHooks } from "./memory/google-sheets";
+import { executeWithFallback } from "../fallback";
+import { AgentMode } from "../types";
+import { getBestHooks } from "../memory/google-sheets";
 
 type ZenthiaContext = {
   brandName?: string;
