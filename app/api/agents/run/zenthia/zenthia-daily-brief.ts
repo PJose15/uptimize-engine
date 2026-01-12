@@ -1,5 +1,5 @@
-import { executeWithFallback } from "./fallback";
-import { AgentMode } from "./types";
+import { executeWithFallback } from "../fallback";
+import { AgentMode } from "../types";
 
 interface DailyBriefContext {
     goal?: string;

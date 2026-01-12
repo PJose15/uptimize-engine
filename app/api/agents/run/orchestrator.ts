@@ -7,9 +7,10 @@ import { logger } from "./logger";
 import { executeWithFallback } from "./fallback";
 import { CONFIG } from "./config";
 import { calculateCost } from "./cost";
-import { runZenthiaGrowthOperator } from "./zenthia-growth-operator";
-import { runDailyBrief } from "./zenthia-daily-brief";
-import { runZenthiaContentFactory } from "./zenthia-content-factory";
+import { runZenthiaGrowthOperator } from "./zenthia/zenthia-growth-operator";
+import { runDailyBrief } from "./zenthia/zenthia-daily-brief";
+import { runZenthiaContentFactory } from "./zenthia/zenthia-content-factory";
+import { runAgent1MarketIntelligence } from "./uptimize/agent-1-market-intelligence";
 import { saveContentPlan, saveDailyBrief, saveAllHooks } from "./memory/google-sheets";
 
 /**
@@ -217,6 +218,44 @@ export async function runOrchestrator(
                 details: factoryResult.message,
                 timestamp: new Date().toISOString(),
             },
+        };
+    }
+
+    // 3.5. UptimizeAI Agent 1: Market Intelligence & Targeting
+    if (agent === "uptimize_agent_1" || agent === "market_intelligence") {
+        logger.info("Routing to UptimizeAI Agent 1: Market Intelligence & Targeting", { taskSummary });
+        const agent1Result = await runAgent1MarketIntelligence(task, context || {}, mode);
+
+        if (agent1Result.success && agent1Result.data) {
+            return {
+                success: true,
+                message: "Target pack generated successfully",
+                data: {
+                    agent: 'uptimize_agent_1',
+                    provider: agent1Result.metadata?.provider || 'unknown',
+                    model: agent1Result.metadata?.model || 'unknown',
+                    timestamp: new Date().toISOString(),
+                    latencyMs: Date.now() - startTime,
+                    tokensUsed: agent1Result.metadata?.tokensUsed,
+                    result: agent1Result.data
+                }
+            };
+        }
+
+        return {
+            success: false,
+            message: agent1Result.message || "Agent 1 failed",
+            error: {
+                type: agent1Result.error?.type || ErrorType.MODEL_ERROR,
+                details: agent1Result.error?.details || "Unknown error",
+                timestamp: new Date().toISOString(),
+            },
+            data: {
+                provider: agent1Result.metadata?.provider || 'unknown',
+                model: agent1Result.metadata?.model || 'unknown',
+                timestamp: new Date().toISOString(),
+                latencyMs: Date.now() - startTime,
+            }
         };
     }
 
