@@ -1,0 +1,481 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "UptimizeAI_Agent4_DeliveryPackage",
+  "type": "object",
+  "required": [
+    "build_plan",
+    "data_model",
+    "workflow_specs",
+    "agent_spec_sheets",
+    "qa_plan_and_results",
+    "fallback_modes",
+    "client_handoff_kit",
+    "post_launch_monitoring"
+  ],
+  "properties": {
+    "build_plan": {
+      "type": "object",
+      "required": [
+        "phase_1",
+        "phase_2_optional",
+        "milestones",
+        "dependencies",
+        "change_request_linkage"
+      ],
+      "properties": {
+        "phase_1": {
+          "$ref": "#/definitions/phase_plan"
+        },
+        "phase_2_optional": {
+          "$ref": "#/definitions/phase_plan"
+        },
+        "milestones": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "milestone_name",
+              "deliverables",
+              "eta_days",
+              "acceptance_criteria"
+            ],
+            "properties": {
+              "milestone_name": {
+                "type": "string"
+              },
+              "deliverables": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "eta_days": {
+                "type": "integer"
+              },
+              "acceptance_criteria": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "change_request_linkage": {
+          "type": "string"
+        }
+      }
+    },
+    "data_model": {
+      "type": "object",
+      "required": [
+        "entities",
+        "fields",
+        "logging_fields",
+        "pipeline_stages"
+      ],
+      "properties": {
+        "entities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "logging_fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "pipeline_stages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "workflow_specs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "workflow_name",
+          "goal",
+          "inputs",
+          "outputs",
+          "tools",
+          "happy_path_steps",
+          "exception_paths",
+          "kpis_affected"
+        ],
+        "properties": {
+          "workflow_name": {
+            "type": "string"
+          },
+          "goal": {
+            "type": "string"
+          },
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "outputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tools": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "happy_path_steps": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "exception_paths": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "exception_name",
+                "trigger",
+                "behavior",
+                "escalation"
+              ],
+              "properties": {
+                "exception_name": {
+                  "type": "string"
+                },
+                "trigger": {
+                  "type": "string"
+                },
+                "behavior": {
+                  "type": "string"
+                },
+                "escalation": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "kpis_affected": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "agent_spec_sheets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "agent_name",
+          "purpose",
+          "allowed_actions",
+          "disallowed_actions",
+          "tool_permissions",
+          "input_contract",
+          "output_contract",
+          "guardrails",
+          "escalation_rules",
+          "logging"
+        ],
+        "properties": {
+          "agent_name": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "allowed_actions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "disallowed_actions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tool_permissions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "input_contract": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "output_contract": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "guardrails": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "escalation_rules": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "logging": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "qa_plan_and_results": {
+      "type": "object",
+      "required": [
+        "qa_checklist",
+        "test_cases",
+        "results_summary",
+        "open_issues"
+      ],
+      "properties": {
+        "qa_checklist": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "test_cases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "test_name",
+              "type",
+              "steps",
+              "expected_result",
+              "status"
+            ],
+            "properties": {
+              "test_name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "happy_path",
+                  "missing_input",
+                  "wrong_input",
+                  "tool_failure",
+                  "safety"
+                ]
+              },
+              "steps": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "expected_result": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "pass",
+                  "fail",
+                  "blocked"
+                ]
+              }
+            }
+          }
+        },
+        "results_summary": {
+          "type": "string"
+        },
+        "open_issues": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "fallback_modes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "workflow_name",
+          "failure_mode",
+          "fallback_behavior",
+          "human_action_required",
+          "logging"
+        ],
+        "properties": {
+          "workflow_name": {
+            "type": "string"
+          },
+          "failure_mode": {
+            "type": "string"
+          },
+          "fallback_behavior": {
+            "type": "string"
+          },
+          "human_action_required": {
+            "type": "string"
+          },
+          "logging": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "client_handoff_kit": {
+      "type": "object",
+      "required": [
+        "quickstart_5min",
+        "daily_sop",
+        "weekly_sop",
+        "exception_sop",
+        "training_plan",
+        "admin_notes"
+      ],
+      "properties": {
+        "quickstart_5min": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "daily_sop": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "weekly_sop": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "exception_sop": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "training_plan": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "admin_notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "post_launch_monitoring": {
+      "type": "object",
+      "required": [
+        "kpis",
+        "alerts",
+        "support_process",
+        "weekly_review_format"
+      ],
+      "properties": {
+        "kpis": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "alerts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "support_process": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "weekly_review_format": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "phase_plan": {
+      "type": "object",
+      "required": [
+        "goal",
+        "deliverables",
+        "time_to_value",
+        "dependencies"
+      ],
+      "properties": {
+        "goal": {
+          "type": "string"
+        },
+        "deliverables": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "time_to_value": {
+          "type": "string"
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
