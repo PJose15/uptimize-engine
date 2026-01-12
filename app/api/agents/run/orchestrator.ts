@@ -11,6 +11,7 @@ import { runZenthiaGrowthOperator } from "./zenthia/zenthia-growth-operator";
 import { runDailyBrief } from "./zenthia/zenthia-daily-brief";
 import { runZenthiaContentFactory } from "./zenthia/zenthia-content-factory";
 import { runAgent1MarketIntelligence } from "./uptimize/agent-1-market-intelligence";
+import { runAgent2OutboundAppointment } from "./uptimize/agent-2-outbound-appointment";
 import { saveContentPlan, saveDailyBrief, saveAllHooks } from "./memory/google-sheets";
 
 /**
@@ -253,6 +254,44 @@ export async function runOrchestrator(
             data: {
                 provider: agent1Result.metadata?.provider || 'unknown',
                 model: agent1Result.metadata?.model || 'unknown',
+                timestamp: new Date().toISOString(),
+                latencyMs: Date.now() - startTime,
+            }
+        };
+    }
+
+    // 3.6. UptimizeAI Agent 2: Outbound & Appointment Setter
+    if (agent === "uptimize_agent_2" || agent === "outbound_appointment") {
+        logger.info("Routing to UptimizeAI Agent 2: Outbound & Appointment Setter", { taskSummary });
+        const agent2Result = await runAgent2OutboundAppointment(task, context || {}, mode);
+
+        if (agent2Result.success && agent2Result.data) {
+            return {
+                success: true,
+                message: "Outbound campaign and bookings generated successfully",
+                data: {
+                    agent: 'uptimize_agent_2',
+                    provider: agent2Result.metadata?.provider || 'unknown',
+                    model: agent2Result.metadata?.model || 'unknown',
+                    timestamp: new Date().toISOString(),
+                    latencyMs: Date.now() - startTime,
+                    tokensUsed: agent2Result.metadata?.tokensUsed,
+                    result: agent2Result.data
+                }
+            };
+        }
+
+        return {
+            success: false,
+            message: agent2Result.message || "Agent 2 failed",
+            error: {
+                type: agent2Result.error?.type || ErrorType.MODEL_ERROR,
+                details: agent2Result.error?.details || "Unknown error",
+                timestamp: new Date().toISOString(),
+            },
+            data: {
+                provider: agent2Result.metadata?.provider || 'unknown',
+                model: agent2Result.metadata?.model || 'unknown',
                 timestamp: new Date().toISOString(),
                 latencyMs: Date.now() - startTime,
             }
