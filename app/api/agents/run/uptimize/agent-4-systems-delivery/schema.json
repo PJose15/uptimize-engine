@@ -10,7 +10,8 @@
     "qa_plan_and_results",
     "fallback_modes",
     "client_handoff_kit",
-    "post_launch_monitoring"
+    "post_launch_monitoring",
+    "audit_trail_spec"
   ],
   "properties": {
     "build_plan": {
@@ -78,7 +79,8 @@
         "entities",
         "fields",
         "logging_fields",
-        "pipeline_stages"
+        "pipeline_stages",
+        "exception_tags"
       ],
       "properties": {
         "entities": {
@@ -104,6 +106,12 @@
           "items": {
             "type": "string"
           }
+        },
+        "exception_tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -119,6 +127,7 @@
           "tools",
           "happy_path_steps",
           "exception_paths",
+          "audit_events_emitted",
           "kpis_affected"
         ],
         "properties": {
@@ -160,7 +169,8 @@
                 "exception_name",
                 "trigger",
                 "behavior",
-                "escalation"
+                "escalation",
+                "logging"
               ],
               "properties": {
                 "exception_name": {
@@ -174,8 +184,17 @@
                 },
                 "escalation": {
                   "type": "string"
+                },
+                "logging": {
+                  "type": "string"
                 }
               }
+            }
+          },
+          "audit_events_emitted": {
+            "type": "array",
+            "items": {
+              "type": "string"
             }
           },
           "kpis_affected": {
@@ -443,6 +462,35 @@
           "items": {
             "type": "string"
           }
+        }
+      }
+    },
+    "audit_trail_spec": {
+      "type": "object",
+      "required": [
+        "audit_fields",
+        "audit_event_types",
+        "retention_policy",
+        "where_logs_live"
+      ],
+      "properties": {
+        "audit_fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "audit_event_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "retention_policy": {
+          "type": "string"
+        },
+        "where_logs_live": {
+          "type": "string"
         }
       }
     }

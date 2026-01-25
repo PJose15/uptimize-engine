@@ -1,0 +1,208 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "UptimizeAI_Agent3_SalesEngineer_v2",
+  "type": "object",
+  "required": [
+    "pre_call_brief",
+    "discovery_notes_structured",
+    "shadow_ops_map",
+    "exception_library",
+    "value_calc",
+    "solution_blueprint",
+    "proposal_sow",
+    "close_plan",
+    "handoff_to_agent4_spec"
+  ],
+  "properties": {
+    "pre_call_brief": {
+      "type": "object",
+      "required": ["lead_id", "hypotheses", "must_answer_questions", "meeting_goal"],
+      "properties": {
+        "lead_id": { "type": "string" },
+        "hypotheses": { "type": "array", "items": { "type": "string" } },
+        "must_answer_questions": { "type": "array", "items": { "type": "string" } },
+        "meeting_goal": { "type": "string" }
+      }
+    },
+    "discovery_notes_structured": {
+      "type": "object",
+      "required": ["current_process_map", "leaks", "impact", "success_criteria", "constraints", "decision_process"],
+      "properties": {
+        "current_process_map": { "type": "array", "items": { "type": "string" } },
+        "leaks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["leak_name", "where_it_happens", "symptoms", "root_cause_guess"],
+            "properties": {
+              "leak_name": { "type": "string" },
+              "where_it_happens": { "type": "string" },
+              "symptoms": { "type": "string" },
+              "root_cause_guess": { "type": "string" }
+            }
+          }
+        },
+        "impact": {
+          "type": "object",
+          "required": ["time_cost", "revenue_cost", "quality_cost"],
+          "properties": {
+            "time_cost": { "type": "string" },
+            "revenue_cost": { "type": "string" },
+            "quality_cost": { "type": "string" }
+          }
+        },
+        "success_criteria": { "type": "array", "items": { "type": "string" } },
+        "constraints": { "type": "array", "items": { "type": "string" } },
+        "decision_process": {
+          "type": "object",
+          "required": ["decision_maker", "stakeholders", "budget_range_known", "timeline", "procurement_notes"],
+          "properties": {
+            "decision_maker": { "type": "string" },
+            "stakeholders": { "type": "array", "items": { "type": "string" } },
+            "budget_range_known": { "type": "boolean" },
+            "timeline": { "type": "string" },
+            "procurement_notes": { "type": "string" }
+          }
+        }
+      }
+    },
+    "shadow_ops_map": {
+      "type": "object",
+      "required": ["top_invisible_tasks_ranked", "off_system_channels", "context_loss_points", "audit_gaps"],
+      "properties": {
+        "top_invisible_tasks_ranked": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["task", "frequency", "impact", "why_it_exists"],
+            "properties": {
+              "task": { "type": "string" },
+              "frequency": { "type": "string", "enum": ["daily", "weekly", "monthly", "ad_hoc"] },
+              "impact": { "type": "string", "enum": ["high", "medium", "low"] },
+              "why_it_exists": { "type": "string" }
+            }
+          }
+        },
+        "off_system_channels": { "type": "array", "items": { "type": "string" } },
+        "context_loss_points": { "type": "array", "items": { "type": "string" } },
+        "audit_gaps": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "exception_library": {
+      "type": "object",
+      "required": ["top_exceptions_ranked", "exception_metrics_assumptions", "exceptions_to_productize"],
+      "properties": {
+        "top_exceptions_ranked": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["exception_name", "frequency", "impact", "current_handling", "desired_handling"],
+            "properties": {
+              "exception_name": { "type": "string" },
+              "frequency": { "type": "string", "enum": ["daily", "weekly", "monthly", "ad_hoc"] },
+              "impact": { "type": "string", "enum": ["high", "medium", "low"] },
+              "current_handling": { "type": "string" },
+              "desired_handling": { "type": "string" }
+            }
+          }
+        },
+        "exception_metrics_assumptions": { "type": "array", "items": { "type": "string" } },
+        "exceptions_to_productize": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "value_calc": {
+      "type": "object",
+      "required": ["assumptions", "time_saved_per_week_hours", "cost_per_hour_assumption", "monthly_value_estimate", "notes"],
+      "properties": {
+        "assumptions": { "type": "array", "items": { "type": "string" } },
+        "time_saved_per_week_hours": { "type": "number" },
+        "cost_per_hour_assumption": { "type": "number" },
+        "monthly_value_estimate": { "type": "number" },
+        "notes": { "type": "string" }
+      }
+    },
+    "solution_blueprint": {
+      "type": "object",
+      "required": ["phase_1", "phase_2", "phase_3_optional", "kpis_to_track"],
+      "properties": {
+        "phase_1": { "$ref": "#/definitions/phase_block" },
+        "phase_2": { "$ref": "#/definitions/phase_block" },
+        "phase_3_optional": { "$ref": "#/definitions/phase_block" },
+        "kpis_to_track": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "proposal_sow": {
+      "type": "object",
+      "required": ["summary", "deliverables", "timeline", "pricing_options", "client_responsibilities", "assumptions_exclusions", "change_request_process", "acceptance_criteria", "exception_paths_committed", "audit_trail_commitment"],
+      "properties": {
+        "summary": { "type": "string" },
+        "deliverables": { "type": "array", "items": { "type": "string" } },
+        "timeline": { "type": "string" },
+        "pricing_options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["option_name", "price", "what_included", "best_for"],
+            "properties": {
+              "option_name": { "type": "string" },
+              "price": { "type": "string" },
+              "what_included": { "type": "array", "items": { "type": "string" } },
+              "best_for": { "type": "string" }
+            }
+          }
+        },
+        "client_responsibilities": { "type": "array", "items": { "type": "string" } },
+        "assumptions_exclusions": { "type": "array", "items": { "type": "string" } },
+        "change_request_process": { "type": "string" },
+        "acceptance_criteria": { "type": "array", "items": { "type": "string" } },
+        "exception_paths_committed": { "type": "array", "items": { "type": "string" } },
+        "audit_trail_commitment": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "close_plan": {
+      "type": "object",
+      "required": ["primary_objections_expected", "responses", "next_steps", "follow_up_schedule"],
+      "properties": {
+        "primary_objections_expected": { "type": "array", "items": { "type": "string" } },
+        "responses": { "type": "array", "items": { "type": "string" } },
+        "next_steps": { "type": "array", "items": { "type": "string" } },
+        "follow_up_schedule": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["day_offset", "message"],
+            "properties": {
+              "day_offset": { "type": "integer" },
+              "message": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "handoff_to_agent4_spec": {
+      "type": "object",
+      "required": ["build_modules", "integrations", "agent_specs_needed", "risks", "definition_of_done", "top_exceptions_to_handle", "audit_trail_fields_required"],
+      "properties": {
+        "build_modules": { "type": "array", "items": { "type": "string" } },
+        "integrations": { "type": "array", "items": { "type": "string" } },
+        "agent_specs_needed": { "type": "array", "items": { "type": "string" } },
+        "risks": { "type": "array", "items": { "type": "string" } },
+        "definition_of_done": { "type": "array", "items": { "type": "string" } },
+        "top_exceptions_to_handle": { "type": "array", "items": { "type": "string" } },
+        "audit_trail_fields_required": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  },
+  "definitions": {
+    "phase_block": {
+      "type": "object",
+      "required": ["goal", "deliverables", "time_to_value", "dependencies"],
+      "properties": {
+        "goal": { "type": "string" },
+        "deliverables": { "type": "array", "items": { "type": "string" } },
+        "time_to_value": { "type": "string" },
+        "dependencies": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

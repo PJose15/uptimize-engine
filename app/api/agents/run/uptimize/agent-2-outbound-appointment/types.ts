@@ -123,9 +123,9 @@ export interface MessageLibraryEntry {
 }
 
 export interface TrackMessages {
+  pattern_interrupt: string; // v2: Pattern-Interrupt Question track (default)
   problem_first: string;
   proof_first: string;
-  curiosity_first: string;
 }
 
 export interface FollowupTouch {
@@ -152,6 +152,7 @@ export interface ConversationUpdate {
   lead_id: string;
   old_stage: PipelineStage;
   new_stage: PipelineStage;
+  tags: string[]; // v2: Add tags for categorization
   note: string;
 }
 
@@ -189,7 +190,10 @@ export interface QualifiedLeadSummary {
   stack: string;
   timeline: string;
   qualification_level: QualificationLevel;
+  shadow_ops_off_system_examples: string[]; // v2: Off-system work examples
+  top_exceptions_mentioned: string[]; // v2: Edge cases they face
   recommended_offer_angle: string;
+  objections_expected_tags: string[]; // v2: Expected objections for close plan
 }
 
 export type QualificationLevel = "hard_qualified" | "soft_qualified";
@@ -215,6 +219,8 @@ export interface NurtureEntry {
   reason: string;
   next_touch_day_offset: number;
   nurture_message: string;
+  shadow_ops_guess: string; // v2: Hypothesized off-system work
+  likely_exceptions_guess: string[]; // v2: Predicted edge cases
 }
 
 // ============================================================================

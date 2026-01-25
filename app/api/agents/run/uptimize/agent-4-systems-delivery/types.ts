@@ -41,6 +41,8 @@ export interface Agent3HandoffSpec {
   integrations: string[];
   risks: string[];
   definitionOfDone: string[];
+  topExceptionsToHandle: string[]; // v2
+  auditTrailFieldsRequired: string[]; // v2
   scopeReference?: string;
   signedDate?: string;
 }
@@ -104,6 +106,7 @@ export interface DeliveryPackageOutput {
   fallback_modes: FallbackMode[];
   client_handoff_kit: ClientHandoffKit;
   post_launch_monitoring: PostLaunchMonitoring;
+  audit_trail_spec: AuditTrailSpec; // v2
 }
 
 // ========================================
@@ -141,6 +144,7 @@ export interface DataModel {
   fields: string[];
   logging_fields: string[];
   pipeline_stages: string[];
+  exception_tags: string[]; // v2
 }
 
 // ========================================
@@ -155,6 +159,7 @@ export interface WorkflowSpec {
   tools: string[];
   happy_path_steps: string[];
   exception_paths: ExceptionPath[];
+  audit_events_emitted: string[]; // v2
   kpis_affected: string[];
 }
 
@@ -163,6 +168,7 @@ export interface ExceptionPath {
   trigger: string;
   behavior: string;
   escalation: string;
+  logging: string; // v2
 }
 
 // ========================================
@@ -235,4 +241,15 @@ export interface PostLaunchMonitoring {
   alerts: string[];
   support_process: string[];
   weekly_review_format: string[];
+}
+
+// ========================================
+// AUDIT TRAIL SPEC (v2)
+// ========================================
+
+export interface AuditTrailSpec {
+  audit_fields: string[];
+  audit_event_types: string[];
+  retention_policy: string;
+  where_logs_live: string;
 }

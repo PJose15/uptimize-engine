@@ -97,6 +97,8 @@ export interface ProposalSOW {
   assumptions_exclusions: string[];
   change_request_process: string;
   acceptance_criteria: string[];
+  exception_paths_committed: string[]; // v2
+  audit_trail_commitment: string[]; // v2
 }
 
 // ============================================================================
@@ -116,6 +118,42 @@ export interface ClosePlan {
 }
 
 // ============================================================================
+// SHADOW OPS MAP (v2)
+// ============================================================================
+
+export interface ShadowOpsTask {
+  task: string;
+  frequency: "daily" | "weekly" | "monthly" | "ad_hoc";
+  impact: "high" | "medium" | "low";
+  why_it_exists: string;
+}
+
+export interface ShadowOpsMap {
+  top_invisible_tasks_ranked: ShadowOpsTask[];
+  off_system_channels: string[];
+  context_loss_points: string[];
+  audit_gaps: string[];
+}
+
+// ============================================================================
+// EXCEPTION LIBRARY (v2)
+// ============================================================================
+
+export interface Exception {
+  exception_name: string;
+  frequency: "daily" | "weekly" | "monthly" | "ad_hoc";
+  impact: "high" | "medium" | "low";
+  current_handling: string;
+  desired_handling: string;
+}
+
+export interface ExceptionLibrary {
+  top_exceptions_ranked: Exception[];
+  exception_metrics_assumptions: string[];
+  exceptions_to_productize: string[];
+}
+
+// ============================================================================
 // HANDOFF TO AGENT 4 (DELIVERY SPEC)
 // ============================================================================
 
@@ -125,6 +163,8 @@ export interface HandoffToAgent4Spec {
   agent_specs_needed: string[];
   risks: string[];
   definition_of_done: string[];
+  top_exceptions_to_handle: string[]; // v2
+  audit_trail_fields_required: string[]; // v2
 }
 
 // ============================================================================
@@ -134,6 +174,8 @@ export interface HandoffToAgent4Spec {
 export interface Agent3Output {
   pre_call_brief: PreCallBrief;
   discovery_notes_structured: DiscoveryNotesStructured;
+  shadow_ops_map: ShadowOpsMap; // v2
+  exception_library: ExceptionLibrary; // v2
   value_calc: ValueCalc;
   solution_blueprint: SolutionBlueprint;
   proposal_sow: ProposalSOW;
