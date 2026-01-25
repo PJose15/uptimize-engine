@@ -1,5 +1,5 @@
 /**
- * TypeScript types for UptimizeAI Agent 1: Market Intelligence & Targeting
+ * TypeScript types for UptimizeAI Agent 1: Market Intelligence & Targeting (v2)
  */
 
 // Enums for type safety
@@ -16,11 +16,11 @@ export type PainCategory =
   | "CRM/Data Mess"
   | "Manual Reporting / No KPIs"
   | "Community Ops Burden"
-  | "Fulfillment Bottlenecks";
+  | "Fulfillment Bottlenecks"
+  | "EXCEPTION OVERLOAD"
+  | "RECONCILIATION/AUDIT GAP";
 
 export type Confidence = "high" | "medium" | "low";
-
-export type ProofPointStyle = "problem-first" | "proof-first" | "curiosity-first";
 
 export type OutputMode = "Daily Target Pack" | "Segment Deep Dive" | "Angle Testing" | "Weekly Intel";
 
@@ -44,75 +44,73 @@ export interface ScoreBreakdown {
   authority: number;            // 0-15
   budget_likelihood: number;    // 0-15
   complexity_fit: number;       // 0-15
-  tool_stack_fit: number;       // 0-10
+  tool_fit: number;             // 0-10 (renamed from tool_stack_fit for v2)
   reachability: number;         // 0-10
 }
 
-// Lead record structure
-export interface LeadRecord {
-  lead_id: string;
-  person_name: string;
-  role_title: string;
-  company_name: string;
-  company_size_estimate?: string;
-  segment: Segment;
-  region_timezone: string;
-  channel_recommendation: ChannelRecommendation;
-  website: string;
-  evidence_sources: EvidenceSource[];
-  pain_categories: PainCategory[]; // 1-2 items
-  pain_evidence_summary: string;
-  trigger_event: string;
-  trigger_evidence_summary: string;
-  current_stack_assumptions: StackAssumption[];
-  fit_score: number; // 0-100
-  score_breakdown: ScoreBreakdown;
-  confidence: Confidence;
-  confidence_rationale: string;
-  primary_angle: string;
-  backup_angle: string;
-  hook_line: string; // Max ~140 chars
-  cta_question: string;
+// Hooks structure (v2)
+export interface Hooks {
+  primary_hook_140_chars: string;
+  backup_hook_140_chars: string;
 }
 
-// Run metadata structure
+// Lead record structure (v2)
+export interface LeadRecord {
+  lead_id: string;
+  name: string;
+  company: string;
+  role: string;
+  segment: string;
+  fit_score_0_100: number; // 0-100
+  fit_score_breakdown: ScoreBreakdown;
+  confidence_level: Confidence;
+  pain_categories: string[]; // 1-2 items
+  shadow_ops_density_0_10: number; // 0-10 (v2)
+  shadow_ops_rationale: string; // (v2)
+  exception_hypotheses_top3: string[]; // 1-3 items (v2)
+  trigger_event: string;
+  what_to_say: string;
+  hooks: Hooks; // (v2)
+  pattern_interrupt_question: string; // (v2)
+  cta: string;
+}
+
+// Run metadata structure (v2)
 export interface RunMetadata {
   run_date: string; // ISO date
-  segment_focus: string[];
-  pack_size_primary: number;
+  segment_focus: string;
+  sources_used: string[];
   notes: string;
 }
 
-// Angle of the day structure
+// Angle of the day structure (v2)
 export interface AngleOfTheDay {
-  theme: string;
-  one_liner: string;
-  best_for_segment: string;
-  proof_point_style: ProofPointStyle;
+  primary_angle: string;
+  secondary_angle: string;
+  pattern_interrupt_question: string;
 }
 
-// Do not target item structure
+// Do not target item structure (v2)
 export interface DoNotTarget {
-  name_or_company: string;
   reason: string;
+  examples: string[];
 }
 
-// Weekly intel structure
-export interface WeeklyIntel {
-  top_pains: string[];
-  top_triggers: string[];
-  best_angles: string[];
-  objection_patterns: string[];
+// Shadow Ops Insights (v2)
+export interface ShadowOpsInsights {
+  top_signals_found: string[];
+  common_exception_patterns: string[];
+  notes: string;
 }
 
-// Main output structure
+// Main output structure (v2)
 export interface TargetPackOutput {
   run_metadata: RunMetadata;
   angle_of_the_day: AngleOfTheDay;
   do_not_target: DoNotTarget[];
   target_pack_primary: LeadRecord[];
   target_pack_secondary: LeadRecord[];
-  weekly_intel?: WeeklyIntel;
+  shadow_ops_insights: ShadowOpsInsights; // (v2)
 }
 
 // Input context for the agent
