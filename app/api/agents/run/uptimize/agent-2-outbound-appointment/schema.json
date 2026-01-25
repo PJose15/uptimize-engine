@@ -1,0 +1,171 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "UptimizeAI_Agent2_Outbound_v2",
+  "type": "object",
+  "required": [
+    "run_metadata",
+    "outbound_run_sheet",
+    "message_library",
+    "conversation_updates",
+    "bookings",
+    "nurture_queue"
+  ],
+  "properties": {
+    "run_metadata": {
+      "type": "object",
+      "required": ["run_date", "timezone", "channels_used", "volume_targets", "notes"],
+      "properties": {
+        "run_date": { "type": "string" },
+        "timezone": { "type": "string" },
+        "channels_used": { "type": "array", "items": { "type": "string" } },
+        "volume_targets": {
+          "type": "object",
+          "required": ["new_outreach", "followups", "goal_booked_calls"],
+          "properties": {
+            "new_outreach": { "type": "integer" },
+            "followups": { "type": "integer" },
+            "goal_booked_calls": { "type": "integer" }
+          }
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "outbound_run_sheet": {
+      "type": "object",
+      "required": ["daily_plan", "sequence_rules", "qualification_rules", "no_show_protocol"],
+      "properties": {
+        "daily_plan": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["block_name", "activity", "count", "channel"],
+            "properties": {
+              "block_name": { "type": "string" },
+              "activity": { "type": "string", "enum": ["new_outreach", "followups", "replies_qualification", "booking_admin"] },
+              "count": { "type": "integer" },
+              "channel": { "type": "string" }
+            }
+          }
+        },
+        "sequence_rules": { "type": "string" },
+        "qualification_rules": { "type": "string" },
+        "no_show_protocol": { "type": "string" }
+      }
+    },
+    "message_library": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["lead_id", "channel", "track_messages", "followup_sequence"],
+        "properties": {
+          "lead_id": { "type": "string" },
+          "channel": { "type": "string" },
+          "track_messages": {
+            "type": "object",
+            "required": ["pattern_interrupt", "problem_first", "proof_first"],
+            "properties": {
+              "pattern_interrupt": { "type": "string" },
+              "problem_first": { "type": "string" },
+              "proof_first": { "type": "string" }
+            }
+          },
+          "followup_sequence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["touch_number", "day_offset", "message", "angle_type", "cta"],
+              "properties": {
+                "touch_number": { "type": "integer" },
+                "day_offset": { "type": "integer" },
+                "message": { "type": "string" },
+                "angle_type": { "type": "string", "enum": ["question", "insight", "micro_case", "resource", "breakup", "reframe"] },
+                "cta": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "conversation_updates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["lead_id", "old_stage", "new_stage", "tags", "note"],
+        "properties": {
+          "lead_id": { "type": "string" },
+          "old_stage": { "type": "string" },
+          "new_stage": { "type": "string" },
+          "tags": { "type": "array", "items": { "type": "string" } },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "bookings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["lead_id", "meeting_time_local", "meeting_type", "qualified_lead_summary", "confirmation_flow"],
+        "properties": {
+          "lead_id": { "type": "string" },
+          "meeting_time_local": { "type": "string" },
+          "meeting_type": { "type": "string", "enum": ["discovery", "audit", "demo"] },
+          "qualified_lead_summary": {
+            "type": "object",
+            "required": [
+              "problem",
+              "impact",
+              "urgency",
+              "authority",
+              "stack",
+              "timeline",
+              "qualification_level",
+              "shadow_ops_off_system_examples",
+              "top_exceptions_mentioned",
+              "recommended_offer_angle",
+              "objections_expected_tags"
+            ],
+            "properties": {
+              "problem": { "type": "string" },
+              "impact": { "type": "string" },
+              "urgency": { "type": "string" },
+              "authority": { "type": "string" },
+              "stack": { "type": "string" },
+              "timeline": { "type": "string" },
+              "qualification_level": { "type": "string", "enum": ["hard_qualified", "soft_qualified"] },
+              "shadow_ops_off_system_examples": { "type": "array", "items": { "type": "string" } },
+              "top_exceptions_mentioned": { "type": "array", "items": { "type": "string" } },
+              "recommended_offer_angle": { "type": "string" },
+              "objections_expected_tags": { "type": "array", "items": { "type": "string" } }
+            }
+          },
+          "confirmation_flow": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["timing", "message"],
+              "properties": {
+                "timing": { "type": "string", "enum": ["immediate", "24h_before", "2h_before", "15m_before", "no_confirm_reschedule"] },
+                "message": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "nurture_queue": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["lead_id", "reason", "next_touch_day_offset", "nurture_message", "shadow_ops_guess", "likely_exceptions_guess"],
+        "properties": {
+          "lead_id": { "type": "string" },
+          "reason": { "type": "string" },
+          "next_touch_day_offset": { "type": "integer" },
+          "nurture_message": { "type": "string" },
+          "shadow_ops_guess": { "type": "string" },
+          "likely_exceptions_guess": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,144 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "UptimizeAI_Agent5_ClientSuccess_v2",
+  "type": "object",
+  "required": [
+    "onboarding_plan",
+    "adoption_dashboard",
+    "weekly_win_report",
+    "issues_and_tickets",
+    "shadow_ops_reduction_report",
+    "optimization_backlog",
+    "expansion_map",
+    "proof_asset_pipeline",
+    "client_health_score"
+  ],
+  "properties": {
+    "onboarding_plan": {
+      "type": "object",
+      "required": ["day_1", "day_3", "day_7", "training_sessions"],
+      "properties": {
+        "day_1": { "type": "array", "items": { "type": "string" } },
+        "day_3": { "type": "array", "items": { "type": "string" } },
+        "day_7": { "type": "array", "items": { "type": "string" } },
+        "training_sessions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["session_name", "duration_minutes", "agenda"],
+            "properties": {
+              "session_name": { "type": "string" },
+              "duration_minutes": { "type": "integer" },
+              "agenda": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        }
+      }
+    },
+    "adoption_dashboard": {
+      "type": "object",
+      "required": ["kpis", "usage_signals", "exception_metrics", "auditability_metrics", "trend_notes"],
+      "properties": {
+        "kpis": { "type": "array", "items": { "type": "string" } },
+        "usage_signals": { "type": "array", "items": { "type": "string" } },
+        "exception_metrics": {
+          "type": "object",
+          "required": ["exceptions_count_week", "top_exceptions", "avg_time_to_resolution"],
+          "properties": {
+            "exceptions_count_week": { "type": "integer" },
+            "top_exceptions": { "type": "array", "items": { "type": "string" } },
+            "avg_time_to_resolution": { "type": "string" }
+          }
+        },
+        "auditability_metrics": {
+          "type": "object",
+          "required": ["audit_trail_completeness", "missing_log_events"],
+          "properties": {
+            "audit_trail_completeness": { "type": "string", "description": "e.g., 90% of actions logged" },
+            "missing_log_events": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "trend_notes": { "type": "string" }
+      }
+    },
+    "weekly_win_report": {
+      "type": "object",
+      "required": ["week_of", "wins", "metrics_snapshot", "what_broke", "next_actions"],
+      "properties": {
+        "week_of": { "type": "string" },
+        "wins": { "type": "array", "items": { "type": "string" } },
+        "metrics_snapshot": { "type": "array", "items": { "type": "string" } },
+        "what_broke": { "type": "array", "items": { "type": "string" } },
+        "next_actions": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "issues_and_tickets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ticket_id", "severity", "issue", "exception_tag", "status", "owner", "next_step"],
+        "properties": {
+          "ticket_id": { "type": "string" },
+          "severity": { "type": "string", "enum": ["P1", "P2", "P3"] },
+          "issue": { "type": "string" },
+          "exception_tag": { "type": "string" },
+          "status": { "type": "string", "enum": ["open", "in_progress", "blocked", "resolved"] },
+          "owner": { "type": "string", "enum": ["agent4", "agent5", "client", "you"] },
+          "next_step": { "type": "string" }
+        }
+      }
+    },
+    "shadow_ops_reduction_report": {
+      "type": "object",
+      "required": ["before_list", "after_list", "delta_summary", "new_shadow_ops_detected"],
+      "properties": {
+        "before_list": { "type": "array", "items": { "type": "string" } },
+        "after_list": { "type": "array", "items": { "type": "string" } },
+        "delta_summary": { "type": "string" },
+        "new_shadow_ops_detected": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "optimization_backlog": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["item", "impact", "effort", "priority"],
+        "properties": {
+          "item": { "type": "string" },
+          "impact": { "type": "string", "enum": ["high", "medium", "low"] },
+          "effort": { "type": "string", "enum": ["high", "medium", "low"] },
+          "priority": { "type": "integer", "minimum": 1, "maximum": 10 }
+        }
+      }
+    },
+    "expansion_map": {
+      "type": "object",
+      "required": ["phase_2_recommendations", "phase_3_optional", "upsell_triggers"],
+      "properties": {
+        "phase_2_recommendations": { "type": "array", "items": { "type": "string" } },
+        "phase_3_optional": { "type": "array", "items": { "type": "string" } },
+        "upsell_triggers": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "proof_asset_pipeline": {
+      "type": "object",
+      "required": ["testimonial_request_plan", "case_study_draft_outline", "roi_snapshot_points", "proof_angles_to_market"],
+      "properties": {
+        "testimonial_request_plan": { "type": "array", "items": { "type": "string" } },
+        "case_study_draft_outline": { "type": "array", "items": { "type": "string" } },
+        "roi_snapshot_points": { "type": "array", "items": { "type": "string" } },
+        "proof_angles_to_market": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "client_health_score": {
+      "type": "object",
+      "required": ["score_0_100", "risk_level", "drivers", "interventions"],
+      "properties": {
+        "score_0_100": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "risk_level": { "type": "string", "enum": ["healthy", "watch", "at_risk"] },
+        "drivers": { "type": "array", "items": { "type": "string" } },
+        "interventions": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}
