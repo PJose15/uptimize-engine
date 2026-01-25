@@ -1,187 +1,125 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "UptimizeAI_Agent1_TargetPack",
+  "title": "UptimizeAI_Agent1_Targeting_v2",
   "type": "object",
   "required": [
     "run_metadata",
     "angle_of_the_day",
     "do_not_target",
     "target_pack_primary",
-    "target_pack_secondary"
+    "target_pack_secondary",
+    "shadow_ops_insights"
   ],
   "properties": {
     "run_metadata": {
       "type": "object",
-      "required": ["run_date", "segment_focus", "pack_size_primary", "notes"],
+      "required": ["run_date", "segment_focus", "sources_used", "notes"],
       "properties": {
         "run_date": { "type": "string", "description": "ISO date" },
-        "segment_focus": {
-          "type": "array",
-          "items": { "type": "string" },
-          "description": "Segments prioritized this run"
-        },
-        "pack_size_primary": { "type": "integer" },
+        "segment_focus": { "type": "string" },
+        "sources_used": { "type": "array", "items": { "type": "string" } },
         "notes": { "type": "string" }
       }
     },
     "angle_of_the_day": {
       "type": "object",
-      "required": ["theme", "one_liner", "best_for_segment", "proof_point_style"],
+      "required": ["primary_angle", "secondary_angle", "pattern_interrupt_question"],
       "properties": {
-        "theme": { "type": "string" },
-        "one_liner": { "type": "string" },
-        "best_for_segment": { "type": "string" },
-        "proof_point_style": {
-          "type": "string",
-          "enum": ["problem-first", "proof-first", "curiosity-first"]
-        }
+        "primary_angle": { "type": "string" },
+        "secondary_angle": { "type": "string" },
+        "pattern_interrupt_question": { "type": "string" }
       }
     },
     "do_not_target": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["name_or_company", "reason"],
+        "required": ["reason", "examples"],
         "properties": {
-          "name_or_company": { "type": "string" },
-          "reason": { "type": "string" }
+          "reason": { "type": "string" },
+          "examples": { "type": "array", "items": { "type": "string" } }
         }
       }
     },
     "target_pack_primary": {
       "type": "array",
-      "items": { "$ref": "#/definitions/lead_record" }
+      "description": "Leads with fit score >=70",
+      "items": { "$ref": "#/definitions/target_lead" }
     },
     "target_pack_secondary": {
       "type": "array",
-      "items": { "$ref": "#/definitions/lead_record" }
+      "description": "Leads with fit score 60-69",
+      "items": { "$ref": "#/definitions/target_lead" }
     },
-    "weekly_intel": {
+    "shadow_ops_insights": {
       "type": "object",
-      "required": ["top_pains", "top_triggers", "best_angles", "objection_patterns"],
+      "required": ["top_signals_found", "common_exception_patterns", "notes"],
       "properties": {
-        "top_pains": { "type": "array", "items": { "type": "string" } },
-        "top_triggers": { "type": "array", "items": { "type": "string" } },
-        "best_angles": { "type": "array", "items": { "type": "string" } },
-        "objection_patterns": { "type": "array", "items": { "type": "string" } }
+        "top_signals_found": { "type": "array", "items": { "type": "string" } },
+        "common_exception_patterns": { "type": "array", "items": { "type": "string" } },
+        "notes": { "type": "string" }
       }
     }
   },
   "definitions": {
-    "lead_record": {
+    "target_lead": {
       "type": "object",
       "required": [
         "lead_id",
-        "person_name",
-        "role_title",
-        "company_name",
+        "name",
+        "company",
+        "role",
         "segment",
-        "region_timezone",
-        "channel_recommendation",
-        "website",
-        "evidence_sources",
+        "fit_score_0_100",
+        "fit_score_breakdown",
+        "confidence_level",
         "pain_categories",
-        "pain_evidence_summary",
+        "shadow_ops_density_0_10",
+        "shadow_ops_rationale",
+        "exception_hypotheses_top3",
         "trigger_event",
-        "trigger_evidence_summary",
-        "current_stack_assumptions",
-        "fit_score",
-        "score_breakdown",
-        "confidence",
-        "confidence_rationale",
-        "primary_angle",
-        "backup_angle",
-        "hook_line",
-        "cta_question"
+        "what_to_say",
+        "hooks",
+        "pattern_interrupt_question",
+        "cta"
       ],
       "properties": {
         "lead_id": { "type": "string" },
-        "person_name": { "type": "string" },
-        "role_title": { "type": "string" },
-        "company_name": { "type": "string" },
-        "company_size_estimate": { "type": "string" },
-        "segment": {
-          "type": "string",
-          "enum": ["private_group", "operator_smb", "high_volume_leads", "other"]
-        },
-        "region_timezone": { "type": "string" },
-        "channel_recommendation": {
-          "type": "string",
-          "enum": ["email", "linkedin", "instagram_dm", "x_dm", "facebook_dm", "other"]
-        },
-        "website": { "type": "string" },
-        "evidence_sources": {
-          "type": "array",
-          "description": "Links or references where evidence was observed",
-          "items": {
-            "type": "object",
-            "required": ["type", "reference", "note"],
-            "properties": {
-              "type": { "type": "string", "enum": ["website", "social", "job_post", "review", "news", "other"] },
-              "reference": { "type": "string" },
-              "note": { "type": "string" }
-            }
-          }
-        },
-        "pain_categories": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": [
-              "Lead Handling Chaos",
-              "Inbox/DM Overload",
-              "Scheduling + No-Show Leakage",
-              "CRM/Data Mess",
-              "Manual Reporting / No KPIs",
-              "Community Ops Burden",
-              "Fulfillment Bottlenecks"
-            ]
-          },
-          "minItems": 1,
-          "maxItems": 2
-        },
-        "pain_evidence_summary": { "type": "string" },
-        "trigger_event": { "type": "string" },
-        "trigger_evidence_summary": { "type": "string" },
-        "current_stack_assumptions": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "required": ["assumption", "confidence"],
-            "properties": {
-              "assumption": { "type": "string" },
-              "confidence": { "type": "string", "enum": ["high", "medium", "low"] }
-            }
-          }
-        },
-        "fit_score": { "type": "integer", "minimum": 0, "maximum": 100 },
-        "score_breakdown": {
+        "name": { "type": "string" },
+        "company": { "type": "string" },
+        "role": { "type": "string" },
+        "segment": { "type": "string" },
+        "fit_score_0_100": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "fit_score_breakdown": {
           "type": "object",
-          "required": [
-            "pain_intensity",
-            "urgency_trigger",
-            "authority",
-            "budget_likelihood",
-            "complexity_fit",
-            "tool_stack_fit",
-            "reachability"
-          ],
+          "required": ["pain_intensity", "urgency_trigger", "authority", "budget_likelihood", "complexity_fit", "tool_fit", "reachability"],
           "properties": {
             "pain_intensity": { "type": "integer", "minimum": 0, "maximum": 20 },
             "urgency_trigger": { "type": "integer", "minimum": 0, "maximum": 15 },
             "authority": { "type": "integer", "minimum": 0, "maximum": 15 },
             "budget_likelihood": { "type": "integer", "minimum": 0, "maximum": 15 },
             "complexity_fit": { "type": "integer", "minimum": 0, "maximum": 15 },
-            "tool_stack_fit": { "type": "integer", "minimum": 0, "maximum": 10 },
+            "tool_fit": { "type": "integer", "minimum": 0, "maximum": 10 },
             "reachability": { "type": "integer", "minimum": 0, "maximum": 10 }
           }
         },
-        "confidence": { "type": "string", "enum": ["high", "medium", "low"] },
-        "confidence_rationale": { "type": "string" },
-        "primary_angle": { "type": "string" },
-        "backup_angle": { "type": "string" },
-        "hook_line": { "type": "string", "description": "Max ~140 chars" },
-        "cta_question": { "type": "string" }
+        "confidence_level": { "type": "string", "enum": ["high", "medium", "low"] },
+        "pain_categories": { "type": "array", "items": { "type": "string" }, "minItems": 1, "maxItems": 2 },
+        "shadow_ops_density_0_10": { "type": "integer", "minimum": 0, "maximum": 10 },
+        "shadow_ops_rationale": { "type": "string" },
+        "exception_hypotheses_top3": { "type": "array", "items": { "type": "string" }, "minItems": 1, "maxItems": 3 },
+        "trigger_event": { "type": "string" },
+        "what_to_say": { "type": "string" },
+        "hooks": {
+          "type": "object",
+          "required": ["primary_hook_140_chars", "backup_hook_140_chars"],
+          "properties": {
+            "primary_hook_140_chars": { "type": "string" },
+            "backup_hook_140_chars": { "type": "string" }
+          }
+        },
+        "pattern_interrupt_question": { "type": "string" },
+        "cta": { "type": "string" }
       }
     }
   }

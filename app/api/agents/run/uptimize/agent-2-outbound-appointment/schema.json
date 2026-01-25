@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "UptimizeAI_Agent2_OutboundAndBooking",
+  "title": "UptimizeAI_Agent2_Outbound_v2",
   "type": "object",
   "required": [
     "run_metadata",
@@ -15,7 +15,7 @@
       "type": "object",
       "required": ["run_date", "timezone", "channels_used", "volume_targets", "notes"],
       "properties": {
-        "run_date": { "type": "string", "description": "ISO date" },
+        "run_date": { "type": "string" },
         "timezone": { "type": "string" },
         "channels_used": { "type": "array", "items": { "type": "string" } },
         "volume_targets": {
@@ -54,7 +54,6 @@
     },
     "message_library": {
       "type": "array",
-      "description": "Per lead outreach + follow-ups",
       "items": {
         "type": "object",
         "required": ["lead_id", "channel", "track_messages", "followup_sequence"],
@@ -63,11 +62,11 @@
           "channel": { "type": "string" },
           "track_messages": {
             "type": "object",
-            "required": ["problem_first", "proof_first", "curiosity_first"],
+            "required": ["pattern_interrupt", "problem_first", "proof_first"],
             "properties": {
+              "pattern_interrupt": { "type": "string" },
               "problem_first": { "type": "string" },
-              "proof_first": { "type": "string" },
-              "curiosity_first": { "type": "string" }
+              "proof_first": { "type": "string" }
             }
           },
           "followup_sequence": {
@@ -89,14 +88,14 @@
     },
     "conversation_updates": {
       "type": "array",
-      "description": "Status changes + notes for CRM",
       "items": {
         "type": "object",
-        "required": ["lead_id", "old_stage", "new_stage", "note"],
+        "required": ["lead_id", "old_stage", "new_stage", "tags", "note"],
         "properties": {
           "lead_id": { "type": "string" },
           "old_stage": { "type": "string" },
           "new_stage": { "type": "string" },
+          "tags": { "type": "array", "items": { "type": "string" } },
           "note": { "type": "string" }
         }
       }
@@ -108,11 +107,23 @@
         "required": ["lead_id", "meeting_time_local", "meeting_type", "qualified_lead_summary", "confirmation_flow"],
         "properties": {
           "lead_id": { "type": "string" },
-          "meeting_time_local": { "type": "string", "description": "Local time string (America/Puerto_Rico)" },
+          "meeting_time_local": { "type": "string" },
           "meeting_type": { "type": "string", "enum": ["discovery", "audit", "demo"] },
           "qualified_lead_summary": {
             "type": "object",
-            "required": ["problem", "impact", "urgency", "authority", "stack", "timeline", "qualification_level", "recommended_offer_angle"],
+            "required": [
+              "problem",
+              "impact",
+              "urgency",
+              "authority",
+              "stack",
+              "timeline",
+              "qualification_level",
+              "shadow_ops_off_system_examples",
+              "top_exceptions_mentioned",
+              "recommended_offer_angle",
+              "objections_expected_tags"
+            ],
             "properties": {
               "problem": { "type": "string" },
               "impact": { "type": "string" },
@@ -121,7 +132,10 @@
               "stack": { "type": "string" },
               "timeline": { "type": "string" },
               "qualification_level": { "type": "string", "enum": ["hard_qualified", "soft_qualified"] },
-              "recommended_offer_angle": { "type": "string" }
+              "shadow_ops_off_system_examples": { "type": "array", "items": { "type": "string" } },
+              "top_exceptions_mentioned": { "type": "array", "items": { "type": "string" } },
+              "recommended_offer_angle": { "type": "string" },
+              "objections_expected_tags": { "type": "array", "items": { "type": "string" } }
             }
           },
           "confirmation_flow": {
@@ -142,12 +156,14 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["lead_id", "reason", "next_touch_day_offset", "nurture_message"],
+        "required": ["lead_id", "reason", "next_touch_day_offset", "nurture_message", "shadow_ops_guess", "likely_exceptions_guess"],
         "properties": {
           "lead_id": { "type": "string" },
           "reason": { "type": "string" },
           "next_touch_day_offset": { "type": "integer" },
-          "nurture_message": { "type": "string" }
+          "nurture_message": { "type": "string" },
+          "shadow_ops_guess": { "type": "string" },
+          "likely_exceptions_guess": { "type": "array", "items": { "type": "string" } }
         }
       }
     }
