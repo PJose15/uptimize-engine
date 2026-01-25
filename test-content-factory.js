@@ -6,6 +6,7 @@ async function testContentFactory() {
     console.log('='.repeat(70) + '\n');
 
     const requestBody = {
+        task: "Generate viral content hooks for TikTok",
         agent: "zenthia_content_factory",
         context: {
             product: "Online Course: Social Media Growth for Coaches",

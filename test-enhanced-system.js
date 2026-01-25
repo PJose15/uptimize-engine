@@ -1,6 +1,6 @@
 // Comprehensive test of enhanced performance tracking system
-
-const fetch = require('node-fetch');
+import fetch from 'node-fetch';
+import { getBestHooks } from './app/api/agents/run/memory/google-sheets';
 
 async function testEnhancedSystem() {
     console.log('🧠 TESTING ENHANCED MEMORY LAYER WITH PERFORMANCE TRACKING\n');
@@ -10,7 +10,8 @@ async function testEnhancedSystem() {
     console.log('📡 Step 1: Running Zenthia Growth Operator...\n');
 
     const requestBody = {
-        agent: "zenthia-growth-operator",
+        agent: "zenthia_growth_operator",
+        task: "Generate viral TikTok hooks",
         context: {
             business_type: "Online Course Creator",
             current_challenge: "Need viral TikTok hooks",
@@ -66,8 +67,6 @@ async function testEnhancedSystem() {
         console.log('='.repeat(70));
         console.log('📖 Step 2: Reading Best Hooks from Memory...\n');
         console.log('This demonstrates the prioritization logic:\n');
-
-        const { getBestHooks } = require('./app/api/agents/run/memory/google-sheets.ts');
 
         const bestHooks = await getBestHooks(5);
 
