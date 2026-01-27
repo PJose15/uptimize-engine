@@ -602,6 +602,9 @@ class MockMCPConnection implements MCPConnection {
 // ============================================================================
 
 export const MCP_SERVER_PRESETS: Record<string, Partial<MCPServerConfig>> = {
+  // ============================================================================
+  // CRM & SALES TOOLS
+  // ============================================================================
   hubspot: {
     name: "HubSpot CRM",
     description: "HubSpot CRM integration for contacts, deals, and pipeline management",
@@ -614,6 +617,9 @@ export const MCP_SERVER_PRESETS: Record<string, Partial<MCPServerConfig>> = {
     capabilities: { tools: true, resources: true, prompts: false, sampling: false },
   },
 
+  // ============================================================================
+  // COMMUNICATION TOOLS
+  // ============================================================================
   slack: {
     name: "Slack",
     description: "Slack messaging and channel management",
@@ -638,6 +644,9 @@ export const MCP_SERVER_PRESETS: Record<string, Partial<MCPServerConfig>> = {
     capabilities: { tools: true, resources: false, prompts: false, sampling: false },
   },
 
+  // ============================================================================
+  // DATA TOOLS
+  // ============================================================================
   airtable: {
     name: "Airtable",
     description: "Airtable database operations",
@@ -665,6 +674,39 @@ export const MCP_SERVER_PRESETS: Record<string, Partial<MCPServerConfig>> = {
   postgres: {
     name: "PostgreSQL",
     description: "PostgreSQL database operations",
+    capabilities: { tools: true, resources: true, prompts: false, sampling: false },
+  },
+
+  // ============================================================================
+  // RESEARCH TOOLS (for Agent 1 Market Intelligence)
+  // ============================================================================
+  research_web_search: {
+    name: "Web Search Research",
+    description: "Web search for company intelligence, hiring signals, complaints, and news",
+    capabilities: { tools: true, resources: false, prompts: true, sampling: false },
+  },
+
+  research_linkedin: {
+    name: "LinkedIn Research",
+    description: "LinkedIn profile and company data for prospect research",
+    capabilities: { tools: true, resources: true, prompts: false, sampling: false },
+  },
+
+  research_reviews: {
+    name: "Review Sites Research",
+    description: "Aggregate reviews from Google, G2, Capterra, Trustpilot for pain signals",
+    capabilities: { tools: true, resources: true, prompts: false, sampling: false },
+  },
+
+  research_social: {
+    name: "Social Listening Research",
+    description: "Monitor Twitter/X, Facebook, Instagram for mentions and sentiment",
+    capabilities: { tools: true, resources: true, prompts: false, sampling: false },
+  },
+
+  research_industry: {
+    name: "Industry Data Research",
+    description: "Industry databases, associations, regulatory data, and market trends",
     capabilities: { tools: true, resources: true, prompts: false, sampling: false },
   },
 };
