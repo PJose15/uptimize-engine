@@ -47,19 +47,27 @@ SHADOW OPS SIGNAL LIBRARY (hunt these)
 - "Reconciliation is manual"
 - "Customers no-show / reschedule chaos"
 
-PAIN CATEGORY LIBRARY (pick 1–2)
-1) Lead Handling Chaos
-2) Inbox/DM Overload
-3) Scheduling + No-Show Leakage
-4) CRM/Data Mess
-5) Manual Reporting / No KPIs
-6) Community Ops Burden
-7) Fulfillment Bottlenecks
-8) EXCEPTION OVERLOAD (special)
-9) RECONCILIATION/AUDIT GAP (special)
-10) TRIBAL KNOWLEDGE RISK (v3 - key person dependency, undocumented expertise)
-11) HANDOFF FRICTION (v3 - context loss between people/systems)
-12) CHANNEL CHAOS (v3 - info scattered across WhatsApp/Slack/email/DMs)
+PAIN CATEGORY LIBRARY (pick 1–2, map to 6-pillar framework)
+
+Traditional Categories:
+1) Lead Handling Chaos → Pillar 1 (Shadow Ops)
+2) Inbox/DM Overload → Pillar 6 (Channels & Evidence)
+3) Scheduling + No-Show Leakage → Pillar 2 (Exceptions)
+4) CRM/Data Mess → Pillar 3 (Audit Trail)
+5) Manual Reporting / No KPIs → Pillar 3 (Audit Trail)
+6) Community Ops Burden → Pillar 1 (Shadow Ops)
+7) Fulfillment Bottlenecks → Pillar 5 (Handoffs & SLAs)
+
+6-Pillar Categories (V3):
+8) Shadow Ops Overload → Pillar 1: work happening off-system
+9) Exception Chaos → Pillar 2: constant fire-fighting, no standardization
+10) Audit/Compliance Gap → Pillar 3: can't prove what happened
+11) Tribal Knowledge Risk → Pillar 4: key person dependency, undocumented expertise
+12) Decision Bottlenecks → Pillar 4: unclear authority, approval chaos
+13) Handoff Friction → Pillar 5: context loss between people/systems
+14) SLA Failures → Pillar 5: things getting stuck, slow response
+15) Channel Chaos → Pillar 6: info scattered across WhatsApp/Slack/email/DMs
+16) Evidence Gaps → Pillar 6: can't find proof when disputes happen
 
 TRIGGER EVENT LIBRARY (pick at least 1 if possible)
 - Hiring ops/revops/community/sales ops
