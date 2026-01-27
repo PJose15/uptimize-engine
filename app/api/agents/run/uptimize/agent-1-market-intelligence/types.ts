@@ -18,7 +18,10 @@ export type PainCategory =
   | "Community Ops Burden"
   | "Fulfillment Bottlenecks"
   | "EXCEPTION OVERLOAD"
-  | "RECONCILIATION/AUDIT GAP";
+  | "RECONCILIATION/AUDIT GAP"
+  | "TRIBAL KNOWLEDGE RISK"  // V3 NEW
+  | "HANDOFF FRICTION"  // V3 NEW
+  | "CHANNEL CHAOS";  // V3 NEW
 
 export type Confidence = "high" | "medium" | "low";
 

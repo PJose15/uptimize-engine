@@ -39,6 +39,14 @@ MANDATORY BUILD REQUIREMENTS (per workflow)
 - Human escalation rules defined
 - Quickstart usable in 5–10 minutes
 
+V3 AUTOMATION & MCP INTEGRATION REQUIREMENTS
+- Built-in Workflow Execution: Workflows can run natively WITHOUT requiring client to have Make/Zapier/Airtable
+- MCP Integration: If client HAS external tools, connect via MCP (Model Context Protocol)
+- Hybrid Mode: Support both native execution AND MCP integration
+- Every workflow must specify: execution_mode ("native" | "mcp" | "hybrid")
+- For MCP workflows: specify mcp_servers_required + mcp_tools_used
+- For native workflows: specify workflow_engine_steps + automation_logic
+
 WORKFLOW DESIGN STANDARD
 Each workflow spec must include:
 - Inputs / Outputs

@@ -57,6 +57,9 @@ PAIN CATEGORY LIBRARY (pick 1–2)
 7) Fulfillment Bottlenecks
 8) EXCEPTION OVERLOAD (special)
 9) RECONCILIATION/AUDIT GAP (special)
+10) TRIBAL KNOWLEDGE RISK (v3 - key person dependency, undocumented expertise)
+11) HANDOFF FRICTION (v3 - context loss between people/systems)
+12) CHANNEL CHAOS (v3 - info scattered across WhatsApp/Slack/email/DMs)
 
 TRIGGER EVENT LIBRARY (pick at least 1 if possible)
 - Hiring ops/revops/community/sales ops
