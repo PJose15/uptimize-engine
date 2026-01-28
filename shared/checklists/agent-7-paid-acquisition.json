@@ -1,0 +1,113 @@
+{
+  "schema_version": "2.0.0",
+  "agent_id": "agent-7-paid-acquisition",
+  "agent_name": "Paid Acquisition & Funnel Optimizer",
+  "checklist_version": "0.1.0",
+  "last_updated": "2026-01-28T00:00:00.000Z",
+  "owner": "uptimize-team",
+  "status": "draft",
+  "core_standards": {
+    "differentiation": {
+      "items": [
+        { "id": "diff-1", "description": "Agent explicitly targets Shadow Ops", "why_it_matters": "Ads about specific shadow ops pain cut through noise", "status": "not_started" },
+        { "id": "diff-2", "description": "Agent explicitly targets Exceptions", "why_it_matters": "Exception-focused landing pages convert better than generic", "status": "not_started" },
+        { "id": "diff-3", "description": "Agent output includes Shadow Ops output type", "status": "not_started" },
+        { "id": "diff-4", "description": "Agent uses operator-grade outcomes", "status": "not_started" }
+      ],
+      "shadow_ops_outputs": ["shadow_ops_density", "exception_forecast"]
+    },
+    "output_contract": {
+      "items": [
+        { "id": "out-1", "description": "Single structured output", "status": "not_started" },
+        { "id": "out-2", "description": "Includes Ops Spine IDs", "status": "not_started" },
+        { "id": "out-3", "description": "Assumptions stated clearly", "status": "not_started" }
+      ],
+      "ops_spine_entities": ["lead", "opportunity", "audit_event"]
+    },
+    "reliability": {
+      "items": [
+        { "id": "rel-1", "description": "Happy path defined", "status": "not_started" },
+        { "id": "rel-2", "description": "Top 5 exception paths defined", "status": "not_started" },
+        { "id": "rel-3", "description": "Tool failure fallback defined", "status": "not_started" },
+        { "id": "rel-4", "description": "Human escalation rules defined", "status": "not_started" },
+        { "id": "rel-5", "description": "Rollback/disable switch defined", "status": "not_started" }
+      ]
+    },
+    "auditability": {
+      "items": [
+        { "id": "aud-1", "description": "Agent emits audit events", "status": "not_started" },
+        { "id": "aud-2", "description": "Logs include context", "status": "not_started" },
+        { "id": "aud-3", "description": "Retention specified", "status": "not_started" }
+      ]
+    },
+    "security_access": {
+      "items": [
+        { "id": "sec-1", "description": "Least-privilege defined", "status": "not_started" },
+        { "id": "sec-2", "description": "Disallowed actions explicit", "status": "not_started" },
+        { "id": "sec-3", "description": "Sensitive data rules exist", "status": "not_started" },
+        { "id": "sec-4", "description": "MCP permissions specified", "status": "not_started" }
+      ]
+    },
+    "kpi": {
+      "items": [
+        { "id": "kpi-1", "description": "Agent has 3-5 KPIs", "status": "not_started" },
+        { "id": "kpi-2", "description": "KPIs measurable", "status": "not_started" }
+      ],
+      "kpis": [
+        { "name": "Cost Per Qualified Lead", "definition": "Ad spend / Qualified leads (not just any leads)", "measurement_method": "Total spend / Leads passing Agent 2 qualification", "target": "<$100 CPQL" },
+        { "name": "Lead-to-Close Rate (Paid)", "definition": "% of paid leads that close", "measurement_method": "Closed deals / Paid leads", "target": ">8%" },
+        { "name": "Quiz Completion Rate", "definition": "% of quiz starters who complete", "measurement_method": "Completions / Starts", "target": ">60%" },
+        { "name": "ROAS (Return on Ad Spend)", "definition": "Revenue generated / Ad spend", "measurement_method": "Attributed revenue / Total spend", "target": ">3x" }
+      ]
+    },
+    "adoption": {
+      "items": [
+        { "id": "adp-1", "description": "Quickstart usable", "status": "not_started" },
+        { "id": "adp-2", "description": "SOPs documented", "status": "not_started" },
+        { "id": "adp-3", "description": "Micro-commitment exists", "status": "not_started" }
+      ],
+      "is_client_facing": false
+    }
+  },
+  "role_standards": {
+    "agent_type": "agent-7-paid-acquisition",
+    "required_items": [
+      { "id": "role-1", "description": "Funnel angle is based on a specific shadow workflow or exception", "why_it_matters": "Specific angles outperform generic 'AI automation' messaging", "status": "not_started" },
+      { "id": "role-2", "description": "Shadow Ops Quiz funnel exists (score + report)", "why_it_matters": "Quiz qualifies leads and delivers value before ask", "status": "not_started" },
+      { "id": "role-3", "description": "Lead quality loop uses downstream close data (not just CPL)", "why_it_matters": "Optimizing for closes, not just leads, improves ROI", "status": "not_started" },
+      { "id": "role-4", "description": "Offer ladder experiments running (audit → sprint → retainer)", "why_it_matters": "Multiple entry points maximize conversion opportunities", "status": "not_started" },
+      { "id": "role-5", "description": "Retargeting uses proof assets (micro-cases)", "why_it_matters": "Social proof in retargeting drives higher conversion", "status": "not_started" }
+    ],
+    "addon_items": [
+      { "id": "addon-1", "description": "Creative testing matrix by exception type", "status": "not_started" },
+      { "id": "addon-2", "description": "Landing page variants by niche sub-segment", "status": "not_started" }
+    ]
+  },
+  "ship_gate": {
+    "build_readiness": {
+      "items": [
+        { "id": "build-1", "description": "All Core Standards pass", "status": "not_started" },
+        { "id": "build-2", "description": "Role Standards pass", "status": "not_started" },
+        { "id": "build-3", "description": "QA passed", "status": "not_started" },
+        { "id": "build-4", "description": "Audit events verified", "status": "not_started" },
+        { "id": "build-5", "description": "Quickstart works", "status": "not_started" }
+      ]
+    },
+    "business_readiness": {
+      "items": [
+        { "id": "biz-1", "description": "Proof angle identified", "status": "not_started" },
+        { "id": "biz-2", "description": "Sell sheet created", "status": "not_started" },
+        { "id": "biz-3", "description": "Pricing approved", "status": "not_started" }
+      ]
+    },
+    "ops_spine_readiness": {
+      "items": [
+        { "id": "ops-1", "description": "Entity links verified", "status": "not_started" },
+        { "id": "ops-2", "description": "Ticket process defined", "status": "not_started" },
+        { "id": "ops-3", "description": "KPI dashboard ready", "status": "not_started" }
+      ]
+    }
+  },
+  "blockers": [],
+  "notes": "Agent 7 not yet implemented. This checklist defines requirements for future build."
+}

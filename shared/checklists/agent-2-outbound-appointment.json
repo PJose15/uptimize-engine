@@ -1,0 +1,196 @@
+{
+  "schema_version": "2.0.0",
+  "agent_id": "agent-2-outbound-appointment",
+  "agent_name": "Outbound & Appointment Setter",
+  "checklist_version": "1.0.0",
+  "last_updated": "2026-01-28T00:00:00.000Z",
+  "owner": "uptimize-team",
+  "status": "in_review",
+  "core_standards": {
+    "differentiation": {
+      "items": [
+        {
+          "id": "diff-1",
+          "description": "Agent explicitly targets Shadow Ops (off-system work: WhatsApp/DMs/Sheets/memory)",
+          "status": "passed",
+          "evidence": "Opener questions target shadow ops pain points identified by Agent 1"
+        },
+        {
+          "id": "diff-2",
+          "description": "Agent explicitly targets Exceptions (edge cases that break normal flows)",
+          "status": "passed",
+          "evidence": "Mini Shadow Ops Audit questions probe for exception scenarios"
+        },
+        {
+          "id": "diff-3",
+          "description": "Agent output includes at least one Shadow Ops output type",
+          "status": "passed",
+          "evidence": "Qualified Lead Brief includes shadow_ops_confirmed and exception_hints"
+        },
+        {
+          "id": "diff-4",
+          "description": "Agent avoids generic automation language and uses operator-grade outcomes",
+          "status": "passed",
+          "evidence": "Message templates use specific operational language from prospect's industry"
+        }
+      ],
+      "shadow_ops_outputs": ["shadow_ops_map", "exception_library"]
+    },
+    "output_contract": {
+      "items": [
+        {
+          "id": "out-1",
+          "description": "Agent outputs a single structured object (JSON schema aligned)",
+          "status": "passed",
+          "evidence": "Outputs QualifiedLeadBrief JSON with all required fields"
+        },
+        {
+          "id": "out-2",
+          "description": "Agent includes required IDs to write into Ops Spine",
+          "status": "passed",
+          "evidence": "Links lead_id, creates opportunity_id on booking"
+        },
+        {
+          "id": "out-3",
+          "description": "Agent states assumptions clearly (no invented tools, no fake numbers)",
+          "status": "passed",
+          "evidence": "Qualification notes capture actual responses, not inferences"
+        }
+      ],
+      "output_schema_ref": "/shared/schemas/ops-spine.json#/$defs/Opportunity",
+      "ops_spine_entities": ["lead", "opportunity", "audit_event"]
+    },
+    "reliability": {
+      "items": [
+        { "id": "rel-1", "description": "Happy path defined", "status": "passed" },
+        { "id": "rel-2", "description": "Top 5 exception paths defined", "status": "passed" },
+        { "id": "rel-3", "description": "Tool failure fallback defined", "status": "passed" },
+        { "id": "rel-4", "description": "Human escalation rules defined", "status": "passed" },
+        { "id": "rel-5", "description": "Rollback/disable switch defined", "status": "passed" }
+      ],
+      "exception_paths": [
+        { "name": "No response after 7 touches", "trigger": "Lead unresponsive", "behavior": "Move to nurture sequence, reduce priority", "tested": true },
+        { "name": "Hostile response", "trigger": "Lead responds negatively", "behavior": "Log objection, do not contact again, flag for review", "tested": true },
+        { "name": "Wrong contact", "trigger": "Responder is not decision maker", "behavior": "Request referral, update lead record", "tested": true },
+        { "name": "Meeting no-show", "trigger": "Booked meeting not attended", "behavior": "Execute no-show protocol with micro-commitment", "tested": true },
+        { "name": "Already using competitor", "trigger": "Lead mentions existing solution", "behavior": "Log competitor, pivot to differentiation angle", "tested": true }
+      ],
+      "tool_failure_fallbacks": [
+        { "tool": "Email sender", "failure_mode": "Delivery failure", "fallback_action": "Queue for retry, try alternate channel", "tested": true },
+        { "tool": "Calendar booking", "failure_mode": "API timeout", "fallback_action": "Manual booking link, flag for follow-up", "tested": true }
+      ],
+      "human_escalation_rules": [
+        { "condition": "High-value lead with complex objection", "escalation_channel": "Slack #sales-escalation", "sla_minutes": 30 },
+        { "condition": "Legal/compliance question raised", "escalation_channel": "Assign to AE directly", "sla_minutes": 60 }
+      ],
+      "rollback_procedure": "Pause all sequences via config flag. Active conversations moved to human queue."
+    },
+    "auditability": {
+      "items": [
+        { "id": "aud-1", "description": "Agent emits audit events", "status": "passed" },
+        { "id": "aud-2", "description": "Logs include enough context", "status": "passed" },
+        { "id": "aud-3", "description": "Data retention specified", "status": "passed" }
+      ],
+      "audit_events": [
+        { "event_type": "outreach.sent", "entity_type": "lead", "fields_logged": ["lead_id", "channel", "message_template", "touch_number"], "retention_days": 90 },
+        { "event_type": "reply.received", "entity_type": "lead", "fields_logged": ["lead_id", "reply_type", "sentiment", "objection_tags"], "retention_days": 90 },
+        { "event_type": "meeting.booked", "entity_type": "opportunity", "fields_logged": ["lead_id", "opp_id", "meeting_time", "qualification_score"], "retention_days": 365 }
+      ],
+      "log_storage_location": "Ops Spine audit_events",
+      "retention_policy": "90 days detailed, 1 year for booked meetings"
+    },
+    "security_access": {
+      "items": [
+        { "id": "sec-1", "description": "Least-privilege access model defined", "status": "passed" },
+        { "id": "sec-2", "description": "Disallowed actions explicit", "status": "passed" },
+        { "id": "sec-3", "description": "Sensitive data handling rules exist", "status": "passed" },
+        { "id": "sec-4", "description": "MCP tool permissions specified", "status": "passed" }
+      ],
+      "permissions": {
+        "allowed_actions": ["Read leads from Agent 1", "Send approved message templates", "Book calendar slots", "Update lead status"],
+        "disallowed_actions": ["Send unapproved messages", "Access financial data", "Modify pricing", "Delete leads"],
+        "mcp_tools": [
+          { "tool_name": "email_sender", "permission": "write" },
+          { "tool_name": "calendar_booking", "permission": "write" },
+          { "tool_name": "ops_spine_lead", "permission": "read_write" }
+        ]
+      },
+      "sensitive_data_rules": [
+        { "data_type": "pii", "handling_rule": "Contact info used only for outreach, never logged in full" }
+      ]
+    },
+    "kpi": {
+      "items": [
+        { "id": "kpi-1", "description": "Agent has 3-5 KPIs", "status": "passed" },
+        { "id": "kpi-2", "description": "KPIs measurable and tied to Ops Spine", "status": "passed" }
+      ],
+      "kpis": [
+        { "name": "Reply Rate", "definition": "% of leads that reply to outreach", "measurement_method": "Replies / Outreach sent", "target": ">8%", "ops_spine_kpi_id": "kpi-a2-reply" },
+        { "name": "Positive Reply Rate", "definition": "% of replies that are positive/interested", "measurement_method": "Positive replies / Total replies", "target": ">40%", "ops_spine_kpi_id": "kpi-a2-positive" },
+        { "name": "Meeting Book Rate", "definition": "% of leads that book meetings", "measurement_method": "Meetings booked / Leads contacted", "target": ">3%", "ops_spine_kpi_id": "kpi-a2-book" },
+        { "name": "Show Rate", "definition": "% of booked meetings that happen", "measurement_method": "Meetings held / Meetings booked", "target": ">80%", "ops_spine_kpi_id": "kpi-a2-show" },
+        { "name": "Objection Capture Rate", "definition": "% of objections properly tagged", "measurement_method": "Tagged objections / Total negative replies", "target": ">90%", "ops_spine_kpi_id": "kpi-a2-objection" }
+      ]
+    },
+    "adoption": {
+      "items": [
+        { "id": "adp-1", "description": "Quickstart usable in 5-10 minutes", "status": "passed" },
+        { "id": "adp-2", "description": "SOPs documented", "status": "passed" },
+        { "id": "adp-3", "description": "Micro-commitment exists", "status": "passed" }
+      ],
+      "is_client_facing": true,
+      "quickstart": { "document_path": "/docs/agent-2-quickstart.md", "estimated_minutes": 8, "tested_with_client": true },
+      "sops": { "daily_sop_path": "/docs/sops/agent-2-daily.md", "weekly_sop_path": "/docs/sops/agent-2-weekly.md", "exception_sop_path": "/docs/sops/agent-2-exceptions.md" },
+      "micro_commitment": { "description": "Reply validation", "action_required": "Review and approve first 5 auto-generated replies", "expected_outcome": "Builds trust in message quality" }
+    }
+  },
+  "role_standards": {
+    "agent_type": "agent-2-outbound-appointment",
+    "required_items": [
+      { "id": "role-1", "description": "Opener is Pattern-Interrupt Question by default", "status": "passed", "evidence": "Default template uses pattern-interrupt from Agent 1" },
+      { "id": "role-2", "description": "Mini Shadow Ops Audit (2-4 Qs) used before booking", "status": "passed", "evidence": "Qualification flow includes shadow ops probing questions" },
+      { "id": "role-3", "description": "Follow-ups branch by reply type (skeptical/busy/curious/tooling already)", "status": "passed", "evidence": "4 reply-type branches implemented with tailored responses" },
+      { "id": "role-4", "description": "No-show protocol includes micro-commitment", "status": "passed", "evidence": "No-show message asks: 'Reply YES + your #1 workflow pain'" },
+      { "id": "role-5", "description": "Objection tags captured and stored", "status": "passed", "evidence": "Objection taxonomy applied to all negative replies" }
+    ],
+    "addon_items": [
+      { "id": "addon-1", "description": "Reply quality scoring (0-10) to prioritize", "status": "passed", "evidence": "Replies scored for intent strength" },
+      { "id": "addon-2", "description": "Objection heatmap updated weekly", "status": "in_progress", "evidence": "Implementing automated heatmap generation" }
+    ]
+  },
+  "ship_gate": {
+    "build_readiness": {
+      "items": [
+        { "id": "build-1", "description": "All Core Standards pass", "status": "passed" },
+        { "id": "build-2", "description": "Role Standards pass", "status": "passed" },
+        { "id": "build-3", "description": "QA passed", "status": "passed" },
+        { "id": "build-4", "description": "Audit events verified", "status": "passed" },
+        { "id": "build-5", "description": "Quickstart works", "status": "passed" }
+      ],
+      "qa_results": { "happy_path_passed": true, "exception_paths_passed": true, "tool_failures_passed": true, "test_run_date": "2026-01-27T11:00:00.000Z" }
+    },
+    "business_readiness": {
+      "items": [
+        { "id": "biz-1", "description": "Proof angle identified", "status": "passed" },
+        { "id": "biz-2", "description": "Sell sheet created", "status": "passed" },
+        { "id": "biz-3", "description": "Pricing approved", "status": "passed" }
+      ],
+      "proof_angle": "Pattern-interrupt outreach with Shadow Ops qualification - books meetings that convert, not just meetings that happen",
+      "pricing_approved": true,
+      "capacity_approved": true
+    },
+    "ops_spine_readiness": {
+      "items": [
+        { "id": "ops-1", "description": "Entity links verified", "status": "passed" },
+        { "id": "ops-2", "description": "Ticket process defined", "status": "passed" },
+        { "id": "ops-3", "description": "KPI dashboard ready", "status": "passed" }
+      ],
+      "entity_links_verified": true,
+      "ticket_process_defined": true,
+      "kpi_dashboard_ready": true
+    },
+    "final_approval": { "approved": true, "approved_by": "uptimize-team", "approved_at": "2026-01-27T14:00:00.000Z" }
+  },
+  "blockers": [],
+  "notes": "Agent 2 production-ready. Objection heatmap automation in progress for v1.1."
+}

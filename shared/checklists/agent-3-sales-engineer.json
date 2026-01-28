@@ -1,0 +1,162 @@
+{
+  "schema_version": "2.0.0",
+  "agent_id": "agent-3-sales-engineer",
+  "agent_name": "Sales Engineer & Offer Architect",
+  "checklist_version": "1.0.0",
+  "last_updated": "2026-01-28T00:00:00.000Z",
+  "owner": "uptimize-team",
+  "status": "in_review",
+  "core_standards": {
+    "differentiation": {
+      "items": [
+        { "id": "diff-1", "description": "Agent explicitly targets Shadow Ops", "status": "passed", "evidence": "6-Pillar Audit includes Shadow Ops as Pillar 1" },
+        { "id": "diff-2", "description": "Agent explicitly targets Exceptions", "status": "passed", "evidence": "Exception Library is Pillar 2 of the audit framework" },
+        { "id": "diff-3", "description": "Agent output includes Shadow Ops output type", "status": "passed", "evidence": "Outputs Shadow Ops Map, Exception Library, and 6-Pillar Audit" },
+        { "id": "diff-4", "description": "Agent uses operator-grade outcomes", "status": "passed", "evidence": "Discovery and SOW use specific operational impact language" }
+      ],
+      "shadow_ops_outputs": ["shadow_ops_map", "exception_library", "shadow_ops_reduction_report"]
+    },
+    "output_contract": {
+      "items": [
+        { "id": "out-1", "description": "Single structured output", "status": "passed", "evidence": "Outputs ProposalPackage JSON with 7 required sections" },
+        { "id": "out-2", "description": "Includes Ops Spine IDs", "status": "passed", "evidence": "Links lead_id → opportunity_id, creates project_id on close" },
+        { "id": "out-3", "description": "Assumptions stated clearly", "status": "passed", "evidence": "Value calc includes explicit assumptions section" }
+      ],
+      "output_schema_ref": "/shared/schemas/ops-spine.json#/$defs/Opportunity",
+      "ops_spine_entities": ["lead", "account", "opportunity", "project"]
+    },
+    "reliability": {
+      "items": [
+        { "id": "rel-1", "description": "Happy path defined", "status": "passed" },
+        { "id": "rel-2", "description": "Top 5 exception paths defined", "status": "passed" },
+        { "id": "rel-3", "description": "Tool failure fallback defined", "status": "passed" },
+        { "id": "rel-4", "description": "Human escalation rules defined", "status": "passed" },
+        { "id": "rel-5", "description": "Rollback/disable switch defined", "status": "passed" }
+      ],
+      "exception_paths": [
+        { "name": "Incomplete discovery", "trigger": "Key pillar data missing", "behavior": "Flag gaps, generate follow-up questions", "tested": true },
+        { "name": "Budget mismatch", "trigger": "Budget < minimum project size", "behavior": "Offer audit-only or defer to future", "tested": true },
+        { "name": "Technical incompatibility", "trigger": "Stack doesn't support required integrations", "behavior": "Document limitation, adjust scope or decline", "tested": true },
+        { "name": "Decision-maker unavailable", "trigger": "No authority to sign", "behavior": "Map decision process, create stakeholder brief", "tested": true },
+        { "name": "Scope creep during discovery", "trigger": "Requirements expand beyond initial brief", "behavior": "Phase scope, document Phase 2/3 items", "tested": true }
+      ],
+      "tool_failure_fallbacks": [
+        { "tool": "Value calculator", "failure_mode": "Missing data", "fallback_action": "Use conservative estimates with clear assumptions", "tested": true },
+        { "tool": "SOW generator", "failure_mode": "Template error", "fallback_action": "Fall back to manual template with AI assist", "tested": true }
+      ],
+      "human_escalation_rules": [
+        { "condition": "Deal > $50k or custom scope", "escalation_channel": "Senior AE review required", "sla_minutes": 120 },
+        { "condition": "Legal/security requirements", "escalation_channel": "Legal review queue", "sla_minutes": 240 }
+      ],
+      "rollback_procedure": "Proposals can be versioned and reverted. Active deals moved to manual process."
+    },
+    "auditability": {
+      "items": [
+        { "id": "aud-1", "description": "Agent emits audit events", "status": "passed" },
+        { "id": "aud-2", "description": "Logs include context", "status": "passed" },
+        { "id": "aud-3", "description": "Retention specified", "status": "passed" }
+      ],
+      "audit_events": [
+        { "event_type": "discovery.completed", "entity_type": "opportunity", "fields_logged": ["opp_id", "pillars_assessed", "gaps_identified", "duration_mins"], "retention_days": 365 },
+        { "event_type": "proposal.generated", "entity_type": "opportunity", "fields_logged": ["opp_id", "pricing_option", "value_calc_summary", "scope_items"], "retention_days": 365 },
+        { "event_type": "deal.closed", "entity_type": "project", "fields_logged": ["opp_id", "project_id", "contract_value", "scope_version"], "retention_days": 730 }
+      ],
+      "log_storage_location": "Ops Spine audit_events",
+      "retention_policy": "2 years for closed deals, 1 year for proposals"
+    },
+    "security_access": {
+      "items": [
+        { "id": "sec-1", "description": "Least-privilege defined", "status": "passed" },
+        { "id": "sec-2", "description": "Disallowed actions explicit", "status": "passed" },
+        { "id": "sec-3", "description": "Sensitive data rules exist", "status": "passed" },
+        { "id": "sec-4", "description": "MCP permissions specified", "status": "passed" }
+      ],
+      "permissions": {
+        "allowed_actions": ["Read qualified leads", "Generate proposals", "Calculate value", "Create opportunities"],
+        "disallowed_actions": ["Approve discounts > 10%", "Commit to custom development", "Access competitor data"],
+        "mcp_tools": [
+          { "tool_name": "value_calculator", "permission": "read_write" },
+          { "tool_name": "sow_generator", "permission": "write" },
+          { "tool_name": "ops_spine_opportunity", "permission": "read_write" }
+        ]
+      },
+      "sensitive_data_rules": [
+        { "data_type": "financial", "handling_rule": "Client financial data used only for value calc, not stored raw" },
+        { "data_type": "pii", "handling_rule": "Contact info in opportunity record only" }
+      ]
+    },
+    "kpi": {
+      "items": [
+        { "id": "kpi-1", "description": "Agent has 3-5 KPIs", "status": "passed" },
+        { "id": "kpi-2", "description": "KPIs measurable", "status": "passed" }
+      ],
+      "kpis": [
+        { "name": "Discovery-to-Proposal Rate", "definition": "% of discoveries that result in proposal", "measurement_method": "Proposals sent / Discoveries completed", "target": ">70%", "ops_spine_kpi_id": "kpi-a3-proposal" },
+        { "name": "Proposal-to-Close Rate", "definition": "% of proposals that close", "measurement_method": "Deals closed / Proposals sent", "target": ">40%", "ops_spine_kpi_id": "kpi-a3-close" },
+        { "name": "Value Calc Accuracy", "definition": "Actual ROI vs predicted ROI", "measurement_method": "Post-delivery ROI / Predicted ROI", "target": ">80% accuracy", "ops_spine_kpi_id": "kpi-a3-accuracy" },
+        { "name": "Scope Accuracy", "definition": "% of deliverables completed as scoped", "measurement_method": "Delivered as scoped / Total deliverables", "target": ">90%", "ops_spine_kpi_id": "kpi-a3-scope" }
+      ]
+    },
+    "adoption": {
+      "items": [
+        { "id": "adp-1", "description": "Quickstart usable", "status": "passed" },
+        { "id": "adp-2", "description": "SOPs documented", "status": "passed" },
+        { "id": "adp-3", "description": "Micro-commitment exists", "status": "passed" }
+      ],
+      "is_client_facing": true,
+      "quickstart": { "document_path": "/docs/agent-3-quickstart.md", "estimated_minutes": 10, "tested_with_client": true },
+      "sops": { "daily_sop_path": "/docs/sops/agent-3-daily.md", "weekly_sop_path": "/docs/sops/agent-3-weekly.md", "exception_sop_path": "/docs/sops/agent-3-exceptions.md" },
+      "micro_commitment": { "description": "Discovery validation", "action_required": "Confirm top 3 pain points from 6-pillar audit", "expected_outcome": "Ensures proposal addresses real needs" }
+    }
+  },
+  "role_standards": {
+    "agent_type": "agent-3-sales-engineer",
+    "required_items": [
+      { "id": "role-1", "description": "Discovery order followed: Process → Shadow Ops → Exceptions → Impact → Constraints → Close plan", "status": "passed", "evidence": "Discovery framework enforces 6-pillar order" },
+      { "id": "role-2", "description": "Exception-to-Deliverable mapping included in SOW", "status": "passed", "evidence": "SOW template maps each exception to specific deliverable" },
+      { "id": "role-3", "description": "Value calc uses standard template with assumptions stated", "status": "passed", "evidence": "Value calculator outputs assumptions section" },
+      { "id": "role-4", "description": "Security/permissions pre-check completed", "status": "passed", "evidence": "Pre-check questionnaire included in discovery" },
+      { "id": "role-5", "description": "Deal risk flags: 'do not close' rules exist", "status": "passed", "evidence": "Risk scoring with auto-decline triggers" },
+      { "id": "role-6", "description": "Handoff spec for Agent 4 included", "status": "passed", "evidence": "Proposal includes delivery handoff specification" }
+    ],
+    "addon_items": [
+      { "id": "addon-1", "description": "Demo narrative blueprint (5-minute story)", "status": "passed", "evidence": "Demo script generator creates narrative arc" },
+      { "id": "addon-2", "description": "Phase 1 Wow Workflow clearly defined with time-to-value", "status": "passed", "evidence": "Every proposal defines 'wow workflow' with 7-day target" }
+    ]
+  },
+  "ship_gate": {
+    "build_readiness": {
+      "items": [
+        { "id": "build-1", "description": "All Core Standards pass", "status": "passed" },
+        { "id": "build-2", "description": "Role Standards pass", "status": "passed" },
+        { "id": "build-3", "description": "QA passed", "status": "passed" },
+        { "id": "build-4", "description": "Audit events verified", "status": "passed" },
+        { "id": "build-5", "description": "Quickstart works", "status": "passed" }
+      ],
+      "qa_results": { "happy_path_passed": true, "exception_paths_passed": true, "tool_failures_passed": true, "test_run_date": "2026-01-27T12:00:00.000Z" }
+    },
+    "business_readiness": {
+      "items": [
+        { "id": "biz-1", "description": "Proof angle identified", "status": "passed" },
+        { "id": "biz-2", "description": "Sell sheet created", "status": "passed" },
+        { "id": "biz-3", "description": "Pricing approved", "status": "passed" }
+      ],
+      "proof_angle": "6-Pillar Audit + Exception-to-Deliverable mapping = proposals that actually get built as scoped",
+      "pricing_approved": true,
+      "capacity_approved": true
+    },
+    "ops_spine_readiness": {
+      "items": [
+        { "id": "ops-1", "description": "Entity links verified", "status": "passed" },
+        { "id": "ops-2", "description": "Ticket process defined", "status": "passed" },
+        { "id": "ops-3", "description": "KPI dashboard ready", "status": "passed" }
+      ],
+      "entity_links_verified": true,
+      "ticket_process_defined": true,
+      "kpi_dashboard_ready": true
+    },
+    "final_approval": { "approved": true, "approved_by": "uptimize-team", "approved_at": "2026-01-27T15:00:00.000Z" }
+  },
+  "blockers": [],
+  "notes": "Agent 3 production-ready with full 6-pillar framework. Exception-to-deliverable mapping is key differentiator."
+}

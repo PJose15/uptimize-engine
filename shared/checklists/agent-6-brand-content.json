@@ -1,0 +1,117 @@
+{
+  "schema_version": "2.0.0",
+  "agent_id": "agent-6-brand-content",
+  "agent_name": "Brand & Content Engine",
+  "checklist_version": "0.1.0",
+  "last_updated": "2026-01-28T00:00:00.000Z",
+  "owner": "uptimize-team",
+  "status": "draft",
+  "core_standards": {
+    "differentiation": {
+      "items": [
+        { "id": "diff-1", "description": "Agent explicitly targets Shadow Ops (off-system work: WhatsApp/DMs/Sheets/memory)", "why_it_matters": "Content about Shadow Ops resonates because it describes their actual reality", "status": "not_started" },
+        { "id": "diff-2", "description": "Agent explicitly targets Exceptions (edge cases that break normal flows)", "why_it_matters": "Exception stories are specific and memorable - not generic 'automation' content", "status": "not_started" },
+        { "id": "diff-3", "description": "Agent output includes at least one Shadow Ops output type", "status": "not_started" },
+        { "id": "diff-4", "description": "Agent avoids generic automation language and uses operator-grade outcomes", "status": "not_started" }
+      ],
+      "shadow_ops_outputs": ["shadow_ops_map", "shadow_ops_reduction_report"]
+    },
+    "output_contract": {
+      "items": [
+        { "id": "out-1", "description": "Agent outputs a single structured object (JSON schema aligned)", "status": "not_started" },
+        { "id": "out-2", "description": "Agent includes required IDs to write into Ops Spine", "status": "not_started" },
+        { "id": "out-3", "description": "Agent states assumptions clearly", "status": "not_started" }
+      ],
+      "ops_spine_entities": ["project", "deliverable", "audit_event"]
+    },
+    "reliability": {
+      "items": [
+        { "id": "rel-1", "description": "Happy path defined", "status": "not_started" },
+        { "id": "rel-2", "description": "Top 5 exception paths defined", "status": "not_started" },
+        { "id": "rel-3", "description": "Tool failure fallback defined", "status": "not_started" },
+        { "id": "rel-4", "description": "Human escalation rules defined", "status": "not_started" },
+        { "id": "rel-5", "description": "Rollback/disable switch defined", "status": "not_started" }
+      ],
+      "exception_paths": [],
+      "tool_failure_fallbacks": [],
+      "human_escalation_rules": []
+    },
+    "auditability": {
+      "items": [
+        { "id": "aud-1", "description": "Agent emits audit events", "status": "not_started" },
+        { "id": "aud-2", "description": "Logs include enough context", "status": "not_started" },
+        { "id": "aud-3", "description": "Data retention specified", "status": "not_started" }
+      ],
+      "audit_events": []
+    },
+    "security_access": {
+      "items": [
+        { "id": "sec-1", "description": "Least-privilege access model defined", "status": "not_started" },
+        { "id": "sec-2", "description": "Disallowed actions explicit", "status": "not_started" },
+        { "id": "sec-3", "description": "Sensitive data handling rules exist", "status": "not_started" },
+        { "id": "sec-4", "description": "MCP tool permissions specified", "status": "not_started" }
+      ]
+    },
+    "kpi": {
+      "items": [
+        { "id": "kpi-1", "description": "Agent has 3-5 KPIs", "status": "not_started" },
+        { "id": "kpi-2", "description": "KPIs measurable and tied to Ops Spine", "status": "not_started" }
+      ],
+      "kpis": [
+        { "name": "Proof-to-Post Conversion Rate", "definition": "% of client wins converted to content within 72 hours", "measurement_method": "Content published / Wins reported", "target": ">60%" },
+        { "name": "Content Engagement Rate", "definition": "Engagement per post by content type", "measurement_method": "Likes + comments + shares / impressions", "target": ">5%" },
+        { "name": "Inbound Lead Attribution", "definition": "% of leads attributable to content", "measurement_method": "Content-sourced leads / Total inbound", "target": ">30%" },
+        { "name": "Niche Authority Score", "definition": "Recognition in target niches", "measurement_method": "Mentions, backlinks, interview requests", "target": "Qualitative growth" }
+      ]
+    },
+    "adoption": {
+      "items": [
+        { "id": "adp-1", "description": "Quickstart usable in 5-10 minutes", "status": "not_started" },
+        { "id": "adp-2", "description": "SOPs documented", "status": "not_started" },
+        { "id": "adp-3", "description": "Micro-commitment exists", "status": "not_started" }
+      ],
+      "is_client_facing": false
+    }
+  },
+  "role_standards": {
+    "agent_type": "agent-6-brand-content",
+    "required_items": [
+      { "id": "role-1", "description": "Content pillars built around Shadow Ops + Exceptions", "why_it_matters": "Pillar consistency = recognizable POV that attracts right-fit audience", "status": "not_started" },
+      { "id": "role-2", "description": "Proof-to-Post SLA: win → content within 72 hours", "why_it_matters": "Fast turnaround keeps proof fresh and momentum high", "status": "not_started" },
+      { "id": "role-3", "description": "Before/After visuals standardized", "why_it_matters": "Visual proof is more shareable and memorable than text", "status": "not_started" },
+      { "id": "role-4", "description": "Founder POV library maintained (strong opinions)", "why_it_matters": "Strong opinions attract engaged audience, repel bad fits", "status": "not_started" },
+      { "id": "role-5", "description": "Collab/interview pipeline feeds niche insights back to targeting", "why_it_matters": "Content research improves Agent 1 targeting", "status": "not_started" }
+    ],
+    "addon_items": [
+      { "id": "addon-1", "description": "Monthly Shadow Ops Report published", "status": "not_started" },
+      { "id": "addon-2", "description": "Content tagged by niche + exception type", "status": "not_started" }
+    ]
+  },
+  "ship_gate": {
+    "build_readiness": {
+      "items": [
+        { "id": "build-1", "description": "All Core Standards pass", "status": "not_started" },
+        { "id": "build-2", "description": "Role Standards pass", "status": "not_started" },
+        { "id": "build-3", "description": "QA passed", "status": "not_started" },
+        { "id": "build-4", "description": "Audit events verified", "status": "not_started" },
+        { "id": "build-5", "description": "Quickstart works", "status": "not_started" }
+      ]
+    },
+    "business_readiness": {
+      "items": [
+        { "id": "biz-1", "description": "Proof angle identified", "status": "not_started" },
+        { "id": "biz-2", "description": "Sell sheet created", "status": "not_started" },
+        { "id": "biz-3", "description": "Pricing approved", "status": "not_started" }
+      ]
+    },
+    "ops_spine_readiness": {
+      "items": [
+        { "id": "ops-1", "description": "Entity links verified", "status": "not_started" },
+        { "id": "ops-2", "description": "Ticket process defined", "status": "not_started" },
+        { "id": "ops-3", "description": "KPI dashboard ready", "status": "not_started" }
+      ]
+    }
+  },
+  "blockers": [],
+  "notes": "Agent 6 not yet implemented. This checklist defines requirements for future build."
+}

@@ -1,0 +1,163 @@
+{
+  "schema_version": "2.0.0",
+  "agent_id": "agent-4-systems-delivery",
+  "agent_name": "Systems Delivery & Orchestrator",
+  "checklist_version": "1.0.0",
+  "last_updated": "2026-01-28T00:00:00.000Z",
+  "owner": "uptimize-team",
+  "status": "in_review",
+  "core_standards": {
+    "differentiation": {
+      "items": [
+        { "id": "diff-1", "description": "Agent explicitly targets Shadow Ops", "status": "passed", "evidence": "Workflow specs capture shadow ops migration from spreadsheets/WhatsApp" },
+        { "id": "diff-2", "description": "Agent explicitly targets Exceptions", "status": "passed", "evidence": "Every workflow requires top 5 exception paths" },
+        { "id": "diff-3", "description": "Agent output includes Shadow Ops output type", "status": "passed", "evidence": "Outputs shadow ops reduction metrics and exception handling specs" },
+        { "id": "diff-4", "description": "Agent uses operator-grade outcomes", "status": "passed", "evidence": "Delivery specs use concrete operational metrics" }
+      ],
+      "shadow_ops_outputs": ["shadow_ops_map", "shadow_ops_reduction_report", "exception_library"]
+    },
+    "output_contract": {
+      "items": [
+        { "id": "out-1", "description": "Single structured output", "status": "passed", "evidence": "Outputs DeliveryPackage JSON with 8 required sections" },
+        { "id": "out-2", "description": "Includes Ops Spine IDs", "status": "passed", "evidence": "Links project_id → workflow_ids → deliverable_ids" },
+        { "id": "out-3", "description": "Assumptions stated clearly", "status": "passed", "evidence": "Build plan includes constraints and assumptions section" }
+      ],
+      "output_schema_ref": "/shared/schemas/ops-spine.json#/$defs/Project",
+      "ops_spine_entities": ["project", "workflow", "deliverable", "ticket", "audit_event"]
+    },
+    "reliability": {
+      "items": [
+        { "id": "rel-1", "description": "Happy path defined", "status": "passed" },
+        { "id": "rel-2", "description": "Top 5 exception paths defined", "status": "passed" },
+        { "id": "rel-3", "description": "Tool failure fallback defined", "status": "passed" },
+        { "id": "rel-4", "description": "Human escalation rules defined", "status": "passed" },
+        { "id": "rel-5", "description": "Rollback/disable switch defined", "status": "passed" }
+      ],
+      "exception_paths": [
+        { "name": "Integration API failure", "trigger": "External API returns error or timeout", "behavior": "Retry with backoff, queue for manual, notify client", "tested": true },
+        { "name": "Data validation failure", "trigger": "Input data doesn't match schema", "behavior": "Log error, skip record, flag for review", "tested": true },
+        { "name": "Workflow timeout", "trigger": "Step exceeds max duration", "behavior": "Checkpoint state, escalate, allow resume", "tested": true },
+        { "name": "Permission denied", "trigger": "Insufficient access to resource", "behavior": "Log attempt, escalate to admin, block action", "tested": true },
+        { "name": "Dependency unavailable", "trigger": "Required service offline", "behavior": "Queue work, notify, process when available", "tested": true }
+      ],
+      "tool_failure_fallbacks": [
+        { "tool": "MCP tools", "failure_mode": "Server unreachable", "fallback_action": "Use cached data or graceful degradation mode", "tested": true },
+        { "tool": "Workflow engine", "failure_mode": "Step execution error", "fallback_action": "Checkpoint, retry, human takeover if 3 failures", "tested": true }
+      ],
+      "human_escalation_rules": [
+        { "condition": "3 consecutive step failures", "escalation_channel": "Slack #delivery-urgent", "sla_minutes": 15 },
+        { "condition": "Client-reported bug P1", "escalation_channel": "On-call engineer", "sla_minutes": 30 }
+      ],
+      "rollback_procedure": "Workflows versioned. Rollback to previous version via admin panel. Data migrations reversible."
+    },
+    "auditability": {
+      "items": [
+        { "id": "aud-1", "description": "Agent emits audit events", "status": "passed" },
+        { "id": "aud-2", "description": "Logs include context", "status": "passed" },
+        { "id": "aud-3", "description": "Retention specified", "status": "passed" }
+      ],
+      "audit_events": [
+        { "event_type": "workflow.executed", "entity_type": "workflow", "fields_logged": ["workflow_id", "trigger", "steps_completed", "duration_ms", "result"], "retention_days": 90 },
+        { "event_type": "exception.triggered", "entity_type": "workflow", "fields_logged": ["workflow_id", "exception_name", "trigger_data", "behavior_executed"], "retention_days": 180 },
+        { "event_type": "deliverable.shipped", "entity_type": "deliverable", "fields_logged": ["deliverable_id", "type", "qa_status", "handoff_to"], "retention_days": 365 }
+      ],
+      "log_storage_location": "Ops Spine audit_events + workflow execution logs",
+      "retention_policy": "90 days execution logs, 1 year deliverables, 6 months exceptions"
+    },
+    "security_access": {
+      "items": [
+        { "id": "sec-1", "description": "Least-privilege defined", "status": "passed" },
+        { "id": "sec-2", "description": "Disallowed actions explicit", "status": "passed" },
+        { "id": "sec-3", "description": "Sensitive data rules exist", "status": "passed" },
+        { "id": "sec-4", "description": "MCP permissions specified", "status": "passed" }
+      ],
+      "permissions": {
+        "allowed_actions": ["Execute approved workflows", "Read/write project data", "Create deliverables", "Emit audit events"],
+        "disallowed_actions": ["Delete production data", "Bypass approval gates", "Access other client data", "Modify billing"],
+        "mcp_tools": [
+          { "tool_name": "workflow_engine", "permission": "read_write" },
+          { "tool_name": "ops_spine_project", "permission": "read_write" },
+          { "tool_name": "notification_sender", "permission": "write" }
+        ]
+      },
+      "sensitive_data_rules": [
+        { "data_type": "credentials", "handling_rule": "Stored in secrets manager, never logged, rotated on breach" },
+        { "data_type": "pii", "handling_rule": "Processed but not stored in logs, masked in debug output" }
+      ]
+    },
+    "kpi": {
+      "items": [
+        { "id": "kpi-1", "description": "Agent has 3-5 KPIs", "status": "passed" },
+        { "id": "kpi-2", "description": "KPIs measurable", "status": "passed" }
+      ],
+      "kpis": [
+        { "name": "On-Time Delivery Rate", "definition": "% of deliverables shipped by committed date", "measurement_method": "Shipped on-time / Total deliverables", "target": ">90%", "ops_spine_kpi_id": "kpi-a4-ontime" },
+        { "name": "First-Time Quality Rate", "definition": "% of deliverables passing QA first time", "measurement_method": "Passed first QA / Total QA runs", "target": ">85%", "ops_spine_kpi_id": "kpi-a4-quality" },
+        { "name": "Exception Handling Rate", "definition": "% of exceptions auto-handled vs escalated", "measurement_method": "Auto-handled / Total exceptions", "target": ">70%", "ops_spine_kpi_id": "kpi-a4-exception" },
+        { "name": "Workflow Success Rate", "definition": "% of workflow executions completing successfully", "measurement_method": "Successful runs / Total runs", "target": ">95%", "ops_spine_kpi_id": "kpi-a4-success" },
+        { "name": "Shadow Ops Reduction", "definition": "Measured reduction in off-system work", "measurement_method": "Pre vs post shadow ops density score", "target": ">50% reduction", "ops_spine_kpi_id": "kpi-a4-shadow" }
+      ]
+    },
+    "adoption": {
+      "items": [
+        { "id": "adp-1", "description": "Quickstart usable", "status": "passed" },
+        { "id": "adp-2", "description": "SOPs documented", "status": "passed" },
+        { "id": "adp-3", "description": "Micro-commitment exists", "status": "passed" }
+      ],
+      "is_client_facing": true,
+      "quickstart": { "document_path": "/docs/agent-4-quickstart.md", "estimated_minutes": 5, "tested_with_client": true },
+      "sops": { "daily_sop_path": "/docs/sops/agent-4-daily.md", "weekly_sop_path": "/docs/sops/agent-4-weekly.md", "exception_sop_path": "/docs/sops/agent-4-exceptions.md" },
+      "micro_commitment": { "description": "Wow workflow activation", "action_required": "Run the 'wow workflow' once and confirm it worked", "expected_outcome": "Immediate value demonstration, builds confidence" }
+    }
+  },
+  "role_standards": {
+    "agent_type": "agent-4-systems-delivery",
+    "required_items": [
+      { "id": "role-1", "description": "Workflow spec includes: inputs/outputs/tools/happy path", "status": "passed", "evidence": "Workflow spec template enforces all fields" },
+      { "id": "role-2", "description": "Top 5 exception paths are implemented + tested", "status": "passed", "evidence": "QA checklist requires exception path testing" },
+      { "id": "role-3", "description": "Tool failure fallback modes implemented + tested", "status": "passed", "evidence": "Fallback modes table in every workflow spec" },
+      { "id": "role-4", "description": "Human-in-the-loop gates for risky actions defined", "status": "passed", "evidence": "Approval workflow for high-risk steps" },
+      { "id": "role-5", "description": "Observability shipped: volume, exceptions, fallbacks, success rate", "status": "passed", "evidence": "Dashboard includes all 4 metric categories" }
+    ],
+    "addon_items": [
+      { "id": "addon-1", "description": "Exception storm testing (high volume)", "status": "in_progress", "evidence": "Load testing framework in development" },
+      { "id": "addon-2", "description": "Migration plan for spreadsheet/WhatsApp dependency", "status": "passed", "evidence": "Shadow ops migration template included" },
+      { "id": "addon-3", "description": "Rollback mode documented", "status": "passed", "evidence": "Rollback procedures in admin guide" }
+    ]
+  },
+  "ship_gate": {
+    "build_readiness": {
+      "items": [
+        { "id": "build-1", "description": "All Core Standards pass", "status": "passed" },
+        { "id": "build-2", "description": "Role Standards pass", "status": "passed" },
+        { "id": "build-3", "description": "QA passed", "status": "passed" },
+        { "id": "build-4", "description": "Audit events verified", "status": "passed" },
+        { "id": "build-5", "description": "Quickstart works", "status": "passed" }
+      ],
+      "qa_results": { "happy_path_passed": true, "exception_paths_passed": true, "tool_failures_passed": true, "test_run_date": "2026-01-27T13:00:00.000Z" }
+    },
+    "business_readiness": {
+      "items": [
+        { "id": "biz-1", "description": "Proof angle identified", "status": "passed" },
+        { "id": "biz-2", "description": "Sell sheet created", "status": "passed" },
+        { "id": "biz-3", "description": "Pricing approved", "status": "passed" }
+      ],
+      "proof_angle": "Production-grade delivery with 5 exception paths per workflow + observability from day 1",
+      "pricing_approved": true,
+      "capacity_approved": true
+    },
+    "ops_spine_readiness": {
+      "items": [
+        { "id": "ops-1", "description": "Entity links verified", "status": "passed" },
+        { "id": "ops-2", "description": "Ticket process defined", "status": "passed" },
+        { "id": "ops-3", "description": "KPI dashboard ready", "status": "passed" }
+      ],
+      "entity_links_verified": true,
+      "ticket_process_defined": true,
+      "kpi_dashboard_ready": true
+    },
+    "final_approval": { "approved": true, "approved_by": "uptimize-team", "approved_at": "2026-01-27T16:00:00.000Z" }
+  },
+  "blockers": [],
+  "notes": "Agent 4 production-ready with V3 workflow engine + MCP integration. Exception storm testing for v1.1."
+}

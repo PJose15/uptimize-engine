@@ -1,0 +1,113 @@
+{
+  "schema_version": "2.0.0",
+  "agent_id": "agent-9-finance-pricing",
+  "agent_name": "Finance, Pricing & Capacity",
+  "checklist_version": "0.1.0",
+  "last_updated": "2026-01-28T00:00:00.000Z",
+  "owner": "uptimize-team",
+  "status": "draft",
+  "core_standards": {
+    "differentiation": {
+      "items": [
+        { "id": "diff-1", "description": "Agent explicitly targets Shadow Ops", "why_it_matters": "Shadow ops density affects delivery complexity and pricing", "status": "not_started" },
+        { "id": "diff-2", "description": "Agent explicitly targets Exceptions", "why_it_matters": "Exception count is a key pricing input", "status": "not_started" },
+        { "id": "diff-3", "description": "Agent output includes Shadow Ops output type", "status": "not_started" },
+        { "id": "diff-4", "description": "Agent uses operator-grade outcomes", "status": "not_started" }
+      ],
+      "shadow_ops_outputs": ["shadow_ops_density"]
+    },
+    "output_contract": {
+      "items": [
+        { "id": "out-1", "description": "Single structured output", "status": "not_started" },
+        { "id": "out-2", "description": "Includes Ops Spine IDs", "status": "not_started" },
+        { "id": "out-3", "description": "Assumptions stated clearly", "status": "not_started" }
+      ],
+      "ops_spine_entities": ["opportunity", "project", "audit_event"]
+    },
+    "reliability": {
+      "items": [
+        { "id": "rel-1", "description": "Happy path defined", "status": "not_started" },
+        { "id": "rel-2", "description": "Top 5 exception paths defined", "status": "not_started" },
+        { "id": "rel-3", "description": "Tool failure fallback defined", "status": "not_started" },
+        { "id": "rel-4", "description": "Human escalation rules defined", "status": "not_started" },
+        { "id": "rel-5", "description": "Rollback/disable switch defined", "status": "not_started" }
+      ]
+    },
+    "auditability": {
+      "items": [
+        { "id": "aud-1", "description": "Agent emits audit events", "status": "not_started" },
+        { "id": "aud-2", "description": "Logs include context", "status": "not_started" },
+        { "id": "aud-3", "description": "Retention specified", "status": "not_started" }
+      ]
+    },
+    "security_access": {
+      "items": [
+        { "id": "sec-1", "description": "Least-privilege defined", "status": "not_started" },
+        { "id": "sec-2", "description": "Disallowed actions explicit", "status": "not_started" },
+        { "id": "sec-3", "description": "Sensitive data rules exist", "status": "not_started" },
+        { "id": "sec-4", "description": "MCP permissions specified", "status": "not_started" }
+      ]
+    },
+    "kpi": {
+      "items": [
+        { "id": "kpi-1", "description": "Agent has 3-5 KPIs", "status": "not_started" },
+        { "id": "kpi-2", "description": "KPIs measurable", "status": "not_started" }
+      ],
+      "kpis": [
+        { "name": "Gross Margin", "definition": "Revenue - Delivery Cost / Revenue", "measurement_method": "Monthly P&L calculation", "target": ">60%" },
+        { "name": "Pricing Accuracy", "definition": "Actual delivery cost vs estimated", "measurement_method": "Actual hours / Estimated hours", "target": "±15%" },
+        { "name": "Capacity Utilization", "definition": "Billable hours / Available hours", "measurement_method": "Weekly capacity tracking", "target": "70-85%" },
+        { "name": "Deal Desk Turnaround", "definition": "Time from quote request to approval", "measurement_method": "Average hours per quote", "target": "<4 hours" }
+      ]
+    },
+    "adoption": {
+      "items": [
+        { "id": "adp-1", "description": "Quickstart usable", "status": "not_started" },
+        { "id": "adp-2", "description": "SOPs documented", "status": "not_started" },
+        { "id": "adp-3", "description": "Micro-commitment exists", "status": "not_started" }
+      ],
+      "is_client_facing": false
+    }
+  },
+  "role_standards": {
+    "agent_type": "agent-9-finance-pricing",
+    "required_items": [
+      { "id": "role-1", "description": "Complexity Index drives pricing (exceptions + integrations + shadow ops density)", "why_it_matters": "Complexity-based pricing ensures profitable delivery", "status": "not_started" },
+      { "id": "role-2", "description": "Delivery cost model exists (hours by workflow type)", "why_it_matters": "Predictable costs enable consistent margins", "status": "not_started" },
+      { "id": "role-3", "description": "WIP limits set and enforced", "why_it_matters": "WIP limits prevent overcommitment and quality issues", "status": "not_started" },
+      { "id": "role-4", "description": "Retainer structure separated (build vs monitor/optimize)", "why_it_matters": "Clear phases enable better capacity planning", "status": "not_started" },
+      { "id": "role-5", "description": "Risk reserve applied on high-risk builds", "why_it_matters": "Risk reserves protect margin on complex projects", "status": "not_started" }
+    ],
+    "addon_items": [
+      { "id": "addon-1", "description": "Deal desk rulebook created (discount guardrails)", "status": "not_started" },
+      { "id": "addon-2", "description": "Forecast ties pipeline → delivery capacity", "status": "not_started" }
+    ]
+  },
+  "ship_gate": {
+    "build_readiness": {
+      "items": [
+        { "id": "build-1", "description": "All Core Standards pass", "status": "not_started" },
+        { "id": "build-2", "description": "Role Standards pass", "status": "not_started" },
+        { "id": "build-3", "description": "QA passed", "status": "not_started" },
+        { "id": "build-4", "description": "Audit events verified", "status": "not_started" },
+        { "id": "build-5", "description": "Quickstart works", "status": "not_started" }
+      ]
+    },
+    "business_readiness": {
+      "items": [
+        { "id": "biz-1", "description": "Proof angle identified", "status": "not_started" },
+        { "id": "biz-2", "description": "Sell sheet created", "status": "not_started" },
+        { "id": "biz-3", "description": "Pricing approved", "status": "not_started" }
+      ]
+    },
+    "ops_spine_readiness": {
+      "items": [
+        { "id": "ops-1", "description": "Entity links verified", "status": "not_started" },
+        { "id": "ops-2", "description": "Ticket process defined", "status": "not_started" },
+        { "id": "ops-3", "description": "KPI dashboard ready", "status": "not_started" }
+      ]
+    }
+  },
+  "blockers": [],
+  "notes": "Agent 9 not yet implemented. This checklist defines requirements for future build. Complexity Index formula: base + (2 × exception_count) + (3 × shadow_ops_density) + (1.5 × integration_count)"
+}

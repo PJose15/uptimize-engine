@@ -1,0 +1,542 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://uptimizeai.com/schemas/agent-checklist-v2.json",
+  "title": "UptimizeAI Agent Upgrade Checklist V2",
+  "description": "Quality + differentiation gate for every internal agent. Ensures niche-depth and production-readiness.",
+  "type": "object",
+  "required": ["schema_version", "agent_id", "agent_name", "checklist_version", "last_updated", "core_standards", "role_standards", "ship_gate"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "2.0.0",
+      "description": "Schema version for this checklist format"
+    },
+    "agent_id": {
+      "type": "string",
+      "pattern": "^agent-[0-9]+(-[a-z-]+)?$",
+      "description": "Agent identifier (e.g., agent-1-market-intelligence)"
+    },
+    "agent_name": {
+      "type": "string",
+      "description": "Human-readable agent name"
+    },
+    "checklist_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Version of this specific agent's checklist completion"
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 timestamp of last update"
+    },
+    "owner": {
+      "type": "string",
+      "description": "Person responsible for this agent's checklist"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "in_review", "approved", "shipped", "deprecated"],
+      "description": "Overall checklist status"
+    },
+    "core_standards": {
+      "$ref": "#/$defs/CoreStandards"
+    },
+    "role_standards": {
+      "$ref": "#/$defs/RoleStandards"
+    },
+    "ship_gate": {
+      "$ref": "#/$defs/ShipGate"
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Blocker"
+      },
+      "description": "Items marked as BLOCKED with ticket references"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional context or notes"
+    }
+  },
+  "$defs": {
+    "ChecklistItem": {
+      "type": "object",
+      "required": ["id", "description", "status"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for this checklist item"
+        },
+        "description": {
+          "type": "string",
+          "description": "What this item requires"
+        },
+        "why_it_matters": {
+          "type": "string",
+          "description": "Explanation of why this standard exists"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["not_started", "in_progress", "passed", "blocked", "not_applicable"],
+          "description": "Current status of this item"
+        },
+        "evidence": {
+          "type": "string",
+          "description": "Proof that this item is satisfied (file paths, test results, etc.)"
+        },
+        "blocker_ticket": {
+          "type": "string",
+          "description": "Ticket ID if status is blocked"
+        },
+        "verified_by": {
+          "type": "string",
+          "description": "Who verified this item passed"
+        },
+        "verified_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When this item was verified"
+        }
+      }
+    },
+    "CoreStandards": {
+      "type": "object",
+      "required": ["differentiation", "output_contract", "reliability", "auditability", "security_access", "kpi", "adoption"],
+      "properties": {
+        "differentiation": {
+          "type": "object",
+          "description": "Shadow Ops + Exceptions differentiation standard",
+          "required": ["items"],
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/ChecklistItem" },
+              "minItems": 4,
+              "description": "Differentiation checklist items"
+            },
+            "shadow_ops_outputs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["shadow_ops_map", "shadow_ops_density", "exception_library", "exception_forecast", "shadow_ops_reduction_report"]
+              },
+              "description": "Which Shadow Ops outputs this agent produces"
+            }
+          }
+        },
+        "output_contract": {
+          "type": "object",
+          "description": "Structured output requirements",
+          "required": ["items"],
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/ChecklistItem" },
+              "minItems": 3
+            },
+            "output_schema_ref": {
+              "type": "string",
+              "description": "Reference to the JSON schema for this agent's output"
+            },
+            "ops_spine_entities": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["lead", "account", "opportunity", "project", "workflow", "deliverable", "ticket", "audit_event"]
+              },
+              "description": "Which Ops Spine entities this agent writes to"
+            }
+          }
+        },
+        "reliability": {
+          "type": "object",
+          "description": "Exception handling and fallback requirements",
+          "required": ["items"],
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/ChecklistItem" },
+              "minItems": 5
+            },
+            "happy_path_definition": {
+              "type": "string",
+              "description": "File path or inline definition of happy path"
+            },
+            "exception_paths": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["name", "trigger", "behavior"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "trigger": { "type": "string" },
+                  "behavior": { "type": "string" },
+                  "tested": { "type": "boolean" }
+                }
+              },
+              "minItems": 5,
+              "description": "Top 5 exception paths"
+            },
+            "tool_failure_fallbacks": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["tool", "failure_mode", "fallback_action"],
+                "properties": {
+                  "tool": { "type": "string" },
+                  "failure_mode": { "type": "string" },
+                  "fallback_action": { "type": "string" },
+                  "tested": { "type": "boolean" }
+                }
+              },
+              "description": "Tool failure fallback definitions"
+            },
+            "human_escalation_rules": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["condition", "escalation_channel", "sla_minutes"],
+                "properties": {
+                  "condition": { "type": "string" },
+                  "escalation_channel": { "type": "string" },
+                  "sla_minutes": { "type": "integer" }
+                }
+              },
+              "description": "When and how to escalate to humans"
+            },
+            "rollback_procedure": {
+              "type": "string",
+              "description": "How to disable or rollback this agent"
+            }
+          }
+        },
+        "auditability": {
+          "type": "object",
+          "description": "Logging and audit trail requirements",
+          "required": ["items"],
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/ChecklistItem" },
+              "minItems": 3
+            },
+            "audit_events": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["event_type", "entity_type", "fields_logged"],
+                "properties": {
+                  "event_type": { "type": "string" },
+                  "entity_type": { "type": "string" },
+                  "fields_logged": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
+                  "retention_days": { "type": "integer" }
+                }
+              },
+              "description": "Audit events this agent emits"
+            },
+            "log_storage_location": {
+              "type": "string",
+              "description": "Where logs are stored"
+            },
+            "retention_policy": {
+              "type": "string",
+              "description": "How long logs are retained"
+            }
+          }
+        },
+        "security_access": {
+          "type": "object",
+          "description": "Security and access control requirements",
+          "required": ["items"],
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/ChecklistItem" },
+              "minItems": 4
+            },
+            "permissions": {
+              "type": "object",
+              "properties": {
+                "allowed_actions": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "description": "Explicitly allowed actions"
+                },
+                "disallowed_actions": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "description": "Explicitly forbidden actions"
+                },
+                "mcp_tools": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["tool_name", "permission"],
+                    "properties": {
+                      "tool_name": { "type": "string" },
+                      "permission": {
+                        "type": "string",
+                        "enum": ["read", "write", "read_write", "none"]
+                      }
+                    }
+                  },
+                  "description": "MCP tool permissions"
+                }
+              }
+            },
+            "sensitive_data_rules": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["data_type", "handling_rule"],
+                "properties": {
+                  "data_type": {
+                    "type": "string",
+                    "enum": ["pii", "payment", "credentials", "health", "financial", "other"]
+                  },
+                  "handling_rule": { "type": "string" }
+                }
+              },
+              "description": "How sensitive data is handled"
+            }
+          }
+        },
+        "kpi": {
+          "type": "object",
+          "description": "Key Performance Indicator requirements",
+          "required": ["items"],
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/ChecklistItem" },
+              "minItems": 2
+            },
+            "kpis": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["name", "definition", "measurement_method", "target"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "definition": { "type": "string" },
+                  "measurement_method": { "type": "string" },
+                  "target": { "type": "string" },
+                  "ops_spine_kpi_id": { "type": "string" },
+                  "baseline": { "type": "string" }
+                }
+              },
+              "minItems": 3,
+              "maxItems": 5,
+              "description": "3-5 KPIs that prove value"
+            }
+          }
+        },
+        "adoption": {
+          "type": "object",
+          "description": "Adoption and onboarding requirements (if client-facing)",
+          "required": ["items"],
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/ChecklistItem" },
+              "minItems": 3
+            },
+            "is_client_facing": {
+              "type": "boolean",
+              "description": "Whether this agent is client-facing"
+            },
+            "quickstart": {
+              "type": "object",
+              "properties": {
+                "document_path": { "type": "string" },
+                "estimated_minutes": { "type": "integer", "maximum": 10 },
+                "tested_with_client": { "type": "boolean" }
+              },
+              "description": "5-10 minute quickstart documentation"
+            },
+            "sops": {
+              "type": "object",
+              "properties": {
+                "daily_sop_path": { "type": "string" },
+                "weekly_sop_path": { "type": "string" },
+                "exception_sop_path": { "type": "string" }
+              },
+              "description": "Standard Operating Procedures"
+            },
+            "micro_commitment": {
+              "type": "object",
+              "properties": {
+                "description": { "type": "string" },
+                "action_required": { "type": "string" },
+                "expected_outcome": { "type": "string" }
+              },
+              "description": "Small client action that improves adoption"
+            }
+          }
+        }
+      }
+    },
+    "RoleStandards": {
+      "type": "object",
+      "description": "Agent-specific role requirements",
+      "required": ["agent_type", "required_items", "addon_items"],
+      "properties": {
+        "agent_type": {
+          "type": "string",
+          "enum": [
+            "agent-1-market-intelligence",
+            "agent-2-outbound-appointment",
+            "agent-3-sales-engineer",
+            "agent-4-systems-delivery",
+            "agent-5-client-success",
+            "agent-6-brand-content",
+            "agent-7-paid-acquisition",
+            "agent-8-partnerships",
+            "agent-9-finance-pricing",
+            "agent-10-platform-infrastructure"
+          ],
+          "description": "Which agent type this is"
+        },
+        "required_items": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ChecklistItem" },
+          "description": "Required role-specific items"
+        },
+        "addon_items": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ChecklistItem" },
+          "description": "Optional add-on items"
+        }
+      }
+    },
+    "ShipGate": {
+      "type": "object",
+      "description": "Final approval checklist before shipping",
+      "required": ["build_readiness", "business_readiness", "ops_spine_readiness"],
+      "properties": {
+        "build_readiness": {
+          "type": "object",
+          "required": ["items"],
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/ChecklistItem" },
+              "minItems": 5
+            },
+            "qa_results": {
+              "type": "object",
+              "properties": {
+                "happy_path_passed": { "type": "boolean" },
+                "exception_paths_passed": { "type": "boolean" },
+                "tool_failures_passed": { "type": "boolean" },
+                "test_run_date": { "type": "string", "format": "date-time" },
+                "test_report_path": { "type": "string" }
+              }
+            }
+          }
+        },
+        "business_readiness": {
+          "type": "object",
+          "required": ["items"],
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/ChecklistItem" },
+              "minItems": 3
+            },
+            "proof_angle": {
+              "type": "string",
+              "description": "What makes this unique/sellable"
+            },
+            "sell_sheet_path": {
+              "type": "string",
+              "description": "Path to sell sheet document"
+            },
+            "demo_script_path": {
+              "type": "string",
+              "description": "Path to demo script"
+            },
+            "pricing_approved": {
+              "type": "boolean"
+            },
+            "capacity_approved": {
+              "type": "boolean"
+            }
+          }
+        },
+        "ops_spine_readiness": {
+          "type": "object",
+          "required": ["items"],
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/ChecklistItem" },
+              "minItems": 3
+            },
+            "entity_links_verified": {
+              "type": "boolean",
+              "description": "Lead → Opp → Project → Workflow links verified"
+            },
+            "ticket_process_defined": {
+              "type": "boolean"
+            },
+            "kpi_dashboard_ready": {
+              "type": "boolean"
+            },
+            "dashboard_path": {
+              "type": "string"
+            }
+          }
+        },
+        "final_approval": {
+          "type": "object",
+          "properties": {
+            "approved": { "type": "boolean" },
+            "approved_by": { "type": "string" },
+            "approved_at": { "type": "string", "format": "date-time" },
+            "ship_date": { "type": "string", "format": "date-time" },
+            "release_notes": { "type": "string" }
+          }
+        }
+      }
+    },
+    "Blocker": {
+      "type": "object",
+      "required": ["checklist_item_id", "description", "ticket_id", "created_at"],
+      "properties": {
+        "checklist_item_id": {
+          "type": "string",
+          "description": "ID of the blocked checklist item"
+        },
+        "description": {
+          "type": "string",
+          "description": "What is blocked and why"
+        },
+        "ticket_id": {
+          "type": "string",
+          "description": "Ticket tracking this blocker"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "assigned_to": {
+          "type": "string"
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["P1", "P2", "P3"]
+        },
+        "resolved_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

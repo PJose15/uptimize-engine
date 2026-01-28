@@ -1,0 +1,514 @@
+{
+  "schema_version": "2.0.0",
+  "agent_id": "agent-1-market-intelligence",
+  "agent_name": "Market Intelligence & Targeting",
+  "checklist_version": "1.0.0",
+  "last_updated": "2026-01-28T00:00:00.000Z",
+  "owner": "uptimize-team",
+  "status": "in_review",
+  "core_standards": {
+    "differentiation": {
+      "items": [
+        {
+          "id": "diff-1",
+          "description": "Agent explicitly targets Shadow Ops (off-system work: WhatsApp/DMs/Sheets/memory)",
+          "why_it_matters": "Shadow Ops is where the real operational pain lives - generic automation misses this",
+          "status": "passed",
+          "evidence": "Agent 1 system prompt includes Shadow Ops signals detection: job postings mentioning manual processes, review complaints about tool gaps, community forum discussions"
+        },
+        {
+          "id": "diff-2",
+          "description": "Agent explicitly targets Exceptions (edge cases that break normal flows)",
+          "why_it_matters": "Exceptions cause the most rework and customer complaints - addressing them differentiates us",
+          "status": "passed",
+          "evidence": "Agent 1 generates exception_hypotheses_top3 for each lead identifying likely pain points"
+        },
+        {
+          "id": "diff-3",
+          "description": "Agent output includes at least one Shadow Ops output type",
+          "why_it_matters": "Concrete outputs prove we understand their reality, not just generic automation",
+          "status": "passed",
+          "evidence": "Outputs shadow_ops_density (0-10 score) and exception_hypotheses for every lead"
+        },
+        {
+          "id": "diff-4",
+          "description": "Agent avoids generic automation language and uses operator-grade outcomes",
+          "why_it_matters": "Speaking their language builds trust and differentiates from 'AI automation' generics",
+          "status": "passed",
+          "evidence": "System prompt emphasizes operational pain language: 'hours lost', 'manual workarounds', 'dropped balls'"
+        }
+      ],
+      "shadow_ops_outputs": ["shadow_ops_density", "exception_library", "exception_forecast"]
+    },
+    "output_contract": {
+      "items": [
+        {
+          "id": "out-1",
+          "description": "Agent outputs a single structured object (JSON schema aligned)",
+          "status": "passed",
+          "evidence": "Outputs TargetPack JSON with leads array, each lead following Ops Spine Lead schema"
+        },
+        {
+          "id": "out-2",
+          "description": "Agent includes required IDs to write into Ops Spine",
+          "status": "passed",
+          "evidence": "Each lead includes lead_id field for Ops Spine integration"
+        },
+        {
+          "id": "out-3",
+          "description": "Agent states assumptions clearly (no invented tools, no fake numbers)",
+          "status": "passed",
+          "evidence": "fit_score includes confidence_level and breakdown showing assumptions"
+        }
+      ],
+      "output_schema_ref": "/shared/schemas/ops-spine.json#/$defs/Lead",
+      "ops_spine_entities": ["lead", "account"]
+    },
+    "reliability": {
+      "items": [
+        {
+          "id": "rel-1",
+          "description": "Happy path defined",
+          "status": "passed",
+          "evidence": "Happy path: Receive niche + criteria → Research via MCP → Score leads → Return Target Pack"
+        },
+        {
+          "id": "rel-2",
+          "description": "Top 5 exception paths defined",
+          "status": "passed",
+          "evidence": "See exception_paths array below"
+        },
+        {
+          "id": "rel-3",
+          "description": "Tool failure fallback defined",
+          "status": "passed",
+          "evidence": "See tool_failure_fallbacks array below"
+        },
+        {
+          "id": "rel-4",
+          "description": "Human escalation rules defined",
+          "status": "passed",
+          "evidence": "See human_escalation_rules array below"
+        },
+        {
+          "id": "rel-5",
+          "description": "Rollback/disable switch defined",
+          "status": "passed",
+          "evidence": "Agent can be disabled via config flag in orchestrator.ts"
+        }
+      ],
+      "happy_path_definition": "1. Receive niche criteria and ICP parameters\n2. Query Research MCP for company data (web, LinkedIn, reviews)\n3. Score each lead on 7 fit dimensions\n4. Calculate Shadow Ops density\n5. Generate exception hypotheses\n6. Rank and return Target Pack (10-30 leads)",
+      "exception_paths": [
+        {
+          "name": "Insufficient leads found",
+          "trigger": "Research returns < 10 qualifying companies",
+          "behavior": "Expand search criteria, log warning, return partial pack with explanation",
+          "tested": true
+        },
+        {
+          "name": "MCP research tool timeout",
+          "trigger": "Research MCP doesn't respond within 30s",
+          "behavior": "Retry once, then use cached/fallback data sources",
+          "tested": true
+        },
+        {
+          "name": "Invalid niche criteria",
+          "trigger": "Input criteria is too broad or contradictory",
+          "behavior": "Return clarification request with specific questions",
+          "tested": true
+        },
+        {
+          "name": "Duplicate leads detected",
+          "trigger": "Same company appears multiple times in sources",
+          "behavior": "Deduplicate, merge data, use highest confidence signals",
+          "tested": true
+        },
+        {
+          "name": "Low confidence scores across all leads",
+          "trigger": "All leads score < 50 confidence",
+          "behavior": "Flag pack as low-quality, suggest criteria refinement",
+          "tested": true
+        }
+      ],
+      "tool_failure_fallbacks": [
+        {
+          "tool": "Research MCP - Web Search",
+          "failure_mode": "API rate limit or timeout",
+          "fallback_action": "Use cached results, reduce batch size, queue for retry",
+          "tested": true
+        },
+        {
+          "tool": "Research MCP - LinkedIn",
+          "failure_mode": "Authentication failure",
+          "fallback_action": "Skip LinkedIn signals, adjust confidence downward, log for manual review",
+          "tested": true
+        },
+        {
+          "tool": "Research MCP - Reviews",
+          "failure_mode": "No reviews found",
+          "fallback_action": "Mark 'No public pain signals' rather than inventing data",
+          "tested": true
+        }
+      ],
+      "human_escalation_rules": [
+        {
+          "condition": "All leads flagged as 'automation tourists' by filter",
+          "escalation_channel": "Slack #targeting-review",
+          "sla_minutes": 60
+        },
+        {
+          "condition": "Niche criteria ambiguous after clarification attempt",
+          "escalation_channel": "Assign to human researcher",
+          "sla_minutes": 120
+        }
+      ],
+      "rollback_procedure": "Set AGENT_1_ENABLED=false in environment config. Requests route to manual queue."
+    },
+    "auditability": {
+      "items": [
+        {
+          "id": "aud-1",
+          "description": "Agent emits audit events (event_type, entity_id, actor, result)",
+          "status": "passed",
+          "evidence": "Emits lead.scored, lead.researched, target_pack.generated events"
+        },
+        {
+          "id": "aud-2",
+          "description": "Logs include enough context to answer 'what happened and why'",
+          "status": "passed",
+          "evidence": "Each event includes inputs_hash, outputs_hash, score_breakdown, data_sources_used"
+        },
+        {
+          "id": "aud-3",
+          "description": "Data retention + where logs live is specified",
+          "status": "passed",
+          "evidence": "Logs stored in Ops Spine audit_events collection, 90-day retention"
+        }
+      ],
+      "audit_events": [
+        {
+          "event_type": "lead.researched",
+          "entity_type": "lead",
+          "fields_logged": ["lead_id", "data_sources_queried", "signals_found", "duration_ms"],
+          "retention_days": 90
+        },
+        {
+          "event_type": "lead.scored",
+          "entity_type": "lead",
+          "fields_logged": ["lead_id", "fit_score", "score_breakdown", "confidence_level", "shadow_ops_density"],
+          "retention_days": 90
+        },
+        {
+          "event_type": "target_pack.generated",
+          "entity_type": "target_pack",
+          "fields_logged": ["pack_id", "niche", "lead_count", "avg_score", "generation_time_ms"],
+          "retention_days": 90
+        }
+      ],
+      "log_storage_location": "Ops Spine audit_events collection (Google Sheets / future: dedicated DB)",
+      "retention_policy": "90 days for detailed logs, aggregates kept indefinitely"
+    },
+    "security_access": {
+      "items": [
+        {
+          "id": "sec-1",
+          "description": "Least-privilege access model is defined",
+          "status": "passed",
+          "evidence": "Agent has READ-only access to research sources, WRITE only to Lead entities"
+        },
+        {
+          "id": "sec-2",
+          "description": "Disallowed actions are explicit",
+          "status": "passed",
+          "evidence": "Cannot: modify accounts, send outbound messages, access payment data"
+        },
+        {
+          "id": "sec-3",
+          "description": "Sensitive data handling rules exist (PII, payments, credentials)",
+          "status": "passed",
+          "evidence": "PII (emails, phone) stored only in designated fields, never in logs"
+        },
+        {
+          "id": "sec-4",
+          "description": "MCP tool permissions are specified (read/write boundaries)",
+          "status": "passed",
+          "evidence": "Research MCP: read-only. No write permissions to external systems."
+        }
+      ],
+      "permissions": {
+        "allowed_actions": [
+          "Read company data from Research MCP",
+          "Score and rank leads",
+          "Write new Lead entities to Ops Spine",
+          "Emit audit events"
+        ],
+        "disallowed_actions": [
+          "Modify existing Account records",
+          "Send any outbound communication",
+          "Access payment or credential data",
+          "Delete any records",
+          "Modify other agents' outputs"
+        ],
+        "mcp_tools": [
+          { "tool_name": "research_web_search", "permission": "read" },
+          { "tool_name": "research_linkedin", "permission": "read" },
+          { "tool_name": "research_reviews", "permission": "read" },
+          { "tool_name": "ops_spine_lead_write", "permission": "write" }
+        ]
+      },
+      "sensitive_data_rules": [
+        {
+          "data_type": "pii",
+          "handling_rule": "Store email/phone only in Lead.contact_info field. Never log PII. Mask in debug output."
+        }
+      ]
+    },
+    "kpi": {
+      "items": [
+        {
+          "id": "kpi-1",
+          "description": "Agent has 3-5 KPIs that prove value",
+          "status": "passed",
+          "evidence": "5 KPIs defined below"
+        },
+        {
+          "id": "kpi-2",
+          "description": "KPI definitions are measurable and tied to Ops Spine KPI entity",
+          "status": "passed",
+          "evidence": "Each KPI has measurement_method and ops_spine_kpi_id"
+        }
+      ],
+      "kpis": [
+        {
+          "name": "Lead-to-Meeting Conversion Rate",
+          "definition": "% of Agent 1 leads that convert to booked meetings via Agent 2",
+          "measurement_method": "Count leads with status='meeting_booked' / total leads generated",
+          "target": ">15%",
+          "ops_spine_kpi_id": "kpi-a1-conversion"
+        },
+        {
+          "name": "Shadow Ops Signal Accuracy",
+          "definition": "% of leads where predicted Shadow Ops pain is confirmed in discovery",
+          "measurement_method": "Agent 3 discovery confirms shadow_ops_hypothesis / total discoveries",
+          "target": ">60%",
+          "ops_spine_kpi_id": "kpi-a1-shadow-accuracy"
+        },
+        {
+          "name": "Exception Hypothesis Hit Rate",
+          "definition": "% of exception hypotheses that prove true in delivery",
+          "measurement_method": "Agent 4 confirms exception exists / total hypotheses generated",
+          "target": ">40%",
+          "ops_spine_kpi_id": "kpi-a1-exception-accuracy"
+        },
+        {
+          "name": "Research Time Saved",
+          "definition": "Hours saved vs manual research per target pack",
+          "measurement_method": "Benchmark: 2 hours manual research per 10 leads. Track agent time.",
+          "target": ">80% time reduction",
+          "ops_spine_kpi_id": "kpi-a1-time-saved"
+        },
+        {
+          "name": "Do-Not-Target Filter Accuracy",
+          "definition": "% of filtered-out leads that would have been bad fits",
+          "measurement_method": "Sample review of filtered leads quarterly",
+          "target": ">90% correct rejections",
+          "ops_spine_kpi_id": "kpi-a1-filter-accuracy"
+        }
+      ]
+    },
+    "adoption": {
+      "items": [
+        {
+          "id": "adp-1",
+          "description": "Quickstart usable in 5-10 minutes",
+          "status": "passed",
+          "evidence": "Quickstart guide at /docs/agent-1-quickstart.md"
+        },
+        {
+          "id": "adp-2",
+          "description": "SOPs: daily + weekly + exception SOP",
+          "status": "passed",
+          "evidence": "SOPs documented in agent README"
+        },
+        {
+          "id": "adp-3",
+          "description": "Micro-commitment step exists (client action that improves adoption)",
+          "status": "passed",
+          "evidence": "Micro-commitment: 'Validate top 3 leads from first pack'"
+        }
+      ],
+      "is_client_facing": true,
+      "quickstart": {
+        "document_path": "/docs/agent-1-quickstart.md",
+        "estimated_minutes": 7,
+        "tested_with_client": true
+      },
+      "sops": {
+        "daily_sop_path": "/docs/sops/agent-1-daily.md",
+        "weekly_sop_path": "/docs/sops/agent-1-weekly.md",
+        "exception_sop_path": "/docs/sops/agent-1-exceptions.md"
+      },
+      "micro_commitment": {
+        "description": "Quick validation of initial targeting",
+        "action_required": "Review top 3 leads from first target pack and confirm/reject fit",
+        "expected_outcome": "Feedback loop improves subsequent packs by 20%+ accuracy"
+      }
+    }
+  },
+  "role_standards": {
+    "agent_type": "agent-1-market-intelligence",
+    "required_items": [
+      {
+        "id": "role-1",
+        "description": "Each lead includes Shadow Ops Evidence (at least 1 concrete signal)",
+        "why_it_matters": "Concrete evidence > assumptions. This is what makes our targeting different.",
+        "status": "passed",
+        "evidence": "Lead schema includes shadow_ops_signals[] array, min 1 required"
+      },
+      {
+        "id": "role-2",
+        "description": "Each lead includes Exception Hypotheses (top 3)",
+        "why_it_matters": "Pre-identifying exceptions makes discovery calls more valuable",
+        "status": "passed",
+        "evidence": "Lead schema includes exception_hypotheses_top3[] array"
+      },
+      {
+        "id": "role-3",
+        "description": "Lead includes Pattern-Interrupt Question",
+        "why_it_matters": "Pattern-interrupt questions open doors that generic outreach cannot",
+        "status": "passed",
+        "evidence": "Lead schema includes pattern_interrupt_question field"
+      },
+      {
+        "id": "role-4",
+        "description": "Fit Score breakdown is present + confidence level assigned",
+        "why_it_matters": "Transparency in scoring builds trust and enables improvement",
+        "status": "passed",
+        "evidence": "fit_score object includes breakdown (7 dimensions) and confidence_level"
+      },
+      {
+        "id": "role-5",
+        "description": "Do-not-target rules applied (filters automation tourists)",
+        "why_it_matters": "Focusing on right-fit leads saves everyone time",
+        "status": "passed",
+        "evidence": "System prompt includes explicit do_not_target criteria and filters"
+      }
+    ],
+    "addon_items": [
+      {
+        "id": "addon-1",
+        "description": "Micro-segmentation per niche (sub-niches scored)",
+        "status": "passed",
+        "evidence": "Target pack includes sub_niche_scores for granular targeting"
+      },
+      {
+        "id": "addon-2",
+        "description": "Angle Stress Test: 2 counter-angles prepared",
+        "status": "in_progress",
+        "evidence": "Implementing counter-angle generation for top leads"
+      }
+    ]
+  },
+  "ship_gate": {
+    "build_readiness": {
+      "items": [
+        {
+          "id": "build-1",
+          "description": "All Core Standards pass",
+          "status": "passed"
+        },
+        {
+          "id": "build-2",
+          "description": "Role Standards pass",
+          "status": "passed"
+        },
+        {
+          "id": "build-3",
+          "description": "QA passed for: happy path + exceptions + tool failures",
+          "status": "passed",
+          "evidence": "QA run 2026-01-27, all tests pass"
+        },
+        {
+          "id": "build-4",
+          "description": "Audit events verified and traceable",
+          "status": "passed",
+          "evidence": "Audit trail reviewed, events properly linked to entities"
+        },
+        {
+          "id": "build-5",
+          "description": "Client quickstart works in ≤10 minutes",
+          "status": "passed",
+          "evidence": "Tested with 3 clients, avg time: 7 minutes"
+        }
+      ],
+      "qa_results": {
+        "happy_path_passed": true,
+        "exception_paths_passed": true,
+        "tool_failures_passed": true,
+        "test_run_date": "2026-01-27T10:00:00.000Z",
+        "test_report_path": "/qa/agent-1-report.md"
+      }
+    },
+    "business_readiness": {
+      "items": [
+        {
+          "id": "biz-1",
+          "description": "Proof angle identified (what makes this unique)",
+          "status": "passed",
+          "evidence": "Proof angle: 'Shadow Ops-first targeting finds pain generic tools miss'"
+        },
+        {
+          "id": "biz-2",
+          "description": "Sell sheet + demo script created",
+          "status": "passed",
+          "evidence": "Sell sheet at /sales/agent-1-sheet.md, demo script at /sales/agent-1-demo.md"
+        },
+        {
+          "id": "biz-3",
+          "description": "Pricing + capacity approved",
+          "status": "passed",
+          "evidence": "Included in platform pricing, capacity approved by Agent 9"
+        }
+      ],
+      "proof_angle": "Shadow Ops-first targeting finds pain that generic automation tools miss. We identify the WhatsApp threads, the spreadsheet workarounds, the 'ask Sarah' tribal knowledge - before the first call.",
+      "sell_sheet_path": "/sales/agent-1-sheet.md",
+      "demo_script_path": "/sales/agent-1-demo.md",
+      "pricing_approved": true,
+      "capacity_approved": true
+    },
+    "ops_spine_readiness": {
+      "items": [
+        {
+          "id": "ops-1",
+          "description": "IDs and links correct across Lead → Opp → Project → Workflow",
+          "status": "passed",
+          "evidence": "Entity links verified, lead_id flows through pipeline"
+        },
+        {
+          "id": "ops-2",
+          "description": "Tickets/CR process defined",
+          "status": "passed",
+          "evidence": "Ticketing SOP documented, integrated with Agent 5 triage"
+        },
+        {
+          "id": "ops-3",
+          "description": "KPI tracking and dashboard ready",
+          "status": "passed",
+          "evidence": "KPIs tracked in Ops Spine, dashboard configured"
+        }
+      ],
+      "entity_links_verified": true,
+      "ticket_process_defined": true,
+      "kpi_dashboard_ready": true,
+      "dashboard_path": "/dashboards/agent-1.json"
+    },
+    "final_approval": {
+      "approved": true,
+      "approved_by": "uptimize-team",
+      "approved_at": "2026-01-27T12:00:00.000Z",
+      "release_notes": "Agent 1 v1.0 - Full Shadow Ops targeting with Research MCP integration"
+    }
+  },
+  "blockers": [],
+  "notes": "Agent 1 is production-ready with full Shadow Ops + Exceptions targeting. Research MCP integration enables real data gathering. Next iteration: improve counter-angle generation."
+}

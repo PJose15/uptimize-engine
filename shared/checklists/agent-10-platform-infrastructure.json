@@ -1,0 +1,114 @@
+{
+  "schema_version": "2.0.0",
+  "agent_id": "agent-10-platform-infrastructure",
+  "agent_name": "Platform & Infrastructure",
+  "checklist_version": "0.1.0",
+  "last_updated": "2026-01-28T00:00:00.000Z",
+  "owner": "uptimize-team",
+  "status": "draft",
+  "core_standards": {
+    "differentiation": {
+      "items": [
+        { "id": "diff-1", "description": "Agent explicitly targets Shadow Ops", "why_it_matters": "Platform must support Shadow Ops migration patterns", "status": "not_started" },
+        { "id": "diff-2", "description": "Agent explicitly targets Exceptions", "why_it_matters": "Exception handling is a platform-level concern", "status": "not_started" },
+        { "id": "diff-3", "description": "Agent output includes Shadow Ops output type", "status": "not_started" },
+        { "id": "diff-4", "description": "Agent uses operator-grade outcomes", "status": "not_started" }
+      ],
+      "shadow_ops_outputs": ["exception_library"]
+    },
+    "output_contract": {
+      "items": [
+        { "id": "out-1", "description": "Single structured output", "status": "not_started" },
+        { "id": "out-2", "description": "Includes Ops Spine IDs", "status": "not_started" },
+        { "id": "out-3", "description": "Assumptions stated clearly", "status": "not_started" }
+      ],
+      "ops_spine_entities": ["workflow", "audit_event"]
+    },
+    "reliability": {
+      "items": [
+        { "id": "rel-1", "description": "Happy path defined", "status": "not_started" },
+        { "id": "rel-2", "description": "Top 5 exception paths defined", "status": "not_started" },
+        { "id": "rel-3", "description": "Tool failure fallback defined", "status": "not_started" },
+        { "id": "rel-4", "description": "Human escalation rules defined", "status": "not_started" },
+        { "id": "rel-5", "description": "Rollback/disable switch defined", "status": "not_started" }
+      ]
+    },
+    "auditability": {
+      "items": [
+        { "id": "aud-1", "description": "Agent emits audit events", "status": "not_started" },
+        { "id": "aud-2", "description": "Logs include context", "status": "not_started" },
+        { "id": "aud-3", "description": "Retention specified", "status": "not_started" }
+      ]
+    },
+    "security_access": {
+      "items": [
+        { "id": "sec-1", "description": "Least-privilege defined", "status": "not_started" },
+        { "id": "sec-2", "description": "Disallowed actions explicit", "status": "not_started" },
+        { "id": "sec-3", "description": "Sensitive data rules exist", "status": "not_started" },
+        { "id": "sec-4", "description": "MCP permissions specified", "status": "not_started" }
+      ]
+    },
+    "kpi": {
+      "items": [
+        { "id": "kpi-1", "description": "Agent has 3-5 KPIs", "status": "not_started" },
+        { "id": "kpi-2", "description": "KPIs measurable", "status": "not_started" }
+      ],
+      "kpis": [
+        { "name": "Platform Uptime", "definition": "% time platform is available", "measurement_method": "Uptime monitoring", "target": ">99.5%" },
+        { "name": "Agent Success Rate", "definition": "% of agent executions completing successfully", "measurement_method": "Successful runs / Total runs across all agents", "target": ">95%" },
+        { "name": "MCP Integration Reliability", "definition": "% of MCP calls succeeding", "measurement_method": "Successful MCP calls / Total MCP calls", "target": ">98%" },
+        { "name": "Deployment Frequency", "definition": "Releases per week", "measurement_method": "Count of production deploys", "target": ">2/week" },
+        { "name": "Mean Time to Recovery", "definition": "Time from incident to resolution", "measurement_method": "Incident tracking", "target": "<30 minutes" }
+      ]
+    },
+    "adoption": {
+      "items": [
+        { "id": "adp-1", "description": "Quickstart usable", "status": "not_started" },
+        { "id": "adp-2", "description": "SOPs documented", "status": "not_started" },
+        { "id": "adp-3", "description": "Micro-commitment exists", "status": "not_started" }
+      ],
+      "is_client_facing": false
+    }
+  },
+  "role_standards": {
+    "agent_type": "agent-10-platform-infrastructure",
+    "required_items": [
+      { "id": "role-1", "description": "MCP Integration Catalog maintained (capabilities + failure modes)", "why_it_matters": "Catalog enables informed integration decisions", "status": "not_started" },
+      { "id": "role-2", "description": "Standard logging schema enforced across all agents", "why_it_matters": "Consistent logging enables debugging and auditing", "status": "not_started" },
+      { "id": "role-3", "description": "Golden templates exist (exception handler, reconciliation, approvals, handoff)", "why_it_matters": "Templates accelerate quality delivery", "status": "not_started" },
+      { "id": "role-4", "description": "Secrets/access governance defined", "why_it_matters": "Security is foundational to trust", "status": "not_started" },
+      { "id": "role-5", "description": "Versioning + release gates exist (stable vs beta)", "why_it_matters": "Release gates prevent quality regressions", "status": "not_started" }
+    ],
+    "addon_items": [
+      { "id": "addon-1", "description": "Monitoring templates included in every build", "status": "not_started" },
+      { "id": "addon-2", "description": "'Known issues' registry for tool brittleness", "status": "not_started" }
+    ]
+  },
+  "ship_gate": {
+    "build_readiness": {
+      "items": [
+        { "id": "build-1", "description": "All Core Standards pass", "status": "not_started" },
+        { "id": "build-2", "description": "Role Standards pass", "status": "not_started" },
+        { "id": "build-3", "description": "QA passed", "status": "not_started" },
+        { "id": "build-4", "description": "Audit events verified", "status": "not_started" },
+        { "id": "build-5", "description": "Quickstart works", "status": "not_started" }
+      ]
+    },
+    "business_readiness": {
+      "items": [
+        { "id": "biz-1", "description": "Proof angle identified", "status": "not_started" },
+        { "id": "biz-2", "description": "Sell sheet created", "status": "not_started" },
+        { "id": "biz-3", "description": "Pricing approved", "status": "not_started" }
+      ]
+    },
+    "ops_spine_readiness": {
+      "items": [
+        { "id": "ops-1", "description": "Entity links verified", "status": "not_started" },
+        { "id": "ops-2", "description": "Ticket process defined", "status": "not_started" },
+        { "id": "ops-3", "description": "KPI dashboard ready", "status": "not_started" }
+      ]
+    }
+  },
+  "blockers": [],
+  "notes": "Agent 10 not yet implemented. This checklist defines requirements for future build. Agent 10 is the foundation that enables all other agents."
+}

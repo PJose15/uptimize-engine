@@ -1,0 +1,114 @@
+{
+  "version": "2.0.0",
+  "last_updated": "2026-01-28T00:00:00.000Z",
+  "schema_ref": "/shared/schemas/agent-checklist-v2.json",
+  "agents": [
+    {
+      "agent_id": "agent-1-market-intelligence",
+      "agent_name": "Market Intelligence & Targeting",
+      "agent_type": "agent-1-market-intelligence",
+      "implementation_path": "/app/api/agents/run/uptimize/agent-1-market-intelligence",
+      "checklist_path": "/shared/checklists/agent-1-market-intelligence.json",
+      "is_implemented": true,
+      "is_production_ready": true,
+      "description": "Identifies and ranks prospects with Shadow Ops pain. Outputs Target Packs with fit scores, shadow ops density, and exception hypotheses."
+    },
+    {
+      "agent_id": "agent-2-outbound-appointment",
+      "agent_name": "Outbound & Appointment Setter",
+      "agent_type": "agent-2-outbound-appointment",
+      "implementation_path": "/app/api/agents/run/uptimize/agent-2-outbound-appointment",
+      "checklist_path": "/shared/checklists/agent-2-outbound-appointment.json",
+      "is_implemented": true,
+      "is_production_ready": true,
+      "description": "Converts target packs into booked meetings using pattern-interrupt outreach and mini Shadow Ops audits."
+    },
+    {
+      "agent_id": "agent-3-sales-engineer",
+      "agent_name": "Sales Engineer & Offer Architect",
+      "agent_type": "agent-3-sales-engineer",
+      "implementation_path": "/app/api/agents/run/uptimize/agent-3-sales-engineer",
+      "checklist_path": "/shared/checklists/agent-3-sales-engineer.json",
+      "is_implemented": true,
+      "is_production_ready": true,
+      "description": "Runs 6-pillar discovery, creates proposals with exception-to-deliverable mapping, and manages deal flow."
+    },
+    {
+      "agent_id": "agent-4-systems-delivery",
+      "agent_name": "Systems Delivery & Orchestrator",
+      "agent_type": "agent-4-systems-delivery",
+      "implementation_path": "/app/api/agents/run/uptimize/agent-4-systems-delivery",
+      "checklist_path": "/shared/checklists/agent-4-systems-delivery.json",
+      "is_implemented": true,
+      "is_production_ready": true,
+      "description": "Ships production-ready workflows with 5 exception paths, tool failure fallbacks, and observability."
+    },
+    {
+      "agent_id": "agent-5-client-success",
+      "agent_name": "Client Success & Retention",
+      "agent_type": "agent-5-client-success",
+      "implementation_path": "/app/api/agents/run/uptimize/agent-5-client-success",
+      "checklist_path": "/shared/checklists/agent-5-client-success.json",
+      "is_implemented": true,
+      "is_production_ready": true,
+      "description": "Tracks 6-pillar success, detects Shadow Ops drift, generates win reports, and manages expansion."
+    },
+    {
+      "agent_id": "agent-6-brand-content",
+      "agent_name": "Brand & Content Engine",
+      "agent_type": "agent-6-brand-content",
+      "implementation_path": "/app/api/agents/run/uptimize/agent-6-brand-content",
+      "checklist_path": "/shared/checklists/agent-6-brand-content.json",
+      "is_implemented": false,
+      "is_production_ready": false,
+      "description": "Creates content around Shadow Ops + Exceptions. Manages proof-to-post pipeline and founder POV library."
+    },
+    {
+      "agent_id": "agent-7-paid-acquisition",
+      "agent_name": "Paid Acquisition & Funnel Optimizer",
+      "agent_type": "agent-7-paid-acquisition",
+      "implementation_path": "/app/api/agents/run/uptimize/agent-7-paid-acquisition",
+      "checklist_path": "/shared/checklists/agent-7-paid-acquisition.json",
+      "is_implemented": false,
+      "is_production_ready": false,
+      "description": "Runs shadow ops-focused ad campaigns, manages quiz funnels, and optimizes for close rate not CPL."
+    },
+    {
+      "agent_id": "agent-8-partnerships",
+      "agent_name": "Partnerships & Alliances",
+      "agent_type": "agent-8-partnerships",
+      "implementation_path": "/app/api/agents/run/uptimize/agent-8-partnerships",
+      "checklist_path": "/shared/checklists/agent-8-partnerships.json",
+      "is_implemented": false,
+      "is_production_ready": false,
+      "description": "Manages partner lanes, white-label offerings, and integration-led partnerships."
+    },
+    {
+      "agent_id": "agent-9-finance-pricing",
+      "agent_name": "Finance, Pricing & Capacity",
+      "agent_type": "agent-9-finance-pricing",
+      "implementation_path": "/app/api/agents/run/uptimize/agent-9-finance-pricing",
+      "checklist_path": "/shared/checklists/agent-9-finance-pricing.json",
+      "is_implemented": false,
+      "is_production_ready": false,
+      "description": "Manages complexity-based pricing, WIP limits, capacity planning, and deal desk rules."
+    },
+    {
+      "agent_id": "agent-10-platform-infrastructure",
+      "agent_name": "Platform & Infrastructure",
+      "agent_type": "agent-10-platform-infrastructure",
+      "implementation_path": "/app/api/agents/run/uptimize/agent-10-platform-infrastructure",
+      "checklist_path": "/shared/checklists/agent-10-platform-infrastructure.json",
+      "is_implemented": false,
+      "is_production_ready": false,
+      "description": "Maintains MCP catalog, enforces logging standards, manages golden templates and release gates."
+    }
+  ],
+  "summary": {
+    "total": 10,
+    "implemented": 5,
+    "production_ready": 5,
+    "draft": 5
+  },
+  "notes": "Agents 1-5 are implemented and production-ready. Agents 6-10 have checklist requirements defined but await implementation."
+}
