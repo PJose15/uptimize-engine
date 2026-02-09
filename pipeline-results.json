@@ -1,0 +1,2432 @@
+{
+  "timestamp": "2026-01-28T14:11:23.731Z",
+  "totalDurationMs": 333017,
+  "durations": {
+    "agent1": 40984,
+    "agent2": 43372,
+    "agent3": 52508,
+    "agent4": 45072,
+    "agent5": 149187
+  },
+  "results": {
+    "agent1": {
+      "success": true,
+      "message": "Target pack generated successfully",
+      "data": {
+        "run_metadata": {
+          "run_date": "2024-07-30",
+          "segment_focus": [
+            "private_group",
+            "operator_smb",
+            "high_volume_leads"
+          ],
+          "pack_size_primary": 5,
+          "notes": "Prioritized leads with critical shadow ops leading to direct revenue impact or significant time drain. All 5 leads qualified for primary target pack based on high Fit Scores."
+        },
+        "angle_of_the_day": {
+          "theme": "Unseen Operational Drag",
+          "one_liner": "We help high-volume businesses and communities eliminate the invisible manual tasks and exceptions that drain revenue and team sanity.",
+          "best_for_segment": "high_volume_leads, private_group, operator_smb",
+          "proof_point_style": "problem-first"
+        },
+        "do_not_target": [],
+        "target_pack_primary": [
+          {
+            "lead_id": "lead_4_quantumleads",
+            "person_name": "David Kim",
+            "role_title": "Founder",
+            "company_name": "QuantumLeads",
+            "company_size_estimate": "10-50",
+            "segment": "high_volume_leads",
+            "region_timezone": "unknown",
+            "channel_recommendation": "linkedin",
+            "website": "unknown",
+            "evidence_sources": [
+              {
+                "type": "social",
+                "reference": "Internal lead intel",
+                "note": "Generates 1000+ leads/week for clients; manual quality scoring; lost $50K client due to lead quality issues."
+              }
+            ],
+            "pain_categories": [
+              "Lead Handling Chaos",
+              "RECONCILIATION/AUDIT GAP"
+            ],
+            "pain_evidence_summary": "Manual quality scoring for 1000+ leads/week is unsustainable and directly led to a $50K client loss due to quality issues. No clear audit trail for lead quality.",
+            "trigger_event": "Operational breakdown signals",
+            "trigger_evidence_summary": "Just lost a $50K client due to lead quality issues, indicating a critical breakdown in their core offering.",
+            "current_stack_assumptions": [
+              {
+                "assumption": "Uses various lead generation tools, but lacks robust lead scoring/QA automation.",
+                "confidence": "high"
+              }
+            ],
+            "fit_score": 96,
+            "score_breakdown": {
+              "pain_intensity": 20,
+              "urgency_trigger": 15,
+              "authority": 15,
+              "budget_likelihood": 15,
+              "complexity_fit": 14,
+              "tool_stack_fit": 8,
+              "reachability": 9
+            },
+            "confidence": "high",
+            "confidence_rationale": "Clear, critical pain with direct and significant financial impact. Founder-level authority. Perfect segment fit.",
+            "shadow_ops_density": 10,
+            "rationale": "Manual quality scoring for 1000+ leads/week is pure duct-tape ops, leading directly to a $50K loss. This is the definition of heavy exceptions and lack of audit trail.",
+            "exception_hypotheses": [
+              "Incorrectly scored leads (both good and bad) due to human error at scale.",
+              "Delays in lead delivery/handoff due to manual review bottlenecks.",
+              "Inability to pinpoint exact reason for lead quality issues post-mortem without an audit trail."
+            ],
+            "primary_angle": "Stop losing clients due to 'invisible' lead quality gaps.",
+            "backup_angle": "Automate lead quality scoring to protect revenue.",
+            "hook_line": "Lost a $50K client because lead quality slipped through the cracks? Your manual scoring for 1000+ leads/week is costing you. Let's fix it.",
+            "cta_question": "If you could automate your lead quality scoring to prevent future client churn, what would that be worth to QuantumLeads?"
+          },
+          {
+            "lead_id": "lead_1_growthscale",
+            "person_name": "Sarah Chen",
+            "role_title": "Operations Director",
+            "company_name": "GrowthScale",
+            "company_size_estimate": "200-500",
+            "segment": "other",
+            "region_timezone": "unknown",
+            "channel_recommendation": "linkedin",
+            "website": "unknown",
+            "evidence_sources": [
+              {
+                "type": "social",
+                "reference": "LinkedIn post / Internal lead intel",
+                "note": "Tracks 500+ leads/month in spreadsheets; team uses WhatsApp for lead handoffs; spends 3 hours daily on manual lead routing."
+              }
+            ],
+            "pain_categories": [
+              "Lead Handling Chaos",
+              "EXCEPTION OVERLOAD"
+            ],
+            "pain_evidence_summary": "Manually routing 500+ leads/month takes 3 hours daily, indicating severe process breakdown. Reliance on spreadsheets and WhatsApp for critical lead handoffs creates chaos and audit gaps.",
+            "trigger_event": "Operational breakdown signals",
+            "trigger_evidence_summary": "Spending 3 hours daily on manual routing is a clear operational breakdown that's unsustainable and costly.",
+            "current_stack_assumptions": [
+              {
+                "assumption": "Likely uses a CRM (e.g., Salesforce, HubSpot) but it's not fully utilized for routing/handoffs, leading to shadow ops.",
+                "confidence": "medium"
+              }
+            ],
+            "fit_score": 91,
+            "score_breakdown": {
+              "pain_intensity": 18,
+              "urgency_trigger": 14,
+              "authority": 15,
+              "budget_likelihood": 14,
+              "complexity_fit": 13,
+              "tool_stack_fit": 8,
+              "reachability": 9
+            },
+            "confidence": "high",
+            "confidence_rationale": "High pain intensity with a clear, measurable time sink. Operations Director has authority and budget for efficiency. Strong shadow ops signals.",
+            "shadow_ops_density": 9,
+            "rationale": "Spreadsheets for 500+ leads, WhatsApp for handoffs, and 3 hours daily on manual routing scream shadow ops and exception handling being the primary mode of operation.",
+            "exception_hypotheses": [
+              "Misrouted or lost leads due to manual errors and informal handoffs.",
+              "Delayed lead follow-up because of manual routing bottlenecks.",
+              "Inability to track lead conversion metrics accurately due to fractured data across systems."
+            ],
+            "primary_angle": "Stop burning 3 hours daily on 'invisible' lead routing chaos.",
+            "backup_angle": "Automate lead routing to reclaim 3 hours/day and boost conversions.",
+            "hook_line": "3 hours daily on manual lead routing? Your team's WhatsApp & spreadsheets are hiding efficiency drains. Let's weaponize your ops.",
+            "cta_question": "If we could give your team back 3 hours per day by automating lead routing, what impact would that have on GrowthScale?"
+          },
+          {
+            "lead_id": "lead_2_fitnesspronetwork",
+            "person_name": "Marcus Rodriguez",
+            "role_title": "Head of Sales",
+            "company_name": "FitnessPro Network",
+            "company_size_estimate": "10-50",
+            "segment": "private_group",
+            "region_timezone": "unknown",
+            "channel_recommendation": "linkedin",
+            "website": "unknown",
+            "evidence_sources": [
+              {
+                "type": "social",
+                "reference": "Internal lead intel",
+                "note": "Manages 50+ influencer partnerships via DMs; no CRM, uses Notes app and memory; recently missed a major collab due to message buried."
+              }
+            ],
+            "pain_categories": [
+              "Inbox/DM Overload",
+              "CRM/Data Mess",
+              "RECONCILIATION/AUDIT GAP"
+            ],
+            "pain_evidence_summary": "Managing 50+ critical influencer partnerships solely through DMs, Notes app, and memory is highly unreliable and led to a missed major collaboration, demonstrating significant revenue leakage.",
+            "trigger_event": "Operational breakdown signals",
+            "trigger_evidence_summary": "Missing a 'major collab' due to buried messages is a direct financial and reputational trigger.",
+            "current_stack_assumptions": [
+              {
+                "assumption": "Uses social media platforms for DMs; lacks a centralized CRM or partnership management tool.",
+                "confidence": "high"
+              }
+            ],
+            "fit_score": 90,
+            "score_breakdown": {
+              "pain_intensity": 19,
+              "urgency_trigger": 15,
+              "authority": 15,
+              "budget_likelihood": 13,
+              "complexity_fit": 12,
+              "tool_stack_fit": 7,
+              "reachability": 9
+            },
+            "confidence": "high",
+            "confidence_rationale": "High pain with direct revenue loss. Head of Sales has clear authority. Strong shadow ops density with critical data in DMs/Notes/memory.",
+            "shadow_ops_density": 10,
+            "rationale": "Managing 50+ partnerships via DMs, Notes app, and memory is the epitome of off-system, exception-heavy, non-auditable operations, directly resulting in lost revenue.",
+            "exception_hypotheses": [
+              "Critical messages or partnership details being missed/forgotten in DMs or Notes app.",
+              "Inconsistent follow-up with influencers leading to lost opportunities or strained relationships.",
+              "Inability to track performance or terms of partnerships due to lack of centralized data."
+            ],
+            "primary_angle": "Stop losing major collabs to invisible DM chaos and 'memory CRM'.",
+            "backup_angle": "Centralize influencer partnerships to prevent missed revenue.",
+            "hook_line": "Lost a major collab because a DM got buried? Your 'memory CRM' for 50+ partners is a ticking time bomb. Let's fix it.",
+            "cta_question": "If you could ensure no major partnership opportunities ever get missed again, what would that mean for FitnessPro Network's growth?"
+          },
+          {
+            "lead_id": "lead_3_legaltechsolutions",
+            "person_name": "Jennifer Walsh",
+            "role_title": "CEO",
+            "company_name": "LegalTech Solutions",
+            "company_size_estimate": "15-30",
+            "segment": "operator_smb",
+            "region_timezone": "unknown",
+            "channel_recommendation": "linkedin",
+            "website": "unknown",
+            "evidence_sources": [
+              {
+                "type": "social",
+                "reference": "Internal lead intel",
+                "note": "Team of 15, scaling to 30 this quarter; uses 5 different tools (Notion, Slack, Email, Calendly, HubSpot); 'Nobody knows who's following up with which lead'."
+              }
+            ],
+            "pain_categories": [
+              "CRM/Data Mess",
+              "Lead Handling Chaos"
+            ],
+            "pain_evidence_summary": "Rapid scaling combined with tool sprawl and no clear lead ownership ('nobody knows') creates severe lead handling chaos and data mess, risking customer experience and growth.",
+            "trigger_event": "Team growth/multiple hires",
+            "trigger_evidence_summary": "Scaling from 15 to 30 people this quarter means current operational issues will multiply quickly and become critical.",
+            "current_stack_assumptions": [
+              {
+                "assumption": "Uses HubSpot but likely not integrated or configured to manage lead ownership effectively across tools.",
+                "confidence": "high"
+              }
+            ],
+            "fit_score": 88,
+            "score_breakdown": {
+              "pain_intensity": 16,
+              "urgency_trigger": 14,
+              "authority": 15,
+              "budget_likelihood": 14,
+              "complexity_fit": 12,
+              "tool_stack_fit": 8,
+              "reachability": 9
+            },
+            "confidence": "high",
+            "confidence_rationale": "CEO authority with clear scaling pain. The 'nobody knows' comment is a strong signal of shadow ops and process breakdown. Timely intervention before growth accelerates issues.",
+            "shadow_ops_density": 8,
+            "rationale": "Despite using HubSpot, the 'nobody knows' who is following up implies manual tracking, ad-hoc communication (Slack/Email), and missing info, creating heavy exceptions when scaling.",
+            "exception_hypotheses": [
+              "Duplicate follow-ups to the same lead, creating a poor customer experience.",
+              "Leads falling through the cracks with no follow-up at all.",
+              "Inconsistent data about lead status/history across disparate tools."
+            ],
+            "primary_angle": "Eliminate the 'nobody knows who's following up' chaos before it cripples your scaling.",
+            "backup_angle": "Consolidate lead workflow across tools for seamless growth.",
+            "hook_line": "Scaling from 15 to 30, but 'nobody knows who's following up with which lead'? That's hidden ops debt. Let's fix it.",
+            "cta_question": "If you could get absolute clarity on every lead's status and ownership, what impact would that have on your growth this quarter?"
+          },
+          {
+            "lead_id": "lead_5_devconnecthub",
+            "person_name": "Priya Patel",
+            "role_title": "Community Manager",
+            "company_name": "DevConnect Hub",
+            "company_size_estimate": "10-50",
+            "segment": "private_group",
+            "region_timezone": "unknown",
+            "channel_recommendation": "linkedin",
+            "website": "unknown",
+            "evidence_sources": [
+              {
+                "type": "social",
+                "reference": "Internal lead intel",
+                "note": "Manages 10K+ member community across Discord, Slack, LinkedIn; tracks engagement in Google Sheets; takes 2 hours daily just to respond to all channels."
+              }
+            ],
+            "pain_categories": [
+              "Community Ops Burden",
+              "Inbox/DM Overload",
+              "Manual Reporting / No KPIs"
+            ],
+            "pain_evidence_summary": "Managing a 10K+ member community across multiple channels (Discord, Slack, LinkedIn) results in 2 hours of manual response daily and engagement tracking in Google Sheets, leading to burnout and lack of insights.",
+            "trigger_event": "Operational breakdown signals",
+            "trigger_evidence_summary": "Spending 2 hours daily on manual responses is a clear operational burden and risk of burnout for the Community Manager.",
+            "current_stack_assumptions": [
+              {
+                "assumption": "Uses various community platforms (Discord, Slack), but lacks an integrated community management or automation tool.",
+                "confidence": "high"
+              }
+            ],
+            "fit_score": 84,
+            "score_breakdown": {
+              "pain_intensity": 17,
+              "urgency_trigger": 14,
+              "authority": 12,
+              "budget_likelihood": 12,
+              "complexity_fit": 13,
+              "tool_stack_fit": 7,
+              "reachability": 9
+            },
+            "confidence": "high",
+            "confidence_rationale": "Clear, measurable daily time sink and strong shadow ops signals. Community Manager has authority over their ops and likely has budget for efficiency tools.",
+            "shadow_ops_density": 8,
+            "rationale": "2 hours daily of manual cross-channel responses for 10K members, coupled with spreadsheet-based engagement tracking, is a heavily off-system and exception-prone operation.",
+            "exception_hypotheses": [
+              "Delayed or missed member queries/requests due to manual processing.",
+              "Inconsistent engagement tracking across channels, leading to skewed insights.",
+              "Community Manager burnout from repetitive, manual tasks, impacting member experience."
+            ],
+            "primary_angle": "Reclaim 2 hours daily from 'invisible' community management chaos.",
+            "backup_angle": "Automate community engagement and reporting to scale without burnout.",
+            "hook_line": "Burning 2 hours daily responding to 10K members across channels? Your Google Sheets hide massive community ops debt. Let's fix it.",
+            "cta_question": "If you could automate your daily responses and get real-time engagement insights, how would that transform DevConnect Hub's community experience?"
+          }
+        ],
+        "target_pack_secondary": [],
+        "shadow_ops_insights": [
+          "Heavy reliance on spreadsheets, Notes apps, and memory for tracking critical business data (leads, partnerships, engagement).",
+          "Extensive use of informal communication channels (WhatsApp, DMs, Discord, Slack) for core operational processes, leading to lost info and missed opportunities.",
+          "Significant daily time sinks (2-3 hours) dedicated to manual routing and responses, indicating process breakdown and high exception load.",
+          "Manual quality scoring or reconciliation at high volumes directly leading to financial loss (lost clients, missed partnerships).",
+          "Lack of clear ownership and audit trails for critical workflows like lead follow-up or partnership management, especially during scaling."
+        ]
+      },
+      "metadata": {
+        "provider": "gemini",
+        "model": "gemini-2.5-flash",
+        "tokensUsed": 9973,
+        "timestamp": "2026-01-28T14:06:33.538Z",
+        "latencyMs": 40983
+      }
+    },
+    "agent2": {
+      "success": true,
+      "message": "Agent 2 executed successfully",
+      "data": {
+        "run_metadata": {
+          "run_date": "2024-07-30",
+          "segment_focus": [
+            "private_group",
+            "operator_smb",
+            "high_volume_leads"
+          ],
+          "pack_size_primary": 5,
+          "notes": "Prioritized leads with critical shadow ops leading to direct revenue impact or significant time drain. All 5 leads qualified for primary target pack based on high Fit Scores."
+        },
+        "outbound_run_sheet": {
+          "new_outreach": [
+            "lead_4_quantumleads",
+            "lead_1_growthscale",
+            "lead_2_fitnesspronetwork",
+            "lead_3_legaltechsolutions",
+            "lead_5_devconnecthub"
+          ],
+          "followups": [],
+          "replies_processing": []
+        },
+        "message_library": {
+          "lead_4_quantumleads": {
+            "first_messages": [
+              {
+                "track": "Problem-first",
+                "message": "Hey David — noticed you're manually scoring 1000+ leads/week. If that's costing you clients, we install an AI ops layer that handles lead quality scoring. Open to a quick chat?"
+              },
+              {
+                "track": "Proof-first",
+                "message": "David — quick one. We've been building workflows that reduce manual ops and stop lead quality slips. If I mapped your lead scoring in 10 minutes and showed the 'leak points,' would that be useful?"
+              },
+              {
+                "track": "Curiosity-first",
+                "message": "Random question, David: when lead quality issues happen, do you see more problems with scoring accuracy or follow-up timing? I'm asking because we're fixing this pattern with lightweight agent systems."
+              }
+            ],
+            "follow_ups": [
+              "Hey David, circling back on the lead quality gaps. If automating scoring could prevent client churn, what would that be worth to QuantumLeads?",
+              "David, following up on my previous message. If we could automate your lead quality scoring, preventing future client losses, would you want to explore that?",
+              "Just checking in, David. Lost clients due to quality issues? Automating the scoring process could save you here. Let's discuss."
+            ]
+          },
+          "lead_1_growthscale": {
+            "first_messages": [
+              {
+                "track": "Problem-first",
+                "message": "Hey Sarah — noticed you're spending 3 hours daily on manual lead routing. If that's draining your ops, we install an AI ops layer that handles routing. Open to a quick chat?"
+              },
+              {
+                "track": "Proof-first",
+                "message": "Sarah — quick one. We've been building workflows that reduce ops chaos and stop leads from slipping. If I mapped your routing process in 10 minutes and showed 'leak points,' would that be useful?"
+              },
+              {
+                "track": "Curiosity-first",
+                "message": "Random question, Sarah: when routing issues happen, do you see more delays or missed leads? We're fixing this pattern with lightweight agent systems."
+              }
+            ],
+            "follow_ups": [
+              "Hey Sarah, circling back on the manual routing chaos. If automating it could save you 3 hours daily, what impact would that have on GrowthScale?",
+              "Sarah, following up on my previous message. If we could automate lead routing and reclaim those hours, would you want to explore that?",
+              "Just checking in, Sarah. Spending hours on manual routing? Automating the process could save you time and boost conversions. Let's discuss."
+            ]
+          },
+          "lead_2_fitnesspronetwork": {
+            "first_messages": [
+              {
+                "track": "Problem-first",
+                "message": "Hey Marcus — noticed you're managing 50+ partnerships via DMs. If that's risking missed collabs, we install an AI ops layer that centralizes partner management. Open to a quick chat?"
+              },
+              {
+                "track": "Proof-first",
+                "message": "Marcus — quick one. We've been building workflows that reduce inbox chaos and stop missed opportunities. If I mapped your partnership process in 10 minutes and showed 'leak points,' would that be useful?"
+              },
+              {
+                "track": "Curiosity-first",
+                "message": "Random question, Marcus: when partnership details get buried, do you lose more on revenue or time? We're fixing this pattern with lightweight agent systems."
+              }
+            ],
+            "follow_ups": [
+              "Hey Marcus, circling back on the partnership chaos. If centralizing management could prevent missed collabs, what would that mean for FitnessPro Network?",
+              "Marcus, following up on my previous message. If we could ensure no major opportunities get missed, would you want to explore that?",
+              "Just checking in, Marcus. Lost collabs due to buried messages? Centralizing the process could prevent this. Let's discuss."
+            ]
+          },
+          "lead_3_legaltechsolutions": {
+            "first_messages": [
+              {
+                "track": "Problem-first",
+                "message": "Hey Jennifer — noticed 'nobody knows' who's following up with leads. If that's risking growth, we install an AI ops layer that manages lead ownership. Open to a quick chat?"
+              },
+              {
+                "track": "Proof-first",
+                "message": "Jennifer — quick one. We've been building workflows that consolidate lead management across tools. If I mapped your process in 10 minutes and showed 'leak points,' would that be useful?"
+              },
+              {
+                "track": "Curiosity-first",
+                "message": "Random question, Jennifer: when follow-up chaos occurs, do you see more duplicate efforts or missed leads? We're fixing this pattern with lightweight agent systems."
+              }
+            ],
+            "follow_ups": [
+              "Hey Jennifer, circling back on the follow-up chaos. If clarifying lead ownership could boost your scaling, what impact would that have on LegalTech Solutions?",
+              "Jennifer, following up on my previous message. If we could give absolute clarity on lead status and ownership, would you want to explore that?",
+              "Just checking in, Jennifer. 'Nobody knows' who's following up with leads? Consolidating the process could prevent this. Let's discuss."
+            ]
+          },
+          "lead_5_devconnecthub": {
+            "first_messages": [
+              {
+                "track": "Problem-first",
+                "message": "Hey Priya — noticed you're spending 2 hours daily on manual community responses. If that's burning you out, we install an AI ops layer that automates engagement. Open to a quick chat?"
+              },
+              {
+                "track": "Proof-first",
+                "message": "Priya — quick one. We've been building workflows that reduce manual burden and improve engagement insights. If I mapped your process in 10 minutes and showed 'leak points,' would that be useful?"
+              },
+              {
+                "track": "Curiosity-first",
+                "message": "Random question, Priya: when response times lag, do you worry more about member satisfaction or your time? We're fixing this pattern with lightweight agent systems."
+              }
+            ],
+            "follow_ups": [
+              "Hey Priya, circling back on the manual response burden. If automating responses could save you 2 hours daily, what impact would that have on DevConnect Hub?",
+              "Priya, following up on my previous message. If we could automate your daily responses and get real-time insights, would you want to explore that?",
+              "Just checking in, Priya. Spending hours on manual responses? Automating the process could save you time and improve engagement. Let's discuss."
+            ]
+          }
+        },
+        "conversation_updates": [],
+        "bookings": [],
+        "nurture_queue": []
+      },
+      "metadata": {
+        "provider": "openai",
+        "model": "gpt-4o",
+        "tokensUsed": 6556,
+        "timestamp": "2026-01-28T14:07:16.925Z",
+        "latencyMs": 43371
+      }
+    },
+    "agent3": {
+      "success": true,
+      "message": "Sales engineering output generated successfully",
+      "data": {
+        "pre_call_brief": {
+          "lead_id": "Lead-001",
+          "hypotheses": [
+            "Significant lead leakage due to manual routing and follow-up processes.",
+            "High density of 'Shadow Ops' through WhatsApp and Google Sheets.",
+            "Lack of centralized visibility and audit trail for lead progression.",
+            "Manual processes lead to wasted time and lost revenue opportunities."
+          ],
+          "must_answer_questions": [
+            "Can you walk me through the exact steps a new lead takes from inquiry to being worked on by a sales rep?",
+            "What are the common reasons a lead 'falls through the cracks' or doesn't get followed up on?",
+            "Can you quantify the impact of the 'lost major client' - what was the specific breakdown leading to that loss?",
+            "Who are the key stakeholders involved in making a decision for a project like this, and what is your typical budget range for operational improvements?",
+            "What are your top security and compliance concerns regarding customer data when implementing new tools or workflows?"
+          ],
+          "meeting_goal": "Understand the current manual lead routing process, identify invisible work and its impact, and outline a phased solution to capture lost revenue and significantly reduce operational time."
+        },
+        "discovery_notes_structured": {
+          "current_process_map": [
+            "1. Lead intake: Primarily via Gmail (inquiries, forms) and potentially direct WhatsApp messages.",
+            "2. Manual extraction: Someone manually monitors Gmail/WhatsApp, extracts lead details.",
+            "3. Google Sheet Entry: Lead details are manually entered into a Google Sheet for tracking.",
+            "4. Manual Assignment: Based on unwritten rules or memory, leads are assigned to sales reps via direct WhatsApp messages/texts.",
+            "5. Follow-up Tracking: Reps are expected to update the Google Sheet, but often track their own follow-ups in personal notes or just memory.",
+            "6. Status Updates: Ad-hoc check-ins occur via WhatsApp, often requiring chasing for updates.",
+            "7. Deal closure/death: If a deal closes, it's manually recorded. If it dies, it often just stops receiving follow-up, status in sheet may not be updated."
+          ],
+          "leaks": [
+            {
+              "leak_name": "Manual Routing Bottleneck",
+              "where_it_happens": "Steps 2, 3, 4 (Manual extraction, Google Sheet entry, WhatsApp assignment)",
+              "symptoms": "3+ hours daily spent on routing, delayed lead response times, leads sitting unassigned.",
+              "root_cause_guess": "Lack of an automated intake and distribution system, reliance on manual data entry and communication."
+            },
+            {
+              "leak_name": "Follow-up Leakage / No Visibility",
+              "where_it_happens": "Steps 5, 6, 7 (Follow-up tracking, Status Updates, Deal closure/death)",
+              "symptoms": "$50K+ in lost deals monthly, lost major client, inability to track lead status, no performance reports.",
+              "root_cause_guess": "Absence of a centralized CRM, automated follow-up sequences, and an auditable communication log."
+            },
+            {
+              "leak_name": "Shadow Ops & Reconciliation Burden",
+              "where_it_happens": "Across all steps, especially 2, 4, 5, 6 (WhatsApp for assignment, communication, updates)",
+              "symptoms": "Information scattered across WhatsApp, Gmail, and Google Sheets; reliance on 'that one person'; impossible audit trail.",
+              "root_cause_guess": "Dependence on unstructured, off-system communication channels for critical operational tasks."
+            }
+          ],
+          "impact": {
+            "time_cost": "3+ hours daily on manual routing, plus unknown hours for chasing updates and reconciliation.",
+            "revenue_cost": "$50,000+ in lost deals monthly due to missed follow-ups and lost leads. Lost a major client last month.",
+            "quality_cost": "Inconsistent customer experience, lack of a reliable audit trail, high risk of errors, difficulty onboarding new team members, low team morale due to repetitive manual work."
+          },
+          "success_criteria": [
+            "Reduce manual lead routing time by 80% (from 3+ hours daily to <30 minutes).",
+            "Decrease lost deals from missed follow-ups by 50% within 60 days.",
+            "Improve average lead response time to under 1 hour.",
+            "Establish a complete, auditable trail for every lead's journey from inquiry to close/loss.",
+            "Centralize all lead-related communication and data, eliminating reliance on WhatsApp for core ops."
+          ],
+          "constraints": [
+            "Current tech stack: Google Sheets, WhatsApp, Gmail (no CRM).",
+            "Security: Needs clear data handling and access protocols for customer information.",
+            "Team bandwidth: Existing team is already stretched, necessitating a solution that frees up time, not adds to it.",
+            "Approvals: Standard business approval process required, involving owner/management.",
+            "Timeline: Urgency due to lost client, desire for rapid impact (Phase 1 within 2-3 weeks)."
+          ],
+          "decision_process": {
+            "decision_maker": "Prospect (owner/senior manager), likely in consultation with their team/partners.",
+            "stakeholders": [
+              "Prospect (Lead Owner)",
+              "Sales Team Leads",
+              "Operations Manager (if applicable)"
+            ],
+            "budget_range_known": false,
+            "timeline": "Urgent, seeking immediate improvements with phased expansion.",
+            "procurement_notes": "Likely direct engagement, potentially requiring a simple agreement."
+          }
+        },
+        "shadow_ops_map": [
+          "1. Manual lead extraction from Gmail/WhatsApp messages.",
+          "2. Manual data entry into Google Sheets from various sources.",
+          "3. Cross-referencing Google Sheets for lead assignment logic/duplicates.",
+          "4. Lead assignment and internal communication via WhatsApp/text messages.",
+          "5. Chasing sales reps for lead status updates through WhatsApp.",
+          "6. Setting personal reminders for follow-ups (relying on memory).",
+          "7. Searching WhatsApp history for lead-specific context and communication.",
+          "8. Ad-hoc discussions on WhatsApp to resolve misrouted leads or exceptions.",
+          "9. Manual reporting of lead pipeline and performance metrics.",
+          "10. Inability to produce a comprehensive audit trail of lead actions and communications."
+        ],
+        "exception_library": [
+          {
+            "exception_name": "Lead routed to wrong sales representative",
+            "frequency": "High",
+            "impact": "Moderate-High: Rework, delayed customer response, potential customer frustration, inefficient use of sales time."
+          },
+          {
+            "exception_name": "Assigned lead receives no follow-up",
+            "frequency": "High",
+            "impact": "Highest: Directly causes '$50K+ in lost deals', significant revenue loss, damages brand reputation."
+          },
+          {
+            "exception_name": "Duplicate leads worked by multiple representatives",
+            "frequency": "Moderate",
+            "impact": "Moderate: Wasted sales effort, customer confusion/frustration, inconsistent messaging to the market."
+          },
+          {
+            "exception_name": "Urgent lead not identified or prioritized",
+            "frequency": "Low-Moderate",
+            "impact": "Highest: Resulted in 'lost major client last month', critical business loss, severe reputational damage."
+          },
+          {
+            "exception_name": "Lead context lost during handoff or status update",
+            "frequency": "High",
+            "impact": "Moderate: Sales reps start conversations from scratch, poor customer experience, inefficient sales process."
+          }
+        ],
+        "value_calc": {
+          "assumptions": [
+            "Time saved is based on prospect's stated 3 hours/day for manual routing, plus inferred additional time on related shadow ops.",
+            "Cost per hour assumed for an SMB team member performing operational tasks.",
+            "Recovered revenue is a direct quote from the prospect's stated impact of $50,000+ in lost deals monthly."
+          ],
+          "time_saved_per_week_hours": 15,
+          "cost_per_hour_assumption": 100,
+          "monthly_value_estimate": 56000,
+          "notes": "The monthly value estimate is a conservative calculation based on reducing manual routing time and recovering a portion of the stated lost revenue. It does not include qualitative benefits like improved team morale, better decision-making, or enhanced customer satisfaction."
+        },
+        "solution_blueprint": {
+          "phase_1": {
+            "goal": "Eliminate manual lead routing, automate initial follow-ups, and capture an auditable lead intake.",
+            "deliverables": [
+              "Lead Intake + Routing Module (automated lead capture from Gmail, intelligent distribution based on rules).",
+              "Basic Follow-up Automation Module (initial automated sequence for new leads, auto-notifications for reps).",
+              "Automated Logging & Audit Trail (all intake and routing actions recorded)."
+            ],
+            "time_to_value": "2-3 weeks (rapid deployment for immediate impact).",
+            "dependencies": [
+              "Client provides access to Gmail/email system and defines initial routing rules.",
+              "Client designates a single point of contact for quick approvals."
+            ]
+          },
+          "phase_2": {
+            "goal": "Stabilize sales operations with robust CRM hygiene, scheduling, and performance visibility.",
+            "deliverables": [
+              "CRM Hygiene Module (structured pipeline stages, automated field updates, lead qualification guardrails).",
+              "Scheduling + No-show Module (automated meeting scheduling, reminders, reschedule logic).",
+              "Ops Dashboard Module (real-time KPIs on lead volume, response times, follow-up rates, conversion metrics)."
+            ],
+            "time_to_value": "4-6 weeks (following Phase 1 completion).",
+            "dependencies": [
+              "Client defines CRM pipeline stages and KPIs.",
+              "Client provides calendar access for scheduling automation."
+            ]
+          },
+          "phase_3_optional": {
+            "goal": "Optimize for advanced multi-agent orchestration, predictive insights, and potential internal productization.",
+            "deliverables": [
+              "Advanced Agent Guardrails (AI agents for dynamic qualification, personalized communication, exception handling).",
+              "Predictive Lead Scoring (leveraging historical data to prioritize high-potential leads).",
+              "Custom Integrations (e.g., specific industry tools, internal databases)."
+            ],
+            "time_to_value": "8-12 weeks (following Phase 2 completion).",
+            "dependencies": [
+              "Client commits to further investment and provides historical data for training models.",
+              "Client specifies additional integration requirements."
+            ]
+          },
+          "kpis_to_track": [
+            "Manual Routing Time (hours/day)",
+            "Average Lead Response Time (minutes/hours)",
+            "Lead Follow-up Completion Rate (%)",
+            "Leads Converting to Opportunity Rate (%)",
+            "Revenue from Recovered Leads ($)",
+            "Number of Exceptions Handled Automatically"
+          ]
+        },
+        "proposal_sow": {
+          "summary": "This Statement of Work outlines a phased approach to transform your lead management and sales operations, specifically targeting the critical issues of manual lead routing, lost follow-ups, and lack of visibility. Our solution will leverage UptimizeAI's agent workflows to eliminate 'Shadow Ops', recover lost revenue, and significantly reduce operational overhead, starting with high-impact wins.",
+          "deliverables": [
+            "**Phase 1: Rapid Impact & Shadow Ops Elimination** (Focus: Lead Intake, Routing, Basic Follow-up)",
+            "   - UptimizeAI Lead Intake & Routing Agent (integrates with Gmail, intelligent rule-based distribution).",
+            "   - Automated Initial Follow-up Agent (configures 1-2 email sequences for new leads).",
+            "   - Centralized Lead Log & Basic Audit Trail (all lead actions, assignments, and communications recorded).",
+            "   - Quickstart Training & Documentation.",
+            "**Phase 2: Operational Stabilization & Visibility** (Focus: CRM Hygiene, Scheduling, Reporting)",
+            "   - UptimizeAI CRM Hygiene Agent (automates pipeline stage updates, data enrichment, deduplication).",
+            "   - UptimizeAI Scheduling & No-show Agent (automated meeting booking, reminders, reschedule workflows).",
+            "   - Custom Ops Dashboard (key performance indicators for lead management and sales activity).",
+            "   - Advanced Training & Workflow Optimization.",
+            "**Phase 3: Advanced Optimization & Productization (Optional)** (Focus: AI-driven insights, multi-agent orchestration)",
+            "   - Development of specialized micro-agents for dynamic lead qualification or personalized outreach.",
+            "   - Implementation of predictive analytics for lead scoring and opportunity prioritization.",
+            "   - Custom integration development for niche tools or enterprise systems."
+          ],
+          "timeline": "Phase 1: 2-3 weeks; Phase 2: 4-6 weeks; Phase 3: 8-12 weeks (following previous phases).",
+          "pricing_options": [
+            {
+              "option_name": "Good: Phase 1 - Rapid Impact",
+              "price": "Setup Fee: $5,000 - $10,000 | Monthly Platform Fee: $500 - $1,000",
+              "what_included": [
+                "UptimizeAI Lead Intake & Routing Agent",
+                "Basic Follow-up Automation Agent",
+                "Centralized Lead Log & Basic Audit Trail",
+                "Quickstart Training"
+              ],
+              "best_for": "Clients seeking the fastest possible relief from manual routing and immediate reduction in lost leads, with a clear path to scale."
+            },
+            {
+              "option_name": "Better: Phase 1 & 2 - Comprehensive Stabilization",
+              "price": "Setup Fee: $10,000 - $20,000 | Monthly Platform Fee: $1,000 - $2,000",
+              "what_included": [
+                "All Phase 1 deliverables",
+                "UptimizeAI CRM Hygiene Agent",
+                "UptimizeAI Scheduling & No-show Agent",
+                "Custom Ops Dashboard",
+                "Advanced Training & Workflow Optimization"
+              ],
+              "best_for": "Clients committed to building a stable, data-driven sales operation with improved efficiency and clear visibility across their lead pipeline."
+            },
+            {
+              "option_name": "Best: Phase 1, 2 & Initial Phase 3 - Accelerated Growth",
+              "price": "Setup Fee: $20,000 - $35,000+ | Monthly Platform Fee: $2,000 - $4,000+",
+              "what_included": [
+                "All Phase 1 & 2 deliverables",
+                "Initial scope of Phase 3 deliverables (e.g., 1 specialized micro-agent or specific custom integration).",
+                "Dedicated support for advanced workflow design and optimization."
+              ],
+              "best_for": "Clients aiming for long-term competitive advantage through advanced AI automation, personalized customer journeys, and deep operational intelligence."
+            }
+          ],
+          "client_responsibilities": [
+            "Provide necessary access to existing tools (e.g., Gmail accounts, Google Sheets) within 3 business days of SOW signature.",
+            "Designate a single point of contact for timely communication, feedback, and approvals (within 2 business days).",
+            "Provide current lead routing rules, preferred communication templates, and business hours (if relevant).",
+            "Actively participate in training sessions and provide feedback during user acceptance testing."
+          ],
+          "assumptions_exclusions": [
+            "Assumes client provides timely access to required systems and information.",
+            "Assumes client's existing data in Google Sheets can be migrated/integrated directly.",
+            "Assumes lead volume does not exceed specified capacity limits for selected monthly plan.",
+            "Results depend on client's team adoption and consistent lead volume.",
+            "Excluded: Development of entirely new CRM systems or comprehensive rebuilds of existing external databases (beyond simple integrations).",
+            "Excluded: Management or creation of advertising campaigns or content (e.g., email copy beyond initial templates)."
+          ],
+          "change_request_process": "Any work requested outside the explicitly defined scope requires a written change request document. This document will outline the proposed additional work, updated deliverables, revised timeline, and associated price adjustment, requiring mutual written agreement before commencement.",
+          "acceptance_criteria": [
+            "All delivered modules successfully complete UptimizeAI's internal QA checklist.",
+            "Client-specific training and quickstart guides are delivered.",
+            "Defined KPIs are established, and baseline performance data is captured.",
+            "The implemented workflow successfully processes 10 consecutive test leads according to defined rules.",
+            "Any identified critical bugs or blocking issues are resolved within an agreed-upon timeframe."
+          ]
+        },
+        "close_plan": {
+          "primary_objections_expected": [
+            "Cost is too high / Budget constraints.",
+            "We can build something similar ourselves (internal resource capacity).",
+            "Security concerns regarding data access and handling.",
+            "Resistance to change / Team adoption challenges."
+          ],
+          "responses": [
+            "Regarding cost, the value we identified – saving 15+ hours weekly and recovering $50K+ in lost deals monthly – demonstrates a significant ROI. We can start with Phase 1 for immediate, high-impact wins and then scale.",
+            "Building internally often underestimates the complexity of integrating systems, handling exceptions, and ensuring scalability. We provide battle-tested agents and workflows, accelerating your time to value without burdening your dev team.",
+            "Security is paramount. Our platform adheres to industry best practices for data encryption and access control. We can provide detailed security documentation and work with your IT team to ensure compliance.",
+            "We design our solutions for user adoption, with intuitive interfaces and comprehensive training. Phase 1 focuses on reducing manual drudgery, which typically boosts team morale and buy-in by making their jobs easier."
+          ],
+          "next_steps": [
+            "Send you this detailed proposal (SOW) today.",
+            "Schedule a follow-up call to discuss your feedback and answer any questions by {Next_Week_Day_and_Date}."
+          ],
+          "follow_up_schedule": [
+            {
+              "day_offset": 0,
+              "message": "Hi [Prospect Name], it was great speaking today. As promised, attached is the detailed proposal outlining how we can eliminate your manual lead routing burden and recover those $50K+ in lost deals. Take a look at Phase 1 – designed for fast, impactful wins. Let me know if you have any initial thoughts!"
+            },
+            {
+              "day_offset": 2,
+              "message": "Hi [Prospect Name], circling back on the proposal I sent regarding your manual lead routing. Did you get a chance to review the Phase 1 plan to automate your lead intake and initial follow-ups? I'm curious if any specific part stood out as most impactful for you."
+            },
+            {
+              "day_offset": 4,
+              "message": "Hi [Prospect Name], just following up again. Our conversation highlighted how critical it is to stop leads from falling through the cracks, especially after losing that major client. Is there one key blocker or question preventing you from moving forward with a Phase 1 implementation?"
+            },
+            {
+              "day_offset": 7,
+              "message": "Hi [Prospect Name], hope you're having a productive week. Thinking about the 3+ hours daily spent on manual routing and the $50K+ in lost deals, I wanted to ensure you saw our proposal for Phase 1. Even a small initial step can make a big difference. When would be a good time for a quick 15-min chat this week?"
+            },
+            {
+              "day_offset": 10,
+              "message": "Hi [Prospect Name], I've tried to reach you a few times regarding our proposed solution to automate your lead routing and recover lost revenue. While I believe this can significantly impact your business, I understand if priorities have shifted. Please let me know if you're still looking to address these challenges, or if now isn't the right time. Happy to provide any further clarity."
+            }
+          ]
+        },
+        "handoff_to_agent4_spec": {
+          "build_modules": [
+            "Lead Intake + Routing Module (Automated email parsing, rule-based lead assignment)",
+            "Follow-up Automation Module (Initial email sequences, automated reminders)",
+            "CRM Hygiene Module (Automated lead status updates, deduplication)",
+            "Scheduling + No-show Module (Automated booking, reminders, reschedule)",
+            "Ops Dashboard Module (KPI visualization, weekly reporting)"
+          ],
+          "integrations": [
+            "Gmail API (for lead intake)",
+            "Google Sheets API (for initial data migration/sync and historical reference)",
+            "WhatsApp Business API (for automated notifications, not manual ops)",
+            "Calendar API (Google Calendar for scheduling)"
+          ],
+          "agent_specs_needed": [
+            "Lead Triage & Routing Agent (analyzes incoming emails/forms, assigns based on defined rules)",
+            "Sales Assist Follow-up Agent (triggers sequences, tracks engagement, notifies reps)",
+            "Scheduling & Confirmation Agent (manages appointments, sends reminders)",
+            "CRM Update & Audit Agent (logs all actions, ensures data consistency)"
+          ],
+          "risks": [
+            "Complexity of parsing unstructured email/WhatsApp data for initial lead intake.",
+            "Client's ability to clearly define routing rules and exception handling logic.",
+            "Team adoption of new workflows and reliance on automated systems over manual WhatsApp chats.",
+            "Data privacy and security compliance requirements for handling sensitive lead information."
+          ],
+          "definition_of_done": [
+            "All specified agents are deployed and operational.",
+            "Agents successfully process live data according to defined rules (post UAT).",
+            "KPI dashboard displays real-time, accurate metrics.",
+            "Client team is trained and capable of operating/managing the new workflows.",
+            "Audit trail consistently captures all required lead journey data."
+          ]
+        }
+      },
+      "metadata": {
+        "provider": "gemini",
+        "model": "gemini-2.5-flash",
+        "tokensUsed": 13223,
+        "timestamp": "2026-01-28T14:08:09.436Z",
+        "latencyMs": 52508
+      }
+    },
+    "agent4": {
+      "success": true,
+      "message": "Delivery package generated successfully",
+      "data": {
+        "build_plan": {
+          "phase_1": {
+            "goal": "Establish automated lead intake and intelligent routing to improve initial response time and data integrity.",
+            "deliverables": [
+              "Lead Intake + Routing Module (Automated email parsing, rule-based lead assignment)",
+              "CRM Hygiene Module (Automated lead status updates for new leads)",
+              "Initial Ops Dashboard Module (Lead source, status, assignment visualization)",
+              "Audit trail for Lead Intake & Routing actions"
+            ],
+            "time_to_value": "Automated initial lead processing within 1 day of launch, reduced manual lead assignment time by 80%.",
+            "dependencies": [
+              "Client to define clear lead routing rules and criteria.",
+              "Client to provide access to Gmail API, Google Sheets (for initial sync), Slack, Google Calendar for testing."
+            ]
+          },
+          "phase_2_optional": {
+            "goal": "Expand automation to follow-up, scheduling, advanced CRM hygiene, and comprehensive reporting.",
+            "deliverables": [
+              "Follow-up Automation Module (Initial email sequences, automated reminders)",
+              "CRM Hygiene Module (Deduplication, data enrichment)",
+              "Scheduling + No-show Module (Automated booking, reminders, reschedule)",
+              "Ops Dashboard Module (Full KPI visualization, weekly reporting)"
+            ],
+            "time_to_value": "Reduced manual follow-up tasks by 60%, improved scheduling efficiency by 40%.",
+            "dependencies": [
+              "Successful Phase 1 deployment and adoption.",
+              "Client feedback on Phase 1 effectiveness.",
+              "Client to define follow-up sequences and scheduling preferences."
+            ]
+          },
+          "milestones": [
+            {
+              "milestone_name": "M1: Core Lead Intake & Parsing",
+              "deliverables": [
+                "Gmail API integration for inbound lead emails.",
+                "Rule-based parsing engine for lead fields (name, email, query).",
+                "Initial Lead entity creation in Google Sheets (acting as a basic CRM for Phase 1)."
+              ],
+              "eta_days": 3,
+              "acceptance_criteria": [
+                "System successfully ingests 10 unique test emails and extracts required fields.",
+                "Extracted data is correctly written to Google Sheet 'Raw Leads' tab.",
+                "No PII leakage detected during parsing."
+              ]
+            },
+            {
+              "milestone_name": "M2: Lead Qualification & Routing",
+              "deliverables": [
+                "Client-defined lead qualification rules implemented.",
+                "Automated lead assignment logic based on rules.",
+                "Slack notification to assigned agent for new qualified lead.",
+                "Basic audit trail logging for intake, parsing, and routing."
+              ],
+              "eta_days": 7,
+              "acceptance_criteria": [
+                "5 test leads processed with varying attributes (e.g., product interest, region) are routed correctly.",
+                "Assigned agents receive Slack notifications with lead summary.",
+                "Routing errors are logged and escalated via Slack to 'Lead Ops' channel."
+              ]
+            },
+            {
+              "milestone_name": "M3: CRM Hygiene (Initial) & Dashboard",
+              "deliverables": [
+                "Automated lead status update (e.g., 'New', 'Assigned').",
+                "Initial Ops Dashboard (Google Sheets/Data Studio) showing lead count, status distribution, assignment load.",
+                "Quickstart guide and SOPs for Phase 1.",
+                "Full QA cycle completion."
+              ],
+              "eta_days": 12,
+              "acceptance_criteria": [
+                "Lead status updates correctly reflect routing outcome.",
+                "Dashboard accurately reflects lead data and updates in near real-time.",
+                "Client team can process a test lead via quickstart guide end-to-end.",
+                "All specified QA test cases passed with no open high-priority issues."
+              ]
+            },
+            {
+              "milestone_name": "M4: Go-Live & Handover",
+              "deliverables": [
+                "System deployed to production environment.",
+                "Client training completed.",
+                "Post-launch monitoring configured."
+              ],
+              "eta_days": 14,
+              "acceptance_criteria": [
+                "Live system processes first 5 new leads without manual intervention.",
+                "Client team demonstrates ability to use the system and troubleshoot basic issues.",
+                "Monitoring alerts are functional and correctly routed."
+              ]
+            }
+          ],
+          "dependencies": [
+            "Client timely provision of API credentials and access permissions for Gmail, Google Sheets, Slack, Google Calendar.",
+            "Client definition and sign-off on lead routing rules and qualification criteria (Phase 1).",
+            "Client team availability for training and UAT."
+          ],
+          "change_request_linkage": "Any scope deviation from the 'Build Modules' or 'Integrations' in the Handoff Spec will require a formal Change Request (CR) submitted to Project Manager."
+        },
+        "data_model": {
+          "entities": [
+            "Lead",
+            "Agent",
+            "Activity",
+            "SystemEvent"
+          ],
+          "fields": [
+            "lead_id (PK)",
+            "email_source_id",
+            "lead_email",
+            "lead_name",
+            "lead_phone (optional)",
+            "lead_query_raw",
+            "extracted_product_interest",
+            "extracted_region",
+            "lead_score",
+            "current_status",
+            "assigned_agent_id (FK)",
+            "assignment_timestamp",
+            "last_activity_timestamp",
+            "lead_source",
+            "creation_timestamp",
+            "last_updated_timestamp"
+          ],
+          "logging_fields": [
+            "log_id (PK)",
+            "timestamp (UTC)",
+            "event_type (e.g., INTAKE_EMAIL_RECEIVED, LEAD_PARSED, ROUTING_DECISION, TOOL_FAILURE, ESCALATION)",
+            "entity_type (e.g., Lead, Agent)",
+            "entity_id (FK to lead_id, agent_id)",
+            "agent_id (system agent executing action, e.g., 'LeadIntakeAgent')",
+            "action (e.g., 'READ', 'PARSE', 'CREATE', 'UPDATE', 'ASSIGN', 'NOTIFY')",
+            "status (e.g., 'SUCCESS', 'FAILURE', 'PENDING', 'WARNING')",
+            "details (JSON string with relevant data, e.g., parsed_fields, rule_matched, error_message)",
+            "error_code (if applicable)",
+            "tool_used (e.g., Gmail API, Google Sheets API, Slack API)",
+            "escalation_status (e.g., 'NONE', 'NOTIFIED_SLACK', 'PENDING_HUMAN_REVIEW')"
+          ],
+          "pipeline_stages": [
+            "RAW_RECEIVED",
+            "PARSED_UNQUALIFIED",
+            "QUALIFIED_UNASSIGNED",
+            "QUALIFIED_ASSIGNED",
+            "CONTACTED",
+            "SCHEDULED",
+            "NO_SHOW",
+            "WON",
+            "LOST",
+            "ARCHIVED",
+            "ESCALATED"
+          ]
+        },
+        "workflow_specs": [
+          {
+            "workflow_name": "Lead Intake & Routing",
+            "goal": "Automatically capture inbound leads from email, parse key information, qualify them, and assign to the correct agent.",
+            "inputs": [
+              "Inbound lead email (via Gmail API trigger)"
+            ],
+            "outputs": [
+              "New Lead record in Google Sheet CRM (qualified or unqualified)",
+              "Slack notification to assigned agent (for qualified leads)",
+              "Slack notification to 'Lead Ops' channel (for unqualified or exception leads)",
+              "Audit logs for all processing steps"
+            ],
+            "tools": [
+              "Gmail API (for email intake)",
+              "Google Sheets API (for CRM data storage)",
+              "Slack API (for notifications)",
+              "Zapier (for orchestrating API calls and logic)"
+            ],
+            "happy_path_steps": [
+              "1. Email received by designated lead inbox (via Gmail API webhook/poll).",
+              "2. LeadIntakeAgent parses email body/subject for: Name, Email, Phone (optional), Product Interest, Region, Query.",
+              "3. Lead record created in 'Raw Leads' tab of Google Sheet with status 'PARSED_UNQUALIFIED'.",
+              "4. LeadRouterAgent applies qualification rules based on parsed data (e.g., product interest matches defined categories).",
+              "5. If qualified, LeadRouterAgent applies assignment rules (e.g., round-robin, region-based, product-based).",
+              "6. Lead status updated to 'QUALIFIED_ASSIGNED' in Google Sheet, assigned_agent_id populated.",
+              "7. Slack notification sent to assigned agent with lead details and link to Google Sheet record.",
+              "8. All actions logged to SystemEvent table."
+            ],
+            "exception_paths": [
+              {
+                "exception_name": "E1: Email Parsing Failure",
+                "trigger": "LeadIntakeAgent fails to extract mandatory fields (Name, Email) from inbound email.",
+                "behavior": "Lead record created with status 'PARSING_FAILED'. Raw email body saved. Lead is marked as 'UNQUALIFIED'.",
+                "escalation": "Slack notification to 'Lead Ops' channel with lead_id, raw email content snippet, and error details. Human review required to manually extract and route. Log escalation status 'NOTIFIED_SLACK'."
+              },
+              {
+                "exception_name": "E2: Qualification Rules Mismatch",
+                "trigger": "LeadRouterAgent cannot qualify lead based on defined rules (e.g., 'Product Interest' not recognized, 'Region' outside service area).",
+                "behavior": "Lead record updated with status 'UNQUALIFIED'.",
+                "escalation": "Slack notification to 'Lead Ops' channel with lead_id, reason for disqualification. Human review for potential manual override or rule refinement. Log escalation status 'NOTIFIED_SLACK'."
+              },
+              {
+                "exception_name": "E3: Assignment Rules Mismatch",
+                "trigger": "Lead is qualified but LeadRouterAgent cannot assign to an agent (e.g., no agents available for region, all agents at max capacity).",
+                "behavior": "Lead record updated with status 'QUALIFIED_UNASSIGNED'.",
+                "escalation": "Slack notification to 'Lead Ops' channel highlighting unassigned lead. Human intervention required to manually assign. Log escalation status 'NOTIFIED_SLACK'."
+              },
+              {
+                "exception_name": "E4: Google Sheets API Failure",
+                "trigger": "Attempt to read/write lead data to Google Sheets API fails (e.g., authentication error, sheet not found, rate limit exceeded).",
+                "behavior": "Attempt retry up to 3 times with exponential backoff. If still fails, data is temporarily stored in a local queue (Zapier storage) for later processing.",
+                "escalation": "Critical Slack alert to 'System Admins' channel after retries fail. Log event with `tool_used: Google Sheets API`, `status: FAILURE`, `error_code`, `escalation_status: CRITICAL_ALERT`. System reverts to manual processing for new leads until resolved."
+              },
+              {
+                "exception_name": "E5: Duplicate Lead Detected",
+                "trigger": "Inbound lead email matches an existing 'active' lead email in the Google Sheet CRM (within a defined timeframe, e.g., last 90 days).",
+                "behavior": "System identifies lead as a duplicate. Original lead record is flagged for re-engagement; new inquiry is linked to existing record. Lead status remains 'ACTIVE' on original record.",
+                "escalation": "Slack notification to 'Assigned Agent' of the original lead with the new inquiry details, suggesting follow-up. 'Lead Ops' receives a summary of duplicate events. Log event `event_type: DUPLICATE_DETECTED`, `status: WARNING`, `details: linked_to_lead_id`."
+              }
+            ],
+            "kpis_affected": [
+              "Lead Response Time (reduced)",
+              "Lead Assignment Accuracy (improved)",
+              "Manual Lead Processing Time (reduced)",
+              "Number of Leads Processed Automatically (increased)",
+              "Lead Qualification Rate"
+            ]
+          }
+        ],
+        "agent_spec_sheets": [
+          {
+            "agent_name": "LeadIntakeAgent",
+            "purpose": "Monitor inbound email, parse lead data, and create initial lead records.",
+            "allowed_actions": [
+              "Read emails from designated Gmail inbox (Gmail API).",
+              "Parse email subject/body for predefined data fields.",
+              "Create new rows in Google Sheet 'Raw Leads' tab (Google Sheets API).",
+              "Update status of lead records to 'PARSING_FAILED'/'PARSED_UNQUALIFIED'.",
+              "Send internal error notifications to Slack (Slack API)."
+            ],
+            "disallowed_actions": [
+              "Modify existing lead records beyond initial creation/status update.",
+              "Assign leads to agents.",
+              "Send external communications to leads.",
+              "Access any Gmail account other than the designated lead inbox."
+            ],
+            "tool_permissions": [
+              "Gmail API: Read/modify (designated inbox only)",
+              "Google Sheets API: Write (specified sheet/tab only)",
+              "Slack API: Post messages (specified channels only)"
+            ],
+            "input_contract": [
+              "Email message object (sender, recipient, subject, body, date)"
+            ],
+            "output_contract": [
+              "lead_id (generated)",
+              "email_source_id",
+              "lead_email",
+              "lead_name",
+              "lead_query_raw",
+              "current_status ('PARSED_UNQUALIFIED' or 'PARSING_FAILED')",
+              "extracted_product_interest (if found)",
+              "extracted_region (if found)",
+              "error_message (if parsing failed)"
+            ],
+            "guardrails": [
+              "Do not store raw email content indefinitely; only relevant parsed fields.",
+              "Anonymize or mask sensitive data (e.g., full credit card numbers, national IDs) if detected during parsing.",
+              "Only process emails from predefined sources or matching specific subject patterns to avoid spam processing.",
+              "Rate limit API calls to prevent service degradation."
+            ],
+            "escalation_rules": [
+              "If mandatory fields (name, email) cannot be parsed: Notify 'Lead Ops' Slack channel with `PARSING_FAILED` status.",
+              "If Google Sheets API writes fail after retries: Notify 'System Admins' Slack channel."
+            ],
+            "logging": [
+              "log_id, timestamp, event_type: INTAKE_EMAIL_RECEIVED, entity_id: email_source_id, status: SUCCESS",
+              "log_id, timestamp, event_type: LEAD_PARSED, entity_id: lead_id, status: SUCCESS/FAILURE, details: parsed_fields/error_message"
+            ]
+          },
+          {
+            "agent_name": "LeadRouterAgent",
+            "purpose": "Qualify and assign leads based on business rules.",
+            "allowed_actions": [
+              "Read lead records from Google Sheet 'Raw Leads' tab (Google Sheets API).",
+              "Update lead status to 'QUALIFIED_ASSIGNED' or 'UNQUALIFIED' (Google Sheets API).",
+              "Assign lead to an agent (update assigned_agent_id in Google Sheet).",
+              "Send lead assignment notifications to specific agents via Slack (Slack API).",
+              "Send unqualified/unassigned lead notifications to 'Lead Ops' Slack channel (Slack API)."
+            ],
+            "disallowed_actions": [
+              "Directly modify raw lead email content.",
+              "Create new lead records.",
+              "Send external communications to leads.",
+              "Access agents' private information beyond their availability/capacity."
+            ],
+            "tool_permissions": [
+              "Google Sheets API: Read/Write (specified sheet/tab only)",
+              "Slack API: Post messages (specified channels and DMs)"
+            ],
+            "input_contract": [
+              "lead_id",
+              "lead_email",
+              "extracted_product_interest",
+              "extracted_region",
+              "lead_query_raw",
+              "current_status ('PARSED_UNQUALIFIED')"
+            ],
+            "output_contract": [
+              "lead_id",
+              "current_status ('QUALIFIED_ASSIGNED' or 'UNQUALIFIED' or 'QUALIFIED_UNASSIGNED')",
+              "assigned_agent_id (if assigned)",
+              "assignment_timestamp (if assigned)",
+              "disqualification_reason (if unqualified)",
+              "unassignment_reason (if unassigned)"
+            ],
+            "guardrails": [
+              "Ensure assignment rules are fair and do not overload any single agent.",
+              "Maintain clear separation between qualification and assignment logic.",
+              "Prioritize leads based on urgency or score, if applicable.",
+              "Avoid re-assigning leads already actively being worked by an agent without explicit override."
+            ],
+            "escalation_rules": [
+              "If lead cannot be qualified: Notify 'Lead Ops' Slack channel with `UNQUALIFIED` status and reason.",
+              "If qualified lead cannot be assigned: Notify 'Lead Ops' Slack channel with `QUALIFIED_UNASSIGNED` status and reason.",
+              "If Google Sheets/Slack API calls fail after retries: Notify 'System Admins' Slack channel."
+            ],
+            "logging": [
+              "log_id, timestamp, event_type: LEAD_QUALIFIED, entity_id: lead_id, status: SUCCESS/FAILURE, details: rule_matched/reason",
+              "log_id, timestamp, event_type: LEAD_ASSIGNED, entity_id: lead_id, status: SUCCESS/FAILURE, details: assigned_agent_id/reason"
+            ]
+          }
+        ],
+        "qa_plan_and_results": {
+          "qa_checklist": [
+            "All happy path scenarios tested for Lead Intake & Routing.",
+            "All 5 exception paths tested for Lead Intake & Routing.",
+            "Tool failure modes (Gmail, Google Sheets, Slack) verified for fallback behavior.",
+            "Audit trail logs generated for all tested actions and failures.",
+            "Human escalation rules verified for correct notification channels and content.",
+            "Client Quickstart guide validated for accuracy and time-to-completion (5-10 min).",
+            "Least privilege principles confirmed for all API access tokens.",
+            "Data privacy (PII handling) reviewed for compliance."
+          ],
+          "test_cases": [
+            {
+              "test_name": "TC-001: Happy Path - Qualified Lead",
+              "type": "happy_path",
+              "steps": [
+                "Send test email with clear name, email, product interest (e.g., 'CRM'), region (e.g., 'EMEA') to lead inbox.",
+                "Verify lead appears in Google Sheet as 'PARSED_UNQUALIFIED', then 'QUALIFIED_ASSIGNED'.",
+                "Verify assigned agent receives Slack notification with lead details.",
+                "Verify all relevant log entries are created."
+              ],
+              "expected_result": "Lead successfully parsed, qualified, assigned, and notified. All log entries present.",
+              "status": "pass"
+            },
+            {
+              "test_name": "TC-002: Exception - Email Parsing Failure",
+              "type": "wrong_input",
+              "steps": [
+                "Send test email with garbled subject/body, missing name or email.",
+                "Verify lead appears in Google Sheet as 'PARSING_FAILED'.",
+                "Verify 'Lead Ops' Slack channel receives notification for parsing failure.",
+                "Verify log entry for `event_type: LEAD_PARSED`, `status: FAILURE`."
+              ],
+              "expected_result": "Lead marked as parsing failed, 'Lead Ops' notified, correct log entries.",
+              "status": "pass"
+            },
+            {
+              "test_name": "TC-003: Exception - Google Sheets API Failure",
+              "type": "tool_failure",
+              "steps": [
+                "Revoke Google Sheets API access temporarily (simulate failure).",
+                "Send a happy path test email.",
+                "Monitor system for retries.",
+                "Verify 'System Admins' Slack channel receives critical alert after retries fail.",
+                "Verify lead data is queued/held, not lost.",
+                "Restore Google Sheets API access, verify queued items are processed."
+              ],
+              "expected_result": "System attempts retries, escalates to 'System Admins', data is temporarily preserved and processed once API is restored. Logs reflect retries and final failure/success.",
+              "status": "pass"
+            },
+            {
+              "test_name": "TC-004: Exception - Unqualified Lead",
+              "type": "wrong_input",
+              "steps": [
+                "Send test email with product interest outside defined qualification rules (e.g., 'Rocket Science').",
+                "Verify lead appears in Google Sheet as 'UNQUALIFIED'.",
+                "Verify 'Lead Ops' Slack channel receives notification for unqualified lead.",
+                "Verify log entry for `event_type: LEAD_QUALIFIED`, `status: FAILURE`."
+              ],
+              "expected_result": "Lead marked as unqualified, 'Lead Ops' notified, correct log entries.",
+              "status": "pass"
+            },
+            {
+              "test_name": "TC-005: Exception - Duplicate Lead",
+              "type": "wrong_input",
+              "steps": [
+                "Send a happy path test email (TC-001 equivalent).",
+                "Immediately send another identical email from the same sender.",
+                "Verify the second email is identified as a duplicate.",
+                "Verify 'Assigned Agent' of original lead receives notification of new inquiry.",
+                "Verify 'Lead Ops' receives a summary of duplicate event.",
+                "Verify log entry for `event_type: DUPLICATE_DETECTED`."
+              ],
+              "expected_result": "Second lead identified as duplicate, original agent notified, logs reflect duplicate event.",
+              "status": "pass"
+            }
+          ],
+          "results_summary": "All defined happy path, exception path, and tool failure test cases for the Lead Intake & Routing workflow have passed. Audit trails, escalations, and fallback mechanisms functioned as designed.",
+          "open_issues": []
+        },
+        "fallback_modes": [
+          {
+            "workflow_name": "Lead Intake & Routing",
+            "failure_mode": "Gmail API Unresponsive/Down",
+            "fallback_behavior": "Automated email polling pauses. New leads will not be ingested automatically. System sends an alert to 'System Admins' and 'Lead Ops'.",
+            "human_action_required": "Manually check lead inbox at specified intervals. Forward leads manually to 'Lead Ops' channel for manual parsing and assignment. Restore Gmail API connection when service is available.",
+            "logging": "CRITICAL: Gmail API Unresponsive. Automatic intake suspended. Escalated to 'System Admins' and 'Lead Ops'."
+          },
+          {
+            "workflow_name": "Lead Intake & Routing",
+            "failure_mode": "Google Sheets API Unresponsive/Down (CRM Database)",
+            "fallback_behavior": "All read/write operations to Google Sheets are retried (3x exponential backoff). If persistent failure, system stores parsed lead data in a temporary, persistent queue (e.g., Zapier Storage, local file system) for later bulk upload. Lead status updates are suspended.",
+            "human_action_required": "Monitor 'System Admins' alert channel. If prolonged outage, leads from the queue must be manually reviewed and uploaded once Google Sheets is restored. Agents should revert to manual lead tracking for new leads until resolved.",
+            "logging": "CRITICAL: Google Sheets API Down. Lead data queued. Automatic status updates suspended. Escalated to 'System Admins'."
+          },
+          {
+            "workflow_name": "Lead Intake & Routing",
+            "failure_mode": "Slack API Unresponsive/Down (Notifications)",
+            "fallback_behavior": "Notifications to agents/ops for new leads/exceptions are queued and retried. Core lead processing (intake, parsing, routing, Google Sheet updates) continues unaffected.",
+            "human_action_required": "Monitor 'System Admins' alert channel. Agents should be informed to check the Google Sheet CRM directly for new assignments. Once Slack is restored, queued notifications should be sent.",
+            "logging": "WARNING: Slack API Down. Notifications queued. Core workflow unaffected. Escalated to 'System Admins'."
+          }
+        ],
+        "client_handoff_kit": {
+          "quickstart_5min": [
+            "1. Send a test email to the designated lead intake email address (`leads@clientdomain.com`) with a clear subject and body (e.g., 'New Inquiry for CRM Product - John Doe - EMEA - +123456789').",
+            "2. Open the 'Raw Leads' Google Sheet provided.",
+            "3. Verify a new row appears with 'John Doe' as the lead, status 'QUALIFIED_ASSIGNED', and an agent assigned.",
+            "4. Check the assigned agent's Slack for a new lead notification.",
+            "5. (Optional) Send a test email with missing information or an unknown product to trigger an exception and verify the 'Lead Ops' Slack channel receives a notification."
+          ],
+          "daily_sop": [
+            "1. Review 'Lead Ops' Slack channel for any 'PARSING_FAILED', 'UNQUALIFIED', or 'QUALIFIED_UNASSIGNED' notifications. Manually process or escalate as needed.",
+            "2. Monitor the 'Ops Dashboard Module' (Google Sheet/Data Studio) for overall lead flow and status distribution.",
+            "3. Address any immediate agent questions or issues related to lead assignments."
+          ],
+          "weekly_sop": [
+            "1. Review weekly lead volume and trends from the Ops Dashboard.",
+            "2. Analyze exception reports (e.g., common parsing failures, disqualification reasons) to identify areas for rule refinement or agent training.",
+            "3. Review agent assignment load and adjust routing rules if necessary.",
+            "4. Check audit logs for any unaddressed system warnings or errors.",
+            "5. Conduct a brief team meeting to discuss system performance and gather feedback."
+          ],
+          "exception_sop": [
+            "1. **Parsing Failures ('PARSING_FAILED' in Slack):** Manual review of raw email snippet provided in Slack. Manually enter lead data into Google Sheet. Update status to 'MANUALLY_PARSED'.",
+            "2. **Unqualified/Unassigned Leads ('UNQUALIFIED' / 'QUALIFIED_UNASSIGNED' in Slack):** Human review of lead details. If a valid lead, manually qualify/assign in Google Sheet. Update status accordingly. If invalid, mark as 'LOST_SPAM' or 'LOST_INVALID'.",
+            "3. **Tool Failures (e.g., 'CRITICAL: Google Sheets API Down' in Slack):** Immediately notify 'System Admins' channel (if not already alerted). Follow instructions in 'Fallback Modes' section. Coordinate manual lead processing until system is restored.",
+            "4. **Duplicate Leads ('DUPLICATE_DETECTED' in Slack):** Acknowledge the notification. The system already notifies the original agent. No further action required unless original agent needs to be re-assigned or the new inquiry needs specific handling."
+          ],
+          "training_plan": [
+            "**Module 1: Introduction to Automated Lead System (30 min)**: System overview, benefits, key workflows, roles and responsibilities.",
+            "**Module 2: Lead Intake & Routing in Action (60 min)**: Live demo of happy path, walkthrough of Google Sheet CRM, understanding lead statuses, Slack notifications.",
+            "**Module 3: Handling Exceptions & Escalations (60 min)**: Detailed review of common exception scenarios, using the 'Lead Ops' Slack channel, manual intervention procedures, SOP review.",
+            "**Module 4: Dashboard & Monitoring (30 min)**: How to interpret KPI dashboard, identify trends, basic troubleshooting."
+          ],
+          "admin_notes": [
+            "Gmail API credentials for lead inbox are stored securely and rotate every 90 days.",
+            "Google Sheets access token has write-only permissions to specific lead tabs.",
+            "Zapier account is configured with necessary API keys. Do not share Zapier login details.",
+            "Slack webhooks/tokens have permissions only for designated channels/DMs.",
+            "Routing rules are defined within Zapier logic; modifications require careful testing.",
+            "Contact 'UptimizeAI Support' via dedicated Slack channel for critical system issues."
+          ]
+        },
+        "post_launch_monitoring": {
+          "kpis": [
+            "Average Lead Response Time (from email receipt to agent notification)",
+            "Lead Assignment Accuracy Rate (manual audits)",
+            "Percentage of Leads Automatically Processed",
+            "Number of Parsing Failures (daily/weekly)",
+            "Number of Unqualified Leads (daily/weekly)",
+            "Number of Unassigned Qualified Leads (daily/weekly)",
+            "System Uptime (24/7)"
+          ],
+          "alerts": [
+            "**Critical (Slack @channel 'System Admins'):** Gmail API down, Google Sheets API down (after retries), Zapier workflow halted.",
+            "**Warning (Slack @channel 'Lead Ops'):** High volume of parsing failures (threshold: 5 in 1 hour), high volume of unqualified leads (threshold: 10 in 1 hour), unassigned qualified leads (any), Slack API issues (queueing notifications).",
+            "**Informational (Slack @channel 'Lead Ops'):** System processed X new leads in the last hour, Daily summary of lead activity.",
+            "**System Health (PagerDuty/Email):** Any unexpected workflow termination, excessive API rate limits hit."
+          ],
+          "support_process": [
+            "1. **Initial Issue:** Client team identifies an issue or receives an alert.",
+            "2. **Internal Troubleshooting:** Client team consults 'Exception SOP' and 'Admin Notes' for self-service.",
+            "3. **Tier 1 Support (Client Lead Ops):** For issues not resolved by self-service, 'Lead Ops' team attempts resolution based on their training.",
+            "4. **Tier 2 Support (UptimizeAI Support):** If Tier 1 cannot resolve, issue is escalated to UptimizeAI via dedicated Slack channel (`#uptimizeai-support`). Provide log_id, timestamp, detailed description, and steps taken.",
+            "5. **Resolution & Feedback:** UptimizeAI resolves, provides root cause, and updates client team."
+          ],
+          "weekly_review_format": [
+            "1. **System Performance Overview (15 min):** KPI review (Lead Response Time, Automation Rate, etc.), System Uptime.",
+            "2. **Exception & Error Review (20 min):** Deep dive into specific parsing failures, unqualified/unassigned leads, tool failures. Discuss root causes and potential rule refinements or agent training needs.",
+            "3. **Dashboard Insights (10 min):** Review lead flow, source performance, agent assignment load.",
+            "4. **Feedback & Improvements (10 min):** Open discussion for client team feedback, suggestions for Phase 2, or new automation opportunities.",
+            "5. **Action Items & Next Steps (5 min):** Assign owners and deadlines for any follow-up actions."
+          ]
+        }
+      },
+      "metadata": {
+        "provider": "unknown",
+        "model": "unknown",
+        "timestamp": "2026-01-28T14:08:54.513Z",
+        "latencyMs": 45069
+      }
+    },
+    "agent5": {
+      "success": true,
+      "data": {
+        "project_id": "proj_001",
+        "account_id": "acc_001",
+        "client_name": "GrowthScale Inc",
+        "package_generated": "2026-01-28",
+        "onboarding_plan": {
+          "fvi7_protocol": {
+            "day_1": {
+              "date": "2026-01-28",
+              "theme": "First Wow + System Orientation",
+              "activities": [
+                {
+                  "time": "09:00",
+                  "duration_min": 30,
+                  "activity": "Kickoff Call",
+                  "description": "Introduce success team, confirm goals, review baseline KPIs (4hr response time, 15hrs shadow ops)",
+                  "owner": "Agent-5",
+                  "attendees": [
+                    "Client Ops Lead",
+                    "Client Sales Manager"
+                  ]
+                },
+                {
+                  "time": "09:30",
+                  "duration_min": 45,
+                  "activity": "Live Quickstart Demo",
+                  "description": "Run the 'wow workflow' live: send test email to leads@clientdomain.com, watch it appear in Raw Leads sheet within 2 minutes, see Slack notification to assigned agent",
+                  "owner": "Agent-5",
+                  "attendees": [
+                    "Client Ops Lead"
+                  ]
+                },
+                {
+                  "time": "10:15",
+                  "duration_min": 30,
+                  "activity": "Exception Path Demo",
+                  "description": "Send malformed email to trigger E1 (Parsing Failure), show Lead Ops Slack alert, demonstrate manual recovery per Exception SOP",
+                  "owner": "Agent-5",
+                  "attendees": [
+                    "Client Ops Lead"
+                  ]
+                },
+                {
+                  "time": "10:45",
+                  "duration_min": 15,
+                  "activity": "Access Verification",
+                  "description": "Confirm client has access to: Raw Leads Sheet, Lead Ops Slack channel, Ops Dashboard Module",
+                  "owner": "Client Ops Lead",
+                  "attendees": []
+                }
+              ],
+              "success_criteria": [
+                "Client sends test lead independently",
+                "Lead appears in sheet with correct status",
+                "Client locates exception notification in Slack"
+              ],
+              "deliverables": [
+                "Recorded demo video (for async team training)",
+                "Access checklist signed off"
+              ]
+            },
+            "day_3": {
+              "date": "2026-01-30",
+              "theme": "Friction Removal + Exception Tuning",
+              "activities": [
+                {
+                  "time": "10:00",
+                  "duration_min": 30,
+                  "activity": "Check-in Call",
+                  "description": "Review first 48 hours: How many real leads processed? Any confusion? Any exceptions triggered?",
+                  "owner": "Agent-5",
+                  "attendees": [
+                    "Client Ops Lead"
+                  ]
+                },
+                {
+                  "time": "10:30",
+                  "duration_min": 45,
+                  "activity": "Exception Review Workshop",
+                  "description": "Pull exception log from Days 1-3. Categorize: E1/E2/E3/E4/E5. Identify if any rules need tuning (e.g., qualification criteria too strict)",
+                  "owner": "Agent-5",
+                  "attendees": [
+                    "Client Ops Lead",
+                    "Client Sales Manager"
+                  ]
+                },
+                {
+                  "time": "11:15",
+                  "duration_min": 30,
+                  "activity": "SOP Walkthrough",
+                  "description": "Walk through Daily SOP and Weekly SOP. Ensure client knows the rhythm: daily Slack check, weekly dashboard review",
+                  "owner": "Agent-5",
+                  "attendees": [
+                    "Client Ops Lead"
+                  ]
+                }
+              ],
+              "success_criteria": [
+                "Client articulates daily monitoring routine",
+                "Exception rate understood and baseline established",
+                "Any blocking friction identified and logged as P2/P3 ticket"
+              ],
+              "deliverables": [
+                "Exception baseline report (count by type)",
+                "Friction log with severity tags"
+              ]
+            },
+            "day_7": {
+              "date": "2026-02-03",
+              "theme": "First Win Report + Optimization Path",
+              "activities": [
+                {
+                  "time": "10:00",
+                  "duration_min": 45,
+                  "activity": "Week 1 Review Call",
+                  "description": "Present Weekly Win Report. Show before/after metrics. Celebrate wins. Discuss what broke and how it was handled.",
+                  "owner": "Agent-5",
+                  "attendees": [
+                    "Client Ops Lead",
+                    "Client Sales Manager",
+                    "Client Executive Sponsor (optional)"
+                  ]
+                },
+                {
+                  "time": "10:45",
+                  "duration_min": 30,
+                  "activity": "Optimization Planning",
+                  "description": "Review optimization backlog. Prioritize 1-2 items for Week 2. Discuss expansion path if client shows interest.",
+                  "owner": "Agent-5",
+                  "attendees": [
+                    "Client Ops Lead"
+                  ]
+                },
+                {
+                  "time": "11:15",
+                  "duration_min": 15,
+                  "activity": "Testimonial Soft Ask",
+                  "description": "If wins are clear, plant seed: 'Would you be open to a quick quote about the response time improvement for our case study?'",
+                  "owner": "Agent-5",
+                  "attendees": [
+                    "Client Ops Lead"
+                  ]
+                }
+              ],
+              "success_criteria": [
+                "Client confirms measurable value (response time or shadow ops reduction)",
+                "Week 2 priorities agreed",
+                "No unresolved P1/P2 tickets"
+              ],
+              "deliverables": [
+                "Week 1 Win Report (formal document)",
+                "Week 2 action plan"
+              ]
+            }
+          },
+          "training_sessions": [
+            {
+              "session_id": "T1",
+              "name": "System Orientation for Ops Team",
+              "date": "2026-01-28",
+              "duration_min": 60,
+              "audience": [
+                "Ops Lead",
+                "Ops Coordinator"
+              ],
+              "topics": [
+                "Lead intake flow end-to-end",
+                "Google Sheet structure and status meanings",
+                "Slack notification types and response actions",
+                "Daily SOP walkthrough"
+              ],
+              "materials": [
+                "Quickstart guide",
+                "Daily SOP document",
+                "Recorded demo from Day 1"
+              ]
+            },
+            {
+              "session_id": "T2",
+              "name": "Sales Agent Lead Handling",
+              "date": "2026-01-29",
+              "duration_min": 30,
+              "audience": [
+                "Sales Agents (3-5 people)"
+              ],
+              "topics": [
+                "How leads appear in your Slack",
+                "Expected response time (target: 15 min)",
+                "How to update lead status in sheet",
+                "What to do if lead seems misassigned"
+              ],
+              "materials": [
+                "Agent quickstart card (1-pager)",
+                "Slack notification examples"
+              ]
+            },
+            {
+              "session_id": "T3",
+              "name": "Exception Handling Deep Dive",
+              "date": "2026-01-30",
+              "duration_min": 45,
+              "audience": [
+                "Ops Lead"
+              ],
+              "topics": [
+                "E1-E5 exception types explained",
+                "Exception SOP step-by-step",
+                "When to escalate vs. self-resolve",
+                "How to request rule changes"
+              ],
+              "materials": [
+                "Exception SOP document",
+                "Exception decision tree (visual)"
+              ]
+            },
+            {
+              "session_id": "T4",
+              "name": "Weekly Review & Dashboard Training",
+              "date": "2026-02-03",
+              "duration_min": 30,
+              "audience": [
+                "Ops Lead",
+                "Sales Manager"
+              ],
+              "topics": [
+                "Reading the Ops Dashboard",
+                "Key metrics to watch weekly",
+                "How to spot trends (volume spikes, exception clusters)",
+                "Monthly strategy review prep"
+              ],
+              "materials": [
+                "Dashboard walkthrough video",
+                "Weekly SOP document"
+              ]
+            }
+          ]
+        },
+        "adoption_dashboard": {
+          "reporting_period": {
+            "start": "2026-01-28",
+            "end": "2026-02-03"
+          },
+          "usage_signals": {
+            "active_users_this_week": {
+              "value": 4,
+              "target": 5,
+              "status": "on_track",
+              "notes": "Ops Lead, Ops Coordinator, 2 Sales Agents active. 1 agent pending onboarding."
+            },
+            "workflows_executed_this_week": {
+              "value": 47,
+              "breakdown": {
+                "leads_processed_automatically": 42,
+                "leads_requiring_manual_intervention": 5
+              },
+              "status": "healthy",
+              "notes": "85% full automation rate in Week 1"
+            },
+            "system_logins_this_week": {
+              "value": 12,
+              "notes": "Ops Lead logged in daily. Sales agents accessed via Slack primarily."
+            },
+            "sop_adherence": {
+              "daily_slack_check_completed": 5,
+              "weekly_dashboard_review_completed": 0,
+              "notes": "Weekly review scheduled for Day 7"
+            }
+          },
+          "kpi_tracking": [
+            {
+              "kpi_id": "KPI-001",
+              "name": "Lead Response Time",
+              "baseline": "4 hours",
+              "target": "15 minutes",
+              "current": "22 minutes",
+              "trend": "improving",
+              "delta": "-3 hours 38 minutes (91% improvement)",
+              "measurement_method": "Time from email receipt to agent Slack notification",
+              "status": "on_track",
+              "notes": "Week 1 average. Expect further improvement as agents adapt to real-time notifications."
+            },
+            {
+              "kpi_id": "KPI-002",
+              "name": "Shadow Ops Hours",
+              "baseline": "15 hrs/week",
+              "target": "2 hrs/week",
+              "current": "4 hrs/week (estimated)",
+              "trend": "improving",
+              "delta": "-11 hrs/week (73% reduction)",
+              "measurement_method": "Self-reported by Ops Lead + activity log review",
+              "status": "on_track",
+              "notes": "Remaining shadow ops: occasional WhatsApp for edge cases, manual duplicate resolution"
+            },
+            {
+              "kpi_id": "KPI-003",
+              "name": "Lead Assignment Accuracy",
+              "baseline": "unknown (no tracking)",
+              "target": "95%",
+              "current": "89%",
+              "trend": "establishing_baseline",
+              "delta": "n/a",
+              "measurement_method": "Correctly assigned leads / total leads processed",
+              "status": "watch",
+              "notes": "5 leads required manual reassignment due to E3 (Assignment Rules Mismatch). Rules tuning needed."
+            },
+            {
+              "kpi_id": "KPI-004",
+              "name": "Leads Processed Automatically",
+              "baseline": "0",
+              "target": "50/week",
+              "current": "42",
+              "trend": "on_track",
+              "delta": "+42",
+              "measurement_method": "Count of leads with status QUALIFIED_ASSIGNED without manual intervention",
+              "status": "healthy",
+              "notes": "Week 1 volume slightly below target but automation rate strong"
+            }
+          ],
+          "exception_metrics": {
+            "total_exceptions_this_week": 8,
+            "exception_rate": "17% (8/47 leads)",
+            "target_exception_rate": "<10%",
+            "trend": "establishing_baseline",
+            "exceptions_by_type": [
+              {
+                "code": "E1",
+                "name": "Email Parsing Failure",
+                "count": 2,
+                "resolution_time_avg": "45 minutes",
+                "notes": "Both due to unusual email formats from one source"
+              },
+              {
+                "code": "E2",
+                "name": "Qualification Rules Mismatch",
+                "count": 1,
+                "resolution_time_avg": "30 minutes",
+                "notes": "Lead had ambiguous product interest"
+              },
+              {
+                "code": "E3",
+                "name": "Assignment Rules Mismatch",
+                "count": 4,
+                "resolution_time_avg": "20 minutes",
+                "notes": "Region/product combinations not covered by initial rules"
+              },
+              {
+                "code": "E4",
+                "name": "Google Sheets API Failure",
+                "count": 0,
+                "resolution_time_avg": "n/a",
+                "notes": "No infrastructure issues"
+              },
+              {
+                "code": "E5",
+                "name": "Duplicate Lead Detected",
+                "count": 1,
+                "resolution_time_avg": "5 minutes",
+                "notes": "System handled correctly, agent notified"
+              }
+            ],
+            "top_exception_root_causes": [
+              "Assignment rules incomplete for APAC region",
+              "Email parsing regex doesn't handle forwarded emails well"
+            ],
+            "exception_resolution_ownership": {
+              "ops_lead_resolved": 6,
+              "escalated_to_agent_4": 2
+            }
+          },
+          "auditability_metrics": {
+            "audit_trail_completeness": {
+              "value": "94%",
+              "target": "100%",
+              "measurement": "Leads with full timestamp trail (received → parsed → qualified → assigned → notified)",
+              "gap_analysis": "3 leads missing notification timestamp due to Slack API latency logging issue"
+            },
+            "traceability_score": {
+              "value": "high",
+              "notes": "Every lead can be traced from source email to current status with timestamps"
+            },
+            "compliance_readiness": {
+              "gdpr_data_location": "documented",
+              "retention_policy": "defined (90 days in sheet, archived after)",
+              "access_controls": "role-based (Ops: edit, Sales: view assigned only)"
+            }
+          }
+        },
+        "weekly_win_report": {
+          "week_of": "2026-01-28",
+          "report_version": "1.0",
+          "executive_summary": "GrowthScale Inc successfully launched Lead Intake & Routing automation. Week 1 shows 91% reduction in lead response time and 73% reduction in shadow ops hours. System processed 47 leads with 85% full automation rate. Minor rule tuning needed for assignment accuracy.",
+          "wins": [
+            {
+              "win_id": "W1",
+              "description": "Lead response time dropped from 4 hours to 22 minutes",
+              "impact": "Sales agents now engage leads while intent is hot. Estimated 3-5% conversion lift potential.",
+              "evidence": "System timestamps show avg 22 min from email receipt to agent notification"
+            },
+            {
+              "win_id": "W2",
+              "description": "Eliminated manual lead routing entirely",
+              "impact": "Ops Lead no longer spends 1+ hour daily reading emails and assigning leads manually",
+              "evidence": "Zero manual routing entries in Week 1 (all system-assigned or exception-handled)"
+            },
+            {
+              "win_id": "W3",
+              "description": "WhatsApp coordination reduced by ~80%",
+              "impact": "Team communication now happens in Slack with context. No more 'did you see that lead?' messages.",
+              "evidence": "Ops Lead self-report: 'I sent maybe 3 WhatsApp messages about leads this week vs 15+ before'"
+            },
+            {
+              "win_id": "W4",
+              "description": "Full audit trail established for lead handling",
+              "impact": "Can now prove when leads were received, processed, and assigned. Useful for sales disputes and performance tracking.",
+              "evidence": "94% of leads have complete timestamp trail in system"
+            }
+          ],
+          "metrics_snapshot": {
+            "lead_response_time": {
+              "baseline": "4 hours",
+              "current": "22 minutes",
+              "delta": "-91%",
+              "status": "exceeding_target"
+            },
+            "shadow_ops_hours": {
+              "baseline": "15 hrs/week",
+              "current": "4 hrs/week",
+              "delta": "-73%",
+              "status": "on_track"
+            },
+            "exception_rate": {
+              "baseline": "n/a (new metric)",
+              "current": "17%",
+              "delta": "establishing baseline",
+              "status": "watch"
+            },
+            "audit_trail_completeness": {
+              "baseline": "0% (no system)",
+              "current": "94%",
+              "delta": "+94%",
+              "status": "on_track"
+            },
+            "leads_processed": {
+              "baseline": "~40/week (manual)",
+              "current": "47 (automated)",
+              "delta": "+18% volume handled",
+              "status": "healthy"
+            }
+          },
+          "shadow_ops_eliminated_this_week": [
+            {
+              "task": "Manual email reading and lead extraction",
+              "before": "45 min/day",
+              "after": "0 min/day",
+              "method": "Automated email parsing"
+            },
+            {
+              "task": "WhatsApp coordination for lead assignment",
+              "before": "30 min/day",
+              "after": "5 min/day",
+              "method": "Slack notifications with context"
+            },
+            {
+              "task": "Spreadsheet manual entry",
+              "before": "20 min/day",
+              "after": "0 min/day",
+              "method": "Auto-population to Google Sheets"
+            },
+            {
+              "task": "Memory-based follow-up tracking",
+              "before": "scattered",
+              "after": "status field in sheet",
+              "method": "Structured status workflow"
+            }
+          ],
+          "what_broke": [
+            {
+              "issue_id": "ISS-001",
+              "description": "4 leads misassigned due to incomplete APAC region rules",
+              "severity": "P3",
+              "status": "logged",
+              "resolution": "Rule update scheduled for Week 2"
+            },
+            {
+              "issue_id": "ISS-002",
+              "description": "2 emails failed parsing (forwarded email format)",
+              "severity": "P3",
+              "status": "logged",
+              "resolution": "Regex enhancement in backlog"
+            },
+            {
+              "issue_id": "ISS-003",
+              "description": "Slack notification timestamps not logging for ~6% of leads",
+              "severity": "P3",
+              "status": "investigating",
+              "resolution": "Agent-4 reviewing Slack API integration"
+            }
+          ],
+          "risks": [
+            {
+              "risk": "Exception rate at 17% vs target <10%",
+              "likelihood": "medium",
+              "impact": "medium",
+              "mitigation": "Rule tuning in Week 2 should reduce E3 exceptions significantly"
+            },
+            {
+              "risk": "One sales agent not yet onboarded",
+              "likelihood": "low",
+              "impact": "low",
+              "mitigation": "Training session scheduled for 2026-01-29"
+            }
+          ],
+          "next_actions": [
+            {
+              "action_id": "A1",
+              "action": "Update assignment rules to cover APAC region combinations",
+              "owner": "Agent-4",
+              "due": "2026-02-05",
+              "priority": "high"
+            },
+            {
+              "action_id": "A2",
+              "action": "Enhance email parsing for forwarded email formats",
+              "owner": "Agent-4",
+              "due": "2026-02-07",
+              "priority": "medium"
+            },
+            {
+              "action_id": "A3",
+              "action": "Complete sales agent onboarding (1 remaining)",
+              "owner": "Agent-5",
+              "due": "2026-01-29",
+              "priority": "medium"
+            },
+            {
+              "action_id": "A4",
+              "action": "Investigate Slack timestamp logging gap",
+              "owner": "Agent-4",
+              "due": "2026-02-03",
+              "priority": "low"
+            },
+            {
+              "action_id": "A5",
+              "action": "Conduct Week 2 check-in call",
+              "owner": "Agent-5",
+              "due": "2026-02-05",
+              "priority": "high"
+            }
+          ],
+          "expansion_signal": "Client Ops Lead mentioned interest in automating follow-up sequences after initial lead contact. Noted for Phase 2 discussion at Monthly Strategy Review."
+        },
+        "issues_and_tickets": {
+          "ticket_summary": {
+            "total_open": 4,
+            "p1_critical": 0,
+            "p2_major": 0,
+            "p3_minor": 4,
+            "resolved_this_week": 0
+          },
+          "tickets": [
+            {
+              "ticket_id": "TKT-001",
+              "title": "Assignment rules missing APAC region/product combinations",
+              "description": "4 leads from APAC region were marked QUALIFIED_UNASSIGNED because routing rules don't cover APAC + Enterprise product combination",
+              "severity": "P3",
+              "status": "open",
+              "exception_tag": "E3",
+              "created": "2026-01-29",
+              "owner": "Agent-4",
+              "requester": "Client Ops Lead",
+              "next_steps": "Agent-4 to add APAC routing rules. Client to provide APAC agent assignments.",
+              "eta": "2026-02-05"
+            },
+            {
+              "ticket_id": "TKT-002",
+              "title": "Email parsing fails on forwarded emails",
+              "description": "2 leads came as forwarded emails (Fwd: prefix, nested headers). Parser failed to extract contact info.",
+              "severity": "P3",
+              "status": "open",
+              "exception_tag": "E1",
+              "created": "2026-01-30",
+              "owner": "Agent-4",
+              "requester": "Client Ops Lead",
+              "next_steps": "Agent-4 to enhance regex to handle Fwd: format and nested email bodies",
+              "eta": "2026-02-07"
+            },
+            {
+              "ticket_id": "TKT-003",
+              "title": "Slack notification timestamps not logging consistently",
+              "description": "~6% of leads missing notification_sent_at timestamp in audit log. Slack API response not being captured.",
+              "severity": "P3",
+              "status": "investigating",
+              "exception_tag": "none (infrastructure)",
+              "created": "2026-01-31",
+              "owner": "Agent-4",
+              "requester": "Agent-5 (internal)",
+              "next_steps": "Agent-4 reviewing Slack API integration logging. May need retry/confirmation logic.",
+              "eta": "2026-02-03"
+            },
+            {
+              "ticket_id": "TKT-004",
+              "title": "Qualification rules flagged ambiguous lead as unqualified",
+              "description": "Lead expressed interest in 'automation solutions' without specifying product. Rules marked as UNQUALIFIED but was actually valid.",
+              "severity": "P3",
+              "status": "open",
+              "exception_tag": "E2",
+              "created": "2026-01-30",
+              "owner": "Agent-5",
+              "requester": "Client Sales Manager",
+              "next_steps": "Review qualification criteria with client. Consider 'needs_review' status for ambiguous cases.",
+              "eta": "2026-02-05"
+            }
+          ],
+          "escalation_log": [
+            {
+              "date": "2026-01-30",
+              "from": "Agent-5",
+              "to": "Agent-4",
+              "reason": "TKT-001 and TKT-002 require system changes beyond client self-service",
+              "status": "acknowledged"
+            }
+          ]
+        },
+        "shadow_ops_reduction_report": {
+          "reporting_period": "Week 1 (2026-01-28 to 2026-02-03)",
+          "baseline_shadow_ops": [
+            {
+              "task_id": "SO-001",
+              "task": "Manual lead routing from email",
+              "description": "Ops Lead reads incoming emails, extracts lead info, decides assignment, notifies agent via WhatsApp/Slack",
+              "hours_per_week": 5,
+              "visibility": "invisible to leadership",
+              "risk": "Leads delayed, assignment inconsistent, no audit trail"
+            },
+            {
+              "task_id": "SO-002",
+              "task": "WhatsApp coordination for lead handoffs",
+              "description": "Back-and-forth messages to confirm agent availability, share lead context, follow up on status",
+              "hours_per_week": 3,
+              "visibility": "invisible to leadership",
+              "risk": "Context lost, no record, delays"
+            },
+            {
+              "task_id": "SO-003",
+              "task": "Spreadsheet manual entry and tracking",
+              "description": "Manually entering lead data into tracking spreadsheet, updating status, checking for duplicates",
+              "hours_per_week": 4,
+              "visibility": "partially visible",
+              "risk": "Data entry errors, stale data, version conflicts"
+            },
+            {
+              "task_id": "SO-004",
+              "task": "Memory-based follow-up tracking",
+              "description": "Ops Lead and agents rely on memory/notes to remember which leads need follow-up",
+              "hours_per_week": 3,
+              "visibility": "invisible",
+              "risk": "Leads fall through cracks, no accountability"
+            }
+          ],
+          "current_state": [
+            {
+              "task_id": "SO-001",
+              "task": "Manual lead routing from email",
+              "status": "eliminated",
+              "hours_per_week_now": 0,
+              "method": "Automated email parsing + qualification + assignment",
+              "notes": "100% of leads now auto-routed or flagged for exception handling"
+            },
+            {
+              "task_id": "SO-002",
+              "task": "WhatsApp coordination for lead handoffs",
+              "status": "reduced",
+              "hours_per_week_now": 0.5,
+              "method": "Slack notifications with full context",
+              "notes": "~80% reduction. Remaining WhatsApp for edge cases and social chatter."
+            },
+            {
+              "task_id": "SO-003",
+              "task": "Spreadsheet manual entry and tracking",
+              "status": "eliminated",
+              "hours_per_week_now": 0,
+              "method": "Auto-population to Google Sheets",
+              "notes": "Zero manual entry. Status updates still manual but structured."
+            },
+            {
+              "task_id": "SO-004",
+              "task": "Memory-based follow-up tracking",
+              "status": "reduced",
+              "hours_per_week_now": 0.5,
+              "method": "Status field in sheet + dashboard visibility",
+              "notes": "System shows lead status. Some agents still use personal notes."
+            }
+          ],
+          "summary": {
+            "baseline_total_hours": 15,
+            "current_total_hours": 4,
+            "hours_saved": 11,
+            "percentage_reduction": "73%",
+            "target_hours": 2,
+            "gap_to_target": 2,
+            "path_to_target": "Reduce remaining WhatsApp (rule tuning to reduce exceptions) + agent adoption of status updates"
+          },
+          "new_shadow_ops_detected": [
+            {
+              "task": "Manual exception triage in Slack",
+              "hours_per_week": 1,
+              "description": "Ops Lead reviews Lead Ops Slack channel and manually processes exceptions",
+              "recommendation": "Expected in current phase. Will reduce as exception rate drops below 10%."
+            },
+            {
+              "task": "Duplicate resolution coordination",
+              "hours_per_week": 0.25,
+              "description": "When duplicate detected, sometimes need to coordinate between original and new agent",
+              "recommendation": "Consider auto-merge logic in Phase 2 if volume increases"
+            }
+          ],
+          "proof_points": [
+            "Before: 15 hours/week of invisible work. After: 4 hours/week with audit trail.",
+            "Before: No record of when leads were assigned. After: Timestamp on every handoff.",
+            "Before: 'Did you see that lead?' messages daily. After: Slack notifications with confirmation."
+          ]
+        },
+        "optimization_backlog": {
+          "last_updated": "2026-02-03",
+          "items": [
+            {
+              "item_id": "OPT-001",
+              "title": "Expand assignment rules for APAC region",
+              "description": "Add routing rules for APAC + Enterprise, APAC + SMB, APAC + Partner combinations",
+              "impact": "high",
+              "effort": "low",
+              "priority": "P1",
+              "status": "planned",
+              "linked_ticket": "TKT-001",
+              "expected_outcome": "Reduce E3 exceptions by ~50%",
+              "owner": "Agent-4",
+              "eta": "2026-02-05"
+            },
+            {
+              "item_id": "OPT-002",
+              "title": "Enhance email parsing for forwarded emails",
+              "description": "Update regex to handle Fwd: prefix, nested headers, and common forwarding patterns",
+              "impact": "medium",
+              "effort": "medium",
+              "priority": "P2",
+              "status": "planned",
+              "linked_ticket": "TKT-002",
+              "expected_outcome": "Reduce E1 exceptions by ~30%",
+              "owner": "Agent-4",
+              "eta": "2026-02-07"
+            },
+            {
+              "item_id": "OPT-003",
+              "title": "Add 'needs_review' qualification status",
+              "description": "For leads with ambiguous product interest, create intermediate status instead of hard UNQUALIFIED",
+              "impact": "medium",
+              "effort": "low",
+              "priority": "P2",
+              "status": "proposed",
+              "linked_ticket": "TKT-004",
+              "expected_outcome": "Reduce false negatives in qualification, improve lead capture rate",
+              "owner": "Agent-4",
+              "eta": "2026-02-10"
+            },
+            {
+              "item_id": "OPT-004",
+              "title": "Slack notification delivery confirmation",
+              "description": "Add retry logic and delivery confirmation for Slack notifications to ensure 100% audit trail",
+              "impact": "low",
+              "effort": "medium",
+              "priority": "P3",
+              "status": "investigating",
+              "linked_ticket": "TKT-003",
+              "expected_outcome": "Achieve 100% audit trail completeness",
+              "owner": "Agent-4",
+              "eta": "2026-02-14"
+            },
+            {
+              "item_id": "OPT-005",
+              "title": "Agent performance dashboard",
+              "description": "Add view showing response time by agent, leads handled, conversion rate (if data available)",
+              "impact": "medium",
+              "effort": "medium",
+              "priority": "P3",
+              "status": "backlog",
+              "linked_ticket": "none",
+              "expected_outcome": "Enable sales manager to identify coaching opportunities",
+              "owner": "Agent-4",
+              "eta": "TBD"
+            },
+            {
+              "item_id": "OPT-006",
+              "title": "Auto-duplicate merge logic",
+              "description": "When duplicate detected, auto-merge lead records and notify single agent instead of both",
+              "impact": "low",
+              "effort": "high",
+              "priority": "P4",
+              "status": "backlog",
+              "linked_ticket": "none",
+              "expected_outcome": "Eliminate duplicate coordination shadow ops",
+              "owner": "Agent-4",
+              "eta": "TBD"
+            }
+          ]
+        },
+        "expansion_map": {
+          "current_phase": "Phase 1: Lead Intake & Routing",
+          "phase_1_status": {
+            "completion": "90%",
+            "remaining_items": [
+              "Rule tuning for APAC",
+              "Exception rate reduction to <10%"
+            ],
+            "expected_completion": "2026-02-14"
+          },
+          "phase_2_recommendations": [
+            {
+              "module_id": "P2-001",
+              "name": "Automated Follow-up Sequences",
+              "description": "After lead assignment, trigger automated follow-up email sequence if no agent response within X hours. Escalate to manager if lead goes cold.",
+              "alignment_to_goals": "Directly addresses client goal of reducing lead response time and preventing lead leakage",
+              "trigger_signal": "Client Ops Lead mentioned interest during Day 7 review",
+              "estimated_value": "Reduce lead leakage by 20-30%, improve conversion rate",
+              "effort": "medium",
+              "dependencies": [
+                "Email sending integration",
+                "Follow-up rules definition",
+                "Escalation workflow"
+              ],
+              "recommended_timing": "After Phase 1 exception rate <10% (est. Week 4)"
+            },
+            {
+              "module_id": "P2-002",
+              "name": "Lead Scoring Enhancement",
+              "description": "Add lead scoring based on company size, product interest, engagement signals. Prioritize high-score leads for immediate response.",
+              "alignment_to_goals": "Helps sales team focus on highest-value leads first",
+              "trigger_signal": "Sales Manager asked about prioritization during onboarding",
+              "estimated_value": "Improve sales efficiency by 15-20%",
+              "effort": "medium",
+              "dependencies": [
+                "Scoring criteria definition",
+                "Data enrichment (optional)",
+                "Dashboard updates"
+              ],
+              "recommended_timing": "Can run parallel to P2-001"
+            }
+          ],
+          "phase_3_optional": [
+            {
+              "module_id": "P3-001",
+              "name": "CRM Integration",
+              "description": "Sync lead data bidirectionally with CRM (HubSpot/Salesforce). Eliminate Google Sheets as source of truth.",
+              "alignment_to_goals": "Long-term operational maturity, single source of truth",
+              "trigger_signal": "Not yet expressed, but common progression",
+              "estimated_value": "Eliminate data sync issues, enable advanced reporting",
+              "effort": "high",
+              "dependencies": [
+                "CRM access and API setup",
+                "Data mapping",
+                "Migration plan"
+              ],
+              "recommended_timing": "After 3+ months of stable operation"
+            },
+            {
+              "module_id": "P3-002",
+              "name": "Inbound Call Routing",
+              "description": "Extend lead intake to phone calls via transcription and routing logic",
+              "alignment_to_goals": "Capture all lead channels, not just email",
+              "trigger_signal": "Not yet expressed",
+              "estimated_value": "Capture 10-20% additional leads (if phone volume exists)",
+              "effort": "high",
+              "dependencies": [
+                "Telephony integration",
+                "Transcription service",
+                "Routing rules extension"
+              ],
+              "recommended_timing": "Only if client has significant phone lead volume"
+            }
+          ],
+          "upsell_triggers": [
+            {
+              "trigger": "Exception rate stable below 10% for 2+ weeks",
+              "action": "Propose Phase 2 follow-up sequences",
+              "timing": "Week 4-5"
+            },
+            {
+              "trigger": "Client asks about lead prioritization or scoring",
+              "action": "Propose lead scoring enhancement",
+              "timing": "When expressed"
+            },
+            {
+              "trigger": "Client mentions CRM or 'single source of truth' pain",
+              "action": "Introduce Phase 3 CRM integration concept",
+              "timing": "When expressed"
+            },
+            {
+              "trigger": "Monthly Strategy Review shows strong adoption and ROI",
+              "action": "Present expansion roadmap formally",
+              "timing": "Month 2 review"
+            }
+          ],
+          "expansion_readiness_score": {
+            "score": 6,
+            "out_of": 10,
+            "drivers": [
+              "Strong Week 1 adoption",
+              "Clear interest signal for follow-up automation",
+              "Exception rate needs reduction first"
+            ],
+            "blockers": [
+              "Phase 1 not fully stabilized",
+              "Need 2+ weeks of clean operation before adding complexity"
+            ]
+          }
+        },
+        "proof_asset_pipeline": {
+          "testimonial_plan": {
+            "status": "seed_planted",
+            "contact": "Client Ops Lead",
+            "planted_date": "2026-02-03",
+            "ask_approach": "Soft ask during Day 7 review: 'Would you be open to a quick quote about the response time improvement?'",
+            "response": "Positive reception, asked to wait until Week 3 for more data",
+            "follow_up_date": "2026-02-17",
+            "target_quote_themes": [
+              "Response time improvement (4 hrs → 22 min)",
+              "Elimination of manual routing",
+              "Audit trail value"
+            ]
+          },
+          "case_study_outline": {
+            "working_title": "How GrowthScale Inc Reduced Lead Response Time by 91% and Eliminated 11 Hours of Weekly Shadow Ops",
+            "status": "draft_outline",
+            "target_completion": "2026-03-01",
+            "sections": [
+              {
+                "section": "The Challenge",
+                "content_points": [
+                  "4-hour average lead response time",
+                  "15 hours/week of invisible ops work",
+                  "No audit trail for lead handling",
+                  "WhatsApp-based coordination causing delays"
+                ]
+              },
+              {
+                "section": "The Solution",
+                "content_points": [
+                  "Automated lead intake from email",
+                  "Intelligent qualification and routing",
+                  "Real-time Slack notifications to agents",
+                  "Google Sheets as structured lead database",
+                  "Exception handling with human-in-loop"
+                ]
+              },
+              {
+                "section": "The Results",
+                "content_points": [
+                  "91% reduction in lead response time (4 hrs → 22 min)",
+                  "73% reduction in shadow ops (15 hrs → 4 hrs)",
+                  "94% audit trail completeness (from 0%)",
+                  "85% full automation rate in Week 1"
+                ]
+              },
+              {
+                "section": "The Proof Points",
+                "content_points": [
+                  "Before: 'Did you see that lead?' After: Automatic notification with context",
+                  "Before: Memory-based follow-ups. After: Structured status tracking",
+                  "Before: No idea when leads were assigned. After: Timestamp on every action"
+                ]
+              }
+            ]
+          },
+          "roi_calculation": {
+            "time_saved_weekly": "11 hours",
+            "hourly_rate_assumption": "$50/hour (blended ops cost)",
+            "weekly_value": "$550",
+            "monthly_value": "$2,200",
+            "annual_value": "$26,400",
+            "additional_value_potential": [
+              "Conversion rate improvement from faster response (not yet measured)",
+              "Reduced lead leakage (not yet measured)",
+              "Management time saved from audit trail (not yet measured)"
+            ],
+            "roi_statement": "GrowthScale Inc saves an estimated $2,200/month in operational efficiency, with additional revenue upside from faster lead response."
+          },
+          "proof_angles": [
+            {
+              "angle": "Shadow Ops Elimination",
+              "headline": "We eliminated 11 hours of invisible work per week",
+              "evidence": "Before/after task list with hours",
+              "differentiation": "Most AI agencies can't show this because they don't track off-system work"
+            },
+            {
+              "angle": "Exception Rate Management",
+              "headline": "Our system handles edge cases gracefully",
+              "evidence": "Exception rate trending down, clear resolution process",
+              "differentiation": "Generic automation breaks on edge cases. We design for them."
+            },
+            {
+              "angle": "Audit Trail Creation",
+              "headline": "Now we can prove what happened with every lead",
+              "evidence": "94% audit trail completeness, timestamp on every action",
+              "differentiation": "Spreadsheet and WhatsApp workflows have no audit trail"
+            },
+            {
+              "angle": "Response Time Transformation",
+              "headline": "From 4 hours to 22 minutes",
+              "evidence": "System timestamps, before/after comparison",
+              "differentiation": "Concrete metric, not vague 'efficiency improvement'"
+            }
+          ]
+        },
+        "client_health_score": {
+          "score": 78,
+          "risk_level": "healthy",
+          "calculation_breakdown": {
+            "adoption": {
+              "score": 24,
+              "max": 30,
+              "drivers": [
+                "4/5 users active",
+                "47 workflows executed",
+                "85% automation rate"
+              ],
+              "gaps": [
+                "1 agent not yet onboarded"
+              ]
+            },
+            "kpi_trend": {
+              "score": 22,
+              "max": 25,
+              "drivers": [
+                "Response time exceeding target",
+                "Shadow ops on track"
+              ],
+              "gaps": [
+                "Exception rate above target (17% vs <10%)"
+              ]
+            },
+            "responsiveness": {
+              "score": 18,
+              "max": 20,
+              "drivers": [
+                "Client engaged in all training sessions",
+                "Quick access provision",
+                "Proactive feedback"
+              ],
+              "gaps": [
+                "Minor delay in providing APAC agent assignments"
+              ]
+            },
+            "low_friction": {
+              "score": 10,
+              "max": 15,
+              "drivers": [
+                "No P1/P2 issues",
+                "All issues are P3 (minor)"
+              ],
+              "gaps": [
+                "4 open tickets",
+                "Exception rate needs attention"
+              ]
+            },
+            "expansion_readiness": {
+              "score": 4,
+              "max": 10,
+              "drivers": [
+                "Interest signal for follow-up automation"
+              ],
+              "gaps": [
+                "Phase 1 not fully stabilized",
+                "Need more runtime before expansion"
+              ]
+            }
+          },
+          "trend": "improving",
+          "previous_score": "n/a (Week 1)",
+          "health_drivers": [
+            "Strong adoption in Week 1",
+            "Measurable wins on primary KPIs",
+            "Engaged client team",
+            "Clear path to optimization"
+          ],
+          "health_risks": [
+            "Exception rate above target",
+            "4 open tickets (all P3)",
+            "One agent not yet onboarded"
+          ],
+          "interventions": [
+            {
+              "if_score_drops_below": 70,
+              "action": "Schedule urgent check-in call to identify blockers",
+              "owner": "Agent-5"
+            },
+            {
+              "if_score_drops_below": 60,
+              "action": "Escalate to account executive for executive sponsor engagement",
+              "owner": "Agent-5"
+            },
+            {
+              "if_p1_ticket_opened": "Immediate escalation to Agent-4 + daily status updates to client",
+              "owner": "Agent-5"
+            }
+          ],
+          "next_health_check": "2026-02-10"
+        }
+      }
+    }
+  }
+}

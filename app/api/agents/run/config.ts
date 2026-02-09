@@ -10,14 +10,14 @@ export const CONFIG = {
     MIN_TASK_LENGTH: 1,
 
     // Timeouts
-    DEFAULT_TIMEOUT_MS: 30000, // 30 seconds
+    DEFAULT_TIMEOUT_MS: 120000, // 2 minutes for large agent prompts
 
     // Provider configurations
     PROVIDERS: {
         GEMINI: {
             name: ProviderName.GEMINI,
-            model: "gemini-1.5-flash-002", // Dec 2024: Stable production version
-            timeoutMs: 30000,
+            model: "gemini-2.5-flash", // Using 2.5 flash for better availability
+            timeoutMs: 120000,
             maxTokens: 8192,
             temperature: 0.7,
         } as ProviderConfig,
@@ -25,14 +25,14 @@ export const CONFIG = {
         OPENAI: {
             name: ProviderName.OPENAI,
             model: "gpt-4o", // Dec 2024: Main multimodal model
-            timeoutMs: 30000,
+            timeoutMs: 120000,
             maxTokens: 4096,
             temperature: 0.7,
         } as ProviderConfig,
         ANTHROPIC: {
             name: ProviderName.ANTHROPIC,
             model: "claude-3-5-sonnet-20241022", // Dec 2024: Latest version
-            timeoutMs: 30000,
+            timeoutMs: 120000,
             maxTokens: 4096,
             temperature: 0.7,
         } as ProviderConfig,

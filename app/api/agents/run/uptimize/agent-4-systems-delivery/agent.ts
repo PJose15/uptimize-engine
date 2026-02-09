@@ -5,8 +5,8 @@
  * that deliver measurable outcomes.
  */
 
-import { executeWithFallback } from "../../shared-utils";
-import { logger } from "@/lib/utils";
+import { executeWithFallback } from "../../fallback";
+import { logger } from "../../logger";
 import type { AgentMode } from "../../route";
 import type {
   Agent4Context,

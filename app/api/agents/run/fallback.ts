@@ -50,7 +50,7 @@ function getAvailableProviders(mode: AgentMode = "balanced"): Provider[] {
 export async function executeWithFallback(
     task: string,
     mode: AgentMode = "balanced",
-    timeoutMs: number = 30000,
+    timeoutMs: number = 120000, // 2 minutes for large agent prompts
     retryPolicy: RetryPolicy = DEFAULT_RETRY_POLICY
 ): Promise<FallbackResult> {
     const taskSummary = logger.summarizeTask(task);

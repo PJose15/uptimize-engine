@@ -94,19 +94,19 @@ INSTRUCTIONS:
 
   console.log("✅ Agent 1 completed successfully!\n");
   console.log(`📋 Target Pack Summary:`);
-  console.log(`   Date: ${agent1Result.data?.run_metadata.run_date}`);
-  console.log(`   Leads Analyzed: ${agent1Result.data?.run_metadata.total_leads_analyzed}`);
-  console.log(`   Leads in Pack: ${agent1Result.data?.run_metadata.leads_in_pack}`);
-  console.log(`   Segments: ${agent1Result.data?.segments.length}`);
+  console.log(`   Date: ${agent1Result.data?.run_metadata?.run_date || 'N/A'}`);
+  console.log(`   Segment Focus: ${agent1Result.data?.run_metadata?.segment_focus || 'N/A'}`);
+  console.log(`   Primary Leads: ${agent1Result.data?.target_pack_primary?.length || 0}`);
+  console.log(`   Secondary Leads: ${agent1Result.data?.target_pack_secondary?.length || 0}`);
   console.log(`   Provider: ${agent1Result.metadata?.provider}`);
   console.log(`   Latency: ${agent1Result.metadata?.latencyMs}ms`);
 
-  if (agent1Result.data?.leads && agent1Result.data.leads.length > 0) {
+  if (agent1Result.data?.target_pack_primary && agent1Result.data.target_pack_primary.length > 0) {
     console.log(`\n   Top 3 Leads:`);
-    agent1Result.data.leads.slice(0, 3).forEach((lead, i) => {
+    agent1Result.data.target_pack_primary.slice(0, 3).forEach((lead, i) => {
       console.log(`   ${i + 1}. ${lead.name} (${lead.company})`);
-      console.log(`      Pain: ${lead.pain_category} | Confidence: ${lead.confidence_score}`);
-      console.log(`      Hook: ${lead.hook_angle.substring(0, 60)}...`);
+      console.log(`      Pain: ${lead.pain_categories?.join(', ') || 'N/A'} | Score: ${lead.fit_score_0_100}`);
+      console.log(`      Hook: ${lead.hooks?.primary_hook_140_chars?.substring(0, 60) || lead.what_to_say?.substring(0, 60) || 'N/A'}...`);
     });
   }
 
@@ -178,32 +178,33 @@ TARGET OUTCOMES:
 
   console.log("✅ Agent 2 completed successfully!\n");
   console.log(`📊 Outbound Campaign Summary:`);
-  console.log(`   Run Date: ${agent2Result.data?.run_metadata.run_date}`);
-  console.log(`   Channels: ${agent2Result.data?.run_metadata.channels_used.join(', ')}`);
-  console.log(`   New Outreach: ${agent2Result.data?.run_metadata.volume_targets.new_outreach}`);
-  console.log(`   Follow-ups: ${agent2Result.data?.run_metadata.volume_targets.followups}`);
-  console.log(`   Goal Calls: ${agent2Result.data?.run_metadata.volume_targets.goal_booked_calls}`);
+  console.log(`   Run Date: ${agent2Result.data?.run_metadata?.run_date || 'N/A'}`);
+  console.log(`   Channels: ${agent2Result.data?.run_metadata?.channels_used?.join(', ') || 'N/A'}`);
+  console.log(`   New Outreach: ${agent2Result.data?.run_metadata?.volume_targets?.new_outreach || 0}`);
+  console.log(`   Follow-ups: ${agent2Result.data?.run_metadata?.volume_targets?.followups || 0}`);
+  console.log(`   Goal Calls: ${agent2Result.data?.run_metadata?.volume_targets?.goal_booked_calls || 0}`);
   console.log(`   Provider: ${agent2Result.metadata?.provider}`);
   console.log(`   Latency: ${agent2Result.metadata?.latencyMs}ms`);
 
   if (agent2Result.data) {
-    console.log(`\n   📬 Message Library: ${agent2Result.data.message_library.length} leads`);
-    console.log(`   🔄 Conversation Updates: ${agent2Result.data.conversation_updates.length} status changes`);
-    console.log(`   📅 Bookings: ${agent2Result.data.bookings.length} calls scheduled`);
-    console.log(`   🌱 Nurture Queue: ${agent2Result.data.nurture_queue.length} leads queued`);
+    console.log(`\n   📬 Message Library: ${agent2Result.data.message_library?.length || 0} leads`);
+    console.log(`   🔄 Conversation Updates: ${agent2Result.data.conversation_updates?.length || 0} status changes`);
+    console.log(`   📅 Bookings: ${agent2Result.data.bookings?.length || 0} calls scheduled`);
+    console.log(`   🌱 Nurture Queue: ${agent2Result.data.nurture_queue?.length || 0} leads queued`);
 
     // Show sample outreach message
-    if (agent2Result.data.message_library.length > 0) {
-      console.log(`\n   💬 Sample Outreach (${agent2Result.data.message_library[0].lead_id}):`);
-      console.log(`      Channel: ${agent2Result.data.message_library[0].channel}`);
+    if (agent2Result.data.message_library && agent2Result.data.message_library.length > 0) {
+      const firstMessage = agent2Result.data.message_library[0];
+      console.log(`\n   💬 Sample Outreach (${firstMessage?.lead_id || 'Lead 1'}):`);
+      console.log(`      Channel: ${firstMessage?.channel || 'N/A'}`);
       console.log(`      Problem-First:`);
-      console.log(`      "${agent2Result.data.message_library[0].track_messages.problem_first}"`);
-      console.log(`\n      Follow-up Sequence: ${agent2Result.data.message_library[0].followup_sequence.length} touches`);
+      console.log(`      "${firstMessage?.track_messages?.problem_first || 'N/A'}"`);
+      console.log(`\n      Follow-up Sequence: ${firstMessage?.followup_sequence?.length || 0} touches`);
 
-      if (agent2Result.data.message_library[0].followup_sequence.length > 0) {
-        const firstFollow = agent2Result.data.message_library[0].followup_sequence[0];
-        console.log(`      Touch 2 (Day ${firstFollow.day_offset}, ${firstFollow.angle_type}):`);
-        console.log(`      "${firstFollow.message}"`);
+      if (firstMessage?.followup_sequence && firstMessage.followup_sequence.length > 0) {
+        const firstFollow = firstMessage.followup_sequence[0];
+        console.log(`      Touch 2 (Day ${firstFollow?.day_offset || 0}, ${firstFollow?.angle_type || 'N/A'}):`);
+        console.log(`      "${firstFollow?.message || 'N/A'}"`);
       }
     }
 
@@ -242,11 +243,11 @@ TARGET OUTCOMES:
   console.log("=".repeat(70) + "\n");
 
   console.log("📈 Pipeline Overview:");
-  console.log(`   ✅ Leads Analyzed: ${agent1Result.data?.run_metadata.total_leads_analyzed || 0}`);
-  console.log(`   ✅ Target Pack Created: ${agent1Result.data?.run_metadata.leads_in_pack || 0} leads`);
-  console.log(`   ✅ Outreach Messages: ${agent2Result.data?.message_library.length || 0} leads`);
-  console.log(`   ✅ Calls Booked: ${agent2Result.data?.bookings.length || 0}`);
-  console.log(`   ⏳ In Nurture: ${agent2Result.data?.nurture_queue.length || 0}`);
+  console.log(`   ✅ Primary Leads: ${agent1Result.data?.target_pack_primary?.length || 0}`);
+  console.log(`   ✅ Secondary Leads: ${agent1Result.data?.target_pack_secondary?.length || 0}`);
+  console.log(`   ✅ Outreach Messages: ${agent2Result.data?.message_library?.length || 0} leads`);
+  console.log(`   ✅ Calls Booked: ${agent2Result.data?.bookings?.length || 0}`);
+  console.log(`   ⏳ In Nurture: ${agent2Result.data?.nurture_queue?.length || 0}`);
 
   console.log(`\n🎯 Next Steps:`);
   console.log(`   1. Review qualified lead summaries for booked calls`);
