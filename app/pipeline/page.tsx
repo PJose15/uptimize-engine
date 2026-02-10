@@ -13,7 +13,9 @@ import {
     Download,
     Copy,
     Eye,
-    X
+    X,
+    DollarSign,
+    History as HistoryIcon
 } from 'lucide-react';
 
 const SAMPLE_LEADS = `1. Sarah Chen, Operations Director at GrowthScale (200-person SaaS)
@@ -36,9 +38,11 @@ interface AgentResult {
     duration: number;
     data?: unknown;
     error?: string;
+    cost?: number;
 }
 
 interface PipelineState {
+    runId?: string;
     isRunning: boolean;
     currentAgent: number;
     agents: Array<{
@@ -50,7 +54,10 @@ interface PipelineState {
         result?: AgentResult;
     }>;
     totalDuration: number;
+    totalCost: number;
     error?: string;
+    validationErrors?: string[];
+    cancelled?: boolean;
 }
 
 export default function PipelinePage() {
@@ -66,16 +73,34 @@ export default function PipelinePage() {
             { id: 5, name: 'Client Success', description: 'Onboard, track adoption, prove ROI', status: 'pending' },
         ],
         totalDuration: 0,
+        totalCost: 0,
     });
     const [showResults, setShowResults] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [copied, setCopied] = useState(false);
+
+    const cancelPipeline = async () => {
+        if (!pipeline.runId) return;
+
+        try {
+            await fetch('/api/pipeline/cancel', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ runId: pipeline.runId }),
+            });
+        } catch (error) {
+            console.error('Failed to cancel:', error);
+        }
+    };
 
     const runPipeline = async () => {
         setPipeline(prev => ({
             ...prev,
             isRunning: true,
             error: undefined,
+            validationErrors: undefined,
+            cancelled: false,
+            totalCost: 0,
             agents: prev.agents.map(a => ({ ...a, status: 'pending' as AgentStatus, duration: undefined, result: undefined })),
         }));
         setShowResults(false);
@@ -107,6 +132,18 @@ export default function PipelinePage() {
                     try {
                         const data = JSON.parse(line.replace('data: ', ''));
 
+                        if (data.type === 'run_started') {
+                            setPipeline(prev => ({ ...prev, runId: data.runId }));
+                        }
+
+                        if (data.type === 'validation_error') {
+                            setPipeline(prev => ({
+                                ...prev,
+                                isRunning: false,
+                                validationErrors: data.errors?.map((e: { path: string[], message: string }) => `${e.path.join('.')}: ${e.message}`) || ['Validation failed'],
+                            }));
+                        }
+
                         if (data.type === 'agent_start') {
                             setPipeline(prev => ({
                                 ...prev,
@@ -122,13 +159,14 @@ export default function PipelinePage() {
                         if (data.type === 'agent_complete') {
                             setPipeline(prev => ({
                                 ...prev,
+                                totalCost: data.totalCost || prev.totalCost,
                                 agents: prev.agents.map(a =>
                                     a.id === data.agentNumber
                                         ? {
                                             ...a,
                                             status: data.success ? 'success' as AgentStatus : 'error' as AgentStatus,
                                             duration: data.duration,
-                                            result: data.result
+                                            result: { ...data.result, cost: data.cost }
                                         }
                                         : a
                                 ),
@@ -140,6 +178,7 @@ export default function PipelinePage() {
                                 ...prev,
                                 isRunning: false,
                                 totalDuration: data.totalDuration,
+                                totalCost: data.totalCost || prev.totalCost,
                             }));
                             setShowResults(true);
                         }
@@ -149,6 +188,7 @@ export default function PipelinePage() {
                                 ...prev,
                                 isRunning: false,
                                 error: data.message,
+                                cancelled: data.cancelled || false,
                             }));
                         }
                     } catch {
@@ -243,6 +283,13 @@ export default function PipelinePage() {
                             </>
                         )}
                     </Button>
+                    {/* Cancel button - only show when running */}
+                    {pipeline.isRunning && pipeline.runId && (
+                        <Button variant="destructive" size="sm" onClick={cancelPipeline}>
+                            <X className="h-4 w-4 mr-1" />
+                            Cancel
+                        </Button>
+                    )}
                 </div>
             </header>
 
@@ -291,6 +338,18 @@ export default function PipelinePage() {
                                 </div>
                             </CardHeader>
                             <CardContent>
+                                {/* Run ID and Cost */}
+                                {pipeline.runId && (
+                                    <div className="mb-3 flex items-center justify-between text-xs">
+                                        <span className="text-zinc-500">Run ID: <code className="text-zinc-900 dark:text-zinc-100">{pipeline.runId.substring(0, 12)}...</code></span>
+                                        {pipeline.totalCost > 0 && (
+                                            <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                                                <DollarSign className="h-3 w-3" />
+                                                ${pipeline.totalCost.toFixed(4)}
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
                                 <div className="mb-2 flex justify-between text-xs text-zinc-500">
                                     <span>Progress</span>
                                     <span>{progress}%</span>
@@ -315,6 +374,25 @@ export default function PipelinePage() {
                                         <div>
                                             <p className="font-medium text-red-800 dark:text-red-200">Pipeline Error</p>
                                             <p className="text-sm text-red-600 dark:text-red-300">{pipeline.error}</p>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
+
+                        {/* Validation Errors */}
+                        {pipeline.validationErrors && pipeline.validationErrors.length > 0 && (
+                            <Card className="border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-900/20">
+                                <CardContent className="pt-6">
+                                    <div className="flex items-start gap-3">
+                                        <AlertCircle className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+                                        <div>
+                                            <p className="font-medium text-yellow-800 dark:text-yellow-200 mb-2">Validation Errors</p>
+                                            <ul className="text-sm text-yellow-600 dark:text-yellow-300 space-y-1">
+                                                {pipeline.validationErrors.map((err, i) => (
+                                                    <li key={i}>• {err}</li>
+                                                ))}
+                                            </ul>
                                         </div>
                                     </div>
                                 </CardContent>
@@ -352,8 +430,19 @@ export default function PipelinePage() {
                                 <CardContent>
                                     <p className="text-sm text-zinc-600 dark:text-zinc-300">
                                         Successfully processed leads through all 5 agents.
+                                        {pipeline.totalCost > 0 && (
+                                            <span className="block mt-1 text-emerald-600 dark:text-emerald-400">
+                                                Total cost: ${pipeline.totalCost.toFixed(4)}
+                                            </span>
+                                        )}
                                     </p>
                                     <div className="mt-4 flex gap-2 flex-wrap">
+                                        <Link href="/history">
+                                            <Button variant="default" size="sm">
+                                                <HistoryIcon className="h-4 w-4 mr-2" />
+                                                View History
+                                            </Button>
+                                        </Link>
                                         <Button variant="outline" size="sm" onClick={() => setShowModal(true)}>
                                             <Eye className="h-4 w-4 mr-2" />
                                             View Full Results

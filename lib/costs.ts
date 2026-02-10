@@ -97,6 +97,26 @@ export function calculateCost(
 }
 
 /**
+ * Simpler estimate function when you only have approximate token counts
+ */
+export function estimateCost(
+    provider: Provider,
+    model: string,
+    inputTokens: number,
+    outputTokens: number
+): number {
+    const estimate = calculateCost(provider, model, { inputTokens, outputTokens });
+    return estimate.totalCost;
+}
+
+/**
+ * Aggregate costs from multiple runs (simple version)
+ */
+export function aggregateCosts(costs: number[]): number {
+    return costs.reduce((sum, cost) => sum + cost, 0);
+}
+
+/**
  * Aggregate costs from multiple agent runs
  */
 export function aggregatePipelineCosts(costs: CostEstimate[]): PipelineCostSummary {

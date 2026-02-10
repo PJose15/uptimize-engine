@@ -1,21 +1,11 @@
 /**
- * Authentication Utilities
- * Simple session-based auth (can be upgraded to NextAuth later)
+ * Authentication Utilities (Prisma)
+ * Database-backed session authentication with SQLite
  */
 
 import { cookies } from 'next/headers';
 import bcrypt from 'bcryptjs';
-
-// In production, store in database
-const USERS: Record<string, { passwordHash: string; role: 'admin' | 'user' }> = {
-    admin: {
-        passwordHash: bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'admin123', 10),
-        role: 'admin',
-    },
-};
-
-// Session store (in production, use Redis or database)
-const sessions = new Map<string, { username: string; role: string; expiresAt: number }>();
+import { prisma } from './prisma';
 
 export interface Session {
     username: string;
@@ -45,22 +35,30 @@ export async function authenticate(
     username: string,
     password: string
 ): Promise<{ success: boolean; token?: string; error?: string }> {
-    const user = USERS[username];
+    const user = await prisma.user.findUnique({
+        where: { username },
+    });
 
     if (!user) {
         return { success: false, error: 'Invalid credentials' };
     }
 
-    const valid = await bcrypt.compare(password, user.passwordHash);
+    const valid = await bcrypt.compare(password, user.password);
 
     if (!valid) {
         return { success: false, error: 'Invalid credentials' };
     }
 
     const token = generateToken();
-    const expiresAt = Date.now() + (24 * 60 * 60 * 1000); // 24 hours
+    const expiresAt = new Date(Date.now() + (24 * 60 * 60 * 1000)); // 24 hours
 
-    sessions.set(token, { username, role: user.role, expiresAt });
+    await prisma.session.create({
+        data: {
+            userId: user.id,
+            token,
+            expiresAt,
+        },
+    });
 
     return { success: true, token };
 }
@@ -68,26 +66,38 @@ export async function authenticate(
 /**
  * Validate session token
  */
-export function validateSession(token: string): Session | null {
-    const session = sessions.get(token);
+export async function validateSession(token: string): Promise<Session | null> {
+    const session = await prisma.session.findUnique({
+        where: { token },
+        include: { user: true },
+    });
 
     if (!session) {
         return null;
     }
 
-    if (Date.now() > session.expiresAt) {
-        sessions.delete(token);
+    if (new Date() > session.expiresAt) {
+        await prisma.session.delete({ where: { token } });
         return null;
     }
 
-    return session;
+    return {
+        username: session.user.username,
+        role: session.user.role,
+        expiresAt: session.expiresAt.getTime(),
+    };
 }
 
 /**
  * Logout - invalidate session
  */
-export function logout(token: string): boolean {
-    return sessions.delete(token);
+export async function logout(token: string): Promise<boolean> {
+    try {
+        await prisma.session.delete({ where: { token } });
+        return true;
+    } catch {
+        return false;
+    }
 }
 
 /**
@@ -99,7 +109,7 @@ export async function getSessionFromCookies(): Promise<Session | null> {
         const token = cookieStore.get('session')?.value;
 
         if (!token) return null;
-        return validateSession(token);
+        return await validateSession(token);
     } catch {
         return null;
     }
@@ -137,21 +147,19 @@ export function isProtectedRoute(pathname: string): boolean {
 /**
  * Clean up expired sessions (run periodically)
  */
-export function cleanupExpiredSessions(): number {
-    let cleaned = 0;
-    const now = Date.now();
+export async function cleanupExpiredSessions(): Promise<number> {
+    const result = await prisma.session.deleteMany({
+        where: {
+            expiresAt: {
+                lt: new Date(),
+            },
+        },
+    });
 
-    for (const [token, session] of sessions.entries()) {
-        if (now > session.expiresAt) {
-            sessions.delete(token);
-            cleaned++;
-        }
-    }
-
-    return cleaned;
+    return result.count;
 }
 
 // Cleanup every 5 minutes
 if (typeof setInterval !== 'undefined') {
-    setInterval(cleanupExpiredSessions, 5 * 60 * 1000);
+    setInterval(() => cleanupExpiredSessions(), 5 * 60 * 1000);
 }
