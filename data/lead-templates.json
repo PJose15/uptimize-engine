@@ -1,0 +1,29 @@
+[
+  {
+    "id": "saas-ops",
+    "name": "SaaS Operations Director",
+    "description": "Operations leader at a scaling SaaS company",
+    "content": "[Name], [Title] at [Company] ([size]-person [industry])\n- Currently [pain point 1]\n- Team uses [current tools]\n- Mentioned: \"[quote about pain point]\"",
+    "createdAt": "2026-02-09T11:55:48.959Z",
+    "updatedAt": "2026-02-09T11:55:48.960Z",
+    "usageCount": 0
+  },
+  {
+    "id": "agency-owner",
+    "name": "Agency Owner",
+    "description": "Creative or marketing agency owner",
+    "content": "[Name], Owner at [Agency Name] ([team size]-person [agency type] agency)\n- Manages [X] active client accounts\n- Struggles with [pain point]\n- Uses [tools] for project management\n- Spends [X hours] weekly on [manual task]",
+    "createdAt": "2026-02-09T11:55:48.960Z",
+    "updatedAt": "2026-02-09T11:55:48.960Z",
+    "usageCount": 0
+  },
+  {
+    "id": "startup-ceo",
+    "name": "Startup CEO",
+    "description": "Early-stage startup founder/CEO",
+    "content": "[Name], CEO/Founder at [Startup Name] ([stage] startup, [X] employees)\n- Building in [industry/vertical]\n- Current challenge: [main pain point]\n- Tech stack: [current tools]\n- Growth goal: [specific goal]",
+    "createdAt": "2026-02-09T11:55:48.960Z",
+    "updatedAt": "2026-02-09T11:55:48.960Z",
+    "usageCount": 0
+  }
+]

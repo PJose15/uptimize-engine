@@ -1,0 +1,64 @@
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+// Protected routes that require authentication
+const protectedRoutes = [
+    '/pipeline',
+    '/history',
+    '/templates',
+    '/compare',
+    '/settings',
+    '/results',
+];
+
+// Public routes that never require auth
+const publicRoutes = [
+    '/login',
+    '/api/auth',
+    '/api/health',
+    '/api/webhooks',
+];
+
+export function middleware(request: NextRequest) {
+    const { pathname } = request.nextUrl;
+
+    // Allow public routes
+    for (const route of publicRoutes) {
+        if (pathname.startsWith(route)) {
+            return NextResponse.next();
+        }
+    }
+
+    // Allow API routes (except protected ones)
+    if (pathname.startsWith('/api/')) {
+        return NextResponse.next();
+    }
+
+    // Check if route is protected
+    let isProtected = pathname === '/';
+
+    for (const route of protectedRoutes) {
+        if (pathname.startsWith(route)) {
+            isProtected = true;
+            break;
+        }
+    }
+
+    if (isProtected) {
+        const sessionToken = request.cookies.get('session')?.value;
+
+        if (!sessionToken) {
+            const loginUrl = new URL('/login', request.url);
+            loginUrl.searchParams.set('redirect', pathname);
+            return NextResponse.redirect(loginUrl);
+        }
+    }
+
+    return NextResponse.next();
+}
+
+export const config = {
+    matcher: [
+        '/((?!_next/static|_next/image|favicon.ico).*)',
+    ],
+};
