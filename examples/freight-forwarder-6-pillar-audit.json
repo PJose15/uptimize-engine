@@ -1,0 +1,886 @@
+{
+  "example_metadata": {
+    "niche": "Freight Forwarders / NVOCCs",
+    "description": "Mid-size logistics operators handling ocean + air freight",
+    "why_this_niche": "Heavy Shadow Ops (emails + spreadsheets for rates), constant exceptions (rate changes, customs holds, detention/demurrage), critical audit needs (documentation, accessorials, disputes), thin margins where small errors destroy profit",
+    "version": "V3 - 6-Pillar Audit Framework",
+    "created": "2026-01-27"
+  },
+
+  "agent_1_target_pack_entry": {
+    "lead_id": "FF-001",
+    "person_name": "Sarah Chen",
+    "role_title": "Operations Director",
+    "company_name": "BlueWave Forwarding",
+    "company_size_estimate": "45 employees, $18M annual revenue, 2,500 shipments/month",
+    "segment": "operator_smb",
+    "niche": "freight_forwarding",
+
+    "pain_categories": ["Shadow Ops Overload", "Exception Chaos", "Evidence Gaps"],
+    "pain_evidence_summary": "LinkedIn post about 'drowning in rate request emails.' Website shows ocean + air services across 3 continents. Job posting for 'Documentation Specialist' indicates scaling chaos. Glassdoor review mentions 'everything tracked in spreadsheets.'",
+
+    "trigger_event": "Hiring documentation role + expanding to new trade lane (Asia-Europe)",
+
+    "fit_score_0_100": 87,
+    "fit_score_breakdown": {
+      "pain_intensity": 18,
+      "urgency_trigger": 14,
+      "authority": 13,
+      "budget_likelihood": 14,
+      "complexity_fit": 13,
+      "tool_fit": 8,
+      "reachability": 7
+    },
+    "confidence_level": "high",
+
+    "shadow_ops_density_0_10": 9,
+    "shadow_ops_rationale": "Multi-continent operations = work lives in emails/texts across time zones. No visible TMS integration. High exception volume (rate changes, customs holds, detention/demurrage). Documentation scattered across inboxes.",
+
+    "exception_hypotheses_top3": [
+      "Rate changes mid-quote or mid-shipment — who bears the cost? No audit trail of what was promised.",
+      "Missing documentation holding shipments at customs — frantic email/text chains to collect docs.",
+      "Detention/demurrage charges appearing weeks later — no proof of who was responsible for delays."
+    ],
+
+    "pattern_interrupt_question": "When a detention charge shows up 3 weeks after delivery, can you prove whether it was your delay or the consignee's? Where's that evidence?",
+
+    "hooks": {
+      "primary_hook_140_chars": "You're losing margin every time a rate expires mid-quote or D&D charges appear with no audit trail. We fix that.",
+      "backup_hook_140_chars": "Your ops team is drowning in emails while exceptions pile up. What if those exceptions handled themselves?"
+    },
+    "cta": "15-min audit call to map your top 3 margin leaks"
+  },
+
+  "agent_3_six_pillar_audit": {
+    "client_id": "bluewave-forwarding",
+    "client_name": "BlueWave Forwarding",
+    "audit_date": "2026-01-27",
+
+    "discovery": {
+      "shadow_ops": {
+        "top_invisible_tasks_ranked": [
+          {
+            "task": "Rate quoting from carrier emails",
+            "frequency": "daily",
+            "impact": "high",
+            "why_it_exists": "Rates come via email from 20+ carriers, manually copied to quote spreadsheet",
+            "current_tool_used": "Email + Excel",
+            "hours_per_week_estimate": 15
+          },
+          {
+            "task": "Document collection for shipments",
+            "frequency": "daily",
+            "impact": "high",
+            "why_it_exists": "B/L, commercial invoices, packing lists requested via email/WhatsApp",
+            "current_tool_used": "Email + WhatsApp + shared drive",
+            "hours_per_week_estimate": 12
+          },
+          {
+            "task": "Carrier booking confirmations",
+            "frequency": "daily",
+            "impact": "medium",
+            "why_it_exists": "Bookings confirmed via email, manually entered into tracking spreadsheet",
+            "current_tool_used": "Email + Excel",
+            "hours_per_week_estimate": 8
+          },
+          {
+            "task": "Customer status update requests",
+            "frequency": "daily",
+            "impact": "medium",
+            "why_it_exists": "Customers ask 'where is my shipment?' via email/phone, ops looks up manually",
+            "current_tool_used": "Email + carrier websites + phone",
+            "hours_per_week_estimate": 10
+          },
+          {
+            "task": "Accessorial charge capture",
+            "frequency": "weekly",
+            "impact": "high",
+            "why_it_exists": "D&D, storage, chassis charges come via email weeks later, often missed",
+            "current_tool_used": "Email + manual invoice review",
+            "hours_per_week_estimate": 6
+          }
+        ],
+        "off_system_channels": [
+          "Personal email threads with carriers",
+          "WhatsApp groups with overseas agents",
+          "Text messages with truckers",
+          "Phone calls not logged anywhere",
+          "Shared drives with no naming convention"
+        ],
+        "context_loss_points": [
+          "Quote details discussed in calls but not documented",
+          "Rate validity dates forgotten or expired",
+          "Special instructions for specific customers in someone's head",
+          "Carrier relationship notes not shared"
+        ],
+        "audit_gaps": [
+          "Can't prove what rate was quoted to customer 3 months ago",
+          "No record of who approved expedited shipping",
+          "D&D responsibility unclear when charges appear"
+        ],
+        "density_score_0_10": 9,
+        "density_rationale": "Multi-carrier, multi-customer, multi-continent operations with almost everything running through email and spreadsheets. High volume of undocumented decisions and approvals."
+      },
+
+      "exceptions": {
+        "top_exceptions_ranked": [
+          {
+            "exception_name": "Rate change mid-shipment",
+            "description": "Carrier rate expires or surcharge changes after quote issued but before sailing",
+            "frequency": "weekly",
+            "impact": "high",
+            "current_handling": "Ops catches it (sometimes), calls customer to renegotiate, absorbs cost if missed",
+            "desired_handling": "Auto-flag rate expiry, lock rates at booking, auto-communicate changes",
+            "rework_time_minutes": 45,
+            "customer_impact": "Surprise charges or margin loss",
+            "who_handles_it": "Senior ops manager"
+          },
+          {
+            "exception_name": "Missing documentation at customs",
+            "description": "Shipment held because commercial invoice, packing list, or certificate is missing/incorrect",
+            "frequency": "weekly",
+            "impact": "high",
+            "current_handling": "Frantic email/WhatsApp to shipper, often in different timezone",
+            "desired_handling": "Pre-departure checklist, auto-reminder sequence, escalation if not received",
+            "rework_time_minutes": 90,
+            "customer_impact": "Delays, storage charges, customer complaints",
+            "who_handles_it": "Documentation team"
+          },
+          {
+            "exception_name": "Detention/Demurrage charges",
+            "description": "Container held at port/terminal longer than free time, charges appear weeks later",
+            "frequency": "weekly",
+            "impact": "high",
+            "current_handling": "Dispute with customer about who's responsible, often no proof",
+            "desired_handling": "Track free time, alert before expiry, capture proof of customer delays",
+            "rework_time_minutes": 120,
+            "customer_impact": "Disputes, write-offs, damaged relationships",
+            "who_handles_it": "Finance + Ops"
+          },
+          {
+            "exception_name": "Booking rollover",
+            "description": "Carrier bumps cargo to next sailing due to vessel capacity",
+            "frequency": "weekly",
+            "impact": "medium",
+            "current_handling": "Find out from carrier email, manually notify customer, rebook",
+            "desired_handling": "Auto-detect rollover, auto-notify customer, track new dates",
+            "rework_time_minutes": 30,
+            "customer_impact": "Delivery delays, supply chain disruption",
+            "who_handles_it": "Ops team"
+          },
+          {
+            "exception_name": "Customs examination/inspection",
+            "description": "Shipment selected for inspection, requires additional docs or fees",
+            "frequency": "monthly",
+            "impact": "high",
+            "current_handling": "Customs broker calls, ops scrambles to get power of attorney, additional docs",
+            "desired_handling": "Pre-stage common docs, auto-escalate to customer, track status",
+            "rework_time_minutes": 180,
+            "customer_impact": "Major delays, fees, potential fines",
+            "who_handles_it": "Senior ops + Compliance"
+          }
+        ],
+        "exception_count_weekly_estimate": 35,
+        "most_disruptive_exception": "Detention/Demurrage charges",
+        "most_frequent_exception": "Rate change mid-shipment",
+        "exception_handling_cost_estimate": "$4,500/week in ops time + $8,000/week in margin leakage",
+        "patterns_observed": [
+          "Most exceptions involve missing or late information",
+          "Time zone differences amplify delays",
+          "No single person owns exception resolution end-to-end"
+        ]
+      },
+
+      "audit_trail": {
+        "completeness_score_0_100": 35,
+        "gaps": [
+          {
+            "process_area": "Quote to booking",
+            "what_cant_be_proven": "What rate was quoted, when, and what terms were agreed",
+            "risk_level": "high",
+            "compliance_implication": "Customer disputes, margin loss",
+            "dispute_frequency": "2-3 per month"
+          },
+          {
+            "process_area": "D&D responsibility",
+            "what_cant_be_proven": "Whether delay was carrier, terminal, trucker, or customer",
+            "risk_level": "high",
+            "compliance_implication": "Write-offs averaging $2,500/incident",
+            "dispute_frequency": "4-5 per month"
+          },
+          {
+            "process_area": "Document submission timeline",
+            "what_cant_be_proven": "When docs were requested vs when received vs when submitted to customs",
+            "risk_level": "medium",
+            "compliance_implication": "Customer blames forwarder for delays",
+            "dispute_frequency": "3-4 per month"
+          }
+        ],
+        "what_is_logged_today": [
+          "Invoices in QuickBooks",
+          "Some shipment milestones in tracking spreadsheet"
+        ],
+        "what_is_not_logged": [
+          "Quote conversations and rate confirmations",
+          "Document request/receive timestamps",
+          "Approval decisions for exceptions",
+          "D&D timeline and responsibility assignments"
+        ],
+        "compliance_requirements": ["ISF filing records", "C-TPAT audit trail"],
+        "dispute_history": [
+          "Lost $12K last quarter in D&D disputes where we couldn't prove customer caused delay",
+          "Customer threatened lawsuit over rate increase we couldn't prove was communicated"
+        ]
+      },
+
+      "knowledge_decisions": {
+        "critical_knowledge_items": [
+          {
+            "knowledge_name": "Carrier relationship pricing",
+            "description": "Which carriers give better rates for which trade lanes, and who to call",
+            "held_by": "Mike (Senior Ops Manager)",
+            "critical_for": "Competitive quoting",
+            "documented_anywhere": false,
+            "backup_person_exists": false,
+            "risk_if_lost": "high"
+          },
+          {
+            "knowledge_name": "Customer special requirements",
+            "description": "Specific customer preferences, past issues, key contacts",
+            "held_by": "Individual account managers",
+            "critical_for": "Customer satisfaction",
+            "documented_anywhere": false,
+            "backup_person_exists": false,
+            "risk_if_lost": "high"
+          },
+          {
+            "knowledge_name": "Customs exception handling",
+            "description": "How to handle inspections, what docs satisfy which requirements",
+            "held_by": "Linda (Compliance Lead)",
+            "critical_for": "Avoiding delays and fines",
+            "documented_anywhere": false,
+            "backup_person_exists": false,
+            "risk_if_lost": "high"
+          }
+        ],
+        "key_person_dependencies": [
+          {
+            "person": "Mike Chen",
+            "role": "Senior Ops Manager",
+            "knowledge_areas": ["Carrier negotiations", "Rate structures", "Escalation decisions"],
+            "bus_factor_risk": "high"
+          },
+          {
+            "person": "Linda Tran",
+            "role": "Compliance Lead",
+            "knowledge_areas": ["Customs requirements", "Exception handling", "Documentation"],
+            "bus_factor_risk": "high"
+          }
+        ],
+        "undocumented_decision_rules": [
+          "When to absorb a rate increase vs pass to customer",
+          "Which customers get extended credit",
+          "When to escalate a customs issue vs handle in-house"
+        ],
+        "decision_types": [
+          {
+            "decision_name": "Rate exception approval",
+            "examples": ["Honor expired rate", "Absorb surcharge increase"],
+            "current_approver": "Mike or Sarah (whoever is available)",
+            "should_be_approver": "Ops Manager with $ threshold",
+            "threshold": ">$500 requires director approval",
+            "required_evidence": ["Original quote", "Rate change notification", "Customer request"],
+            "current_sla": "Undefined",
+            "desired_sla": "4 hours"
+          },
+          {
+            "decision_name": "D&D dispute resolution",
+            "examples": ["Write off D&D", "Bill customer", "Split with carrier"],
+            "current_approver": "Finance + Ops Director",
+            "should_be_approver": "Ops Manager up to threshold, Director above",
+            "threshold": ">$1,000 requires director + customer call",
+            "required_evidence": ["Timeline of events", "Communications", "Proof of delay cause"],
+            "current_sla": "Days to weeks",
+            "desired_sla": "48 hours"
+          }
+        ],
+        "unclear_authority_areas": [
+          "Who can waive late fees for customers",
+          "Who decides whether to expedite at our cost"
+        ],
+        "bottleneck_approvers": ["Sarah (Director) approves everything over $500"],
+        "tribal_knowledge_score_0_10": 8
+      },
+
+      "handoffs_slas": {
+        "handoffs": [
+          {
+            "handoff_name": "Sales to Ops (new booking)",
+            "from_role": "Sales",
+            "from_system": "Email + CRM notes",
+            "to_role": "Ops",
+            "to_system": "Tracking spreadsheet",
+            "frequency": "per_lead",
+            "context_loss_points": [
+              "Special customer requirements discussed verbally",
+              "Rate negotiation history not transferred",
+              "Customer urgency level"
+            ],
+            "friction_score_0_10": 8,
+            "current_workaround": "Ops calls Sales to clarify every booking",
+            "time_lost_per_handoff_minutes": 20
+          },
+          {
+            "handoff_name": "Ops to Documentation (pre-shipment)",
+            "from_role": "Ops",
+            "from_system": "Email",
+            "to_role": "Documentation",
+            "to_system": "Shared drive + Email",
+            "frequency": "per_lead",
+            "context_loss_points": [
+              "Which docs are already collected",
+              "Customer responsiveness history",
+              "Deadline urgency"
+            ],
+            "friction_score_0_10": 7,
+            "current_workaround": "Doc team re-requests docs already sent",
+            "time_lost_per_handoff_minutes": 15
+          },
+          {
+            "handoff_name": "Ops to Finance (billing)",
+            "from_role": "Ops",
+            "from_system": "Tracking spreadsheet",
+            "to_role": "Finance",
+            "to_system": "QuickBooks",
+            "frequency": "per_lead",
+            "context_loss_points": [
+              "Accessorial charges discovered later",
+              "Rate adjustments made",
+              "Credit terms agreed with customer"
+            ],
+            "friction_score_0_10": 6,
+            "current_workaround": "Finance asks Ops to verify every invoice",
+            "time_lost_per_handoff_minutes": 10
+          }
+        ],
+        "total_handoffs_per_lead_or_project": 5,
+        "highest_friction_handoff": "Sales to Ops (new booking)",
+        "total_context_loss_score_0_10": 7,
+        "sla_gaps": [
+          {
+            "process_step": "Quote response to customer",
+            "current_response_time": "4-24 hours",
+            "desired_response_time": "2 hours",
+            "what_happens_when_missed": "Customer goes to competitor",
+            "who_is_accountable": "No one officially"
+          },
+          {
+            "process_step": "Customer status inquiry response",
+            "current_response_time": "1-4 hours",
+            "desired_response_time": "30 minutes",
+            "what_happens_when_missed": "Customer calls repeatedly, ops overwhelmed",
+            "who_is_accountable": "Account manager (unofficially)"
+          }
+        ],
+        "stuck_case_patterns": [
+          "Quotes waiting for carrier rate confirmation",
+          "Shipments waiting for customer docs",
+          "Billing held for accessorial verification"
+        ],
+        "escalation_chaos": [
+          "No clear escalation path when carrier doesn't respond",
+          "Customer complaints go to whoever they know, not a defined process"
+        ],
+        "time_lost_to_handoffs_weekly_hours": 25
+      },
+
+      "channels_evidence": {
+        "channel_inventory": [
+          {
+            "channel_name": "Email (company)",
+            "channel_type": "email",
+            "business_critical_info_pct": 50,
+            "searchable": true,
+            "audit_ready": false,
+            "official_or_shadow": "official",
+            "retention_days": 365,
+            "who_uses_it": ["Everyone"]
+          },
+          {
+            "channel_name": "WhatsApp (personal)",
+            "channel_type": "whatsapp",
+            "business_critical_info_pct": 25,
+            "searchable": false,
+            "audit_ready": false,
+            "official_or_shadow": "shadow",
+            "who_uses_it": ["Ops team", "Overseas agents"]
+          },
+          {
+            "channel_name": "Phone calls",
+            "channel_type": "phone",
+            "business_critical_info_pct": 15,
+            "searchable": false,
+            "audit_ready": false,
+            "official_or_shadow": "official",
+            "who_uses_it": ["Sales", "Ops"]
+          },
+          {
+            "channel_name": "Carrier portals",
+            "channel_type": "portal",
+            "business_critical_info_pct": 10,
+            "searchable": true,
+            "audit_ready": true,
+            "official_or_shadow": "official",
+            "who_uses_it": ["Ops team"]
+          }
+        ],
+        "primary_channel": "Email",
+        "shadow_channels": ["WhatsApp personal groups", "Text messages with truckers"],
+        "chaos_score_0_10": 8,
+        "single_source_of_truth": false,
+        "critical_info_in_shadow_channels_pct": 30,
+        "evidence_gaps": [
+          {
+            "decision_or_event": "Rate quoted to customer",
+            "evidence_required": "Quote document with rate, terms, validity",
+            "evidence_currently_captured": false,
+            "where_its_stored": "Email threads (hard to find)",
+            "findable_in_dispute": false
+          },
+          {
+            "decision_or_event": "D&D responsibility assignment",
+            "evidence_required": "Timeline showing who caused delay",
+            "evidence_currently_captured": false,
+            "where_its_stored": "Various emails and calls",
+            "findable_in_dispute": false
+          },
+          {
+            "decision_or_event": "Document delivery timeline",
+            "evidence_required": "Timestamps of request, receipt, submission",
+            "evidence_currently_captured": false,
+            "where_its_stored": "Email threads",
+            "findable_in_dispute": false
+          }
+        ],
+        "proof_requirements_by_decision": [
+          {
+            "decision_type": "D&D dispute",
+            "proof_needed": ["Free time expiry date", "Container release time", "Delivery appointment time", "Actual pickup time"],
+            "currently_captured": false
+          },
+          {
+            "decision_type": "Rate dispute",
+            "proof_needed": ["Quote document", "Customer acceptance", "Validity period", "Change notifications"],
+            "currently_captured": false
+          }
+        ]
+      },
+
+      "overall_ops_health_score_0_100": 38,
+      "priority_ranking": [
+        {
+          "pillar": "Exception Library",
+          "severity_score": 9,
+          "priority": 1,
+          "rationale": "D&D and rate exceptions are destroying margin. Fix these first.",
+          "quick_win_available": true
+        },
+        {
+          "pillar": "Channels & Evidence",
+          "severity_score": 8,
+          "priority": 2,
+          "rationale": "Can't prove anything in disputes. Evidence capture is critical.",
+          "quick_win_available": true
+        },
+        {
+          "pillar": "Shadow Ops",
+          "severity_score": 9,
+          "priority": 3,
+          "rationale": "Everything in email/WhatsApp. Need to systematize.",
+          "quick_win_available": false
+        },
+        {
+          "pillar": "Handoffs & SLAs",
+          "severity_score": 7,
+          "priority": 4,
+          "rationale": "Context loss is costing time but not destroying margin directly.",
+          "quick_win_available": true
+        },
+        {
+          "pillar": "Knowledge & Decisions",
+          "severity_score": 8,
+          "priority": 5,
+          "rationale": "High bus factor risk but can be addressed after ops is stable.",
+          "quick_win_available": false
+        },
+        {
+          "pillar": "Audit Trail",
+          "severity_score": 6,
+          "priority": 6,
+          "rationale": "Evidence capture will naturally improve this.",
+          "quick_win_available": false
+        }
+      ]
+    },
+
+    "delivery": {
+      "shadow_ops": {
+        "workflows_to_build": [
+          {
+            "workflow_name": "Quote Intake + Rate Lock",
+            "shadow_ops_eliminated": ["Manual rate copying from emails", "Expired rate issues"],
+            "execution_mode": "hybrid",
+            "estimated_hours_saved_weekly": 10
+          },
+          {
+            "workflow_name": "Document Collection Sequence",
+            "shadow_ops_eliminated": ["Chasing customers via WhatsApp/email", "Missing doc delays"],
+            "execution_mode": "native",
+            "estimated_hours_saved_weekly": 8
+          },
+          {
+            "workflow_name": "Customer Status Portal",
+            "shadow_ops_eliminated": ["Where is my shipment? calls", "Manual status lookups"],
+            "execution_mode": "hybrid",
+            "estimated_hours_saved_weekly": 6
+          }
+        ],
+        "channels_to_consolidate": ["WhatsApp → Official messaging system", "Phone → Logged calls"],
+        "automation_priority_order": ["Quote Intake", "Document Collection", "D&D Tracking", "Status Updates"]
+      },
+
+      "exceptions": {
+        "exception_routing_rules": [
+          {
+            "exception_type": "Rate change mid-shipment",
+            "trigger_condition": "Rate validity expires OR carrier surcharge change notification",
+            "auto_handle_or_escalate": "hybrid",
+            "handling_steps": [
+              "Flag shipment immediately",
+              "Calculate margin impact",
+              "If <$200 impact: auto-notify customer, proceed",
+              "If >$200: escalate to Ops Manager with impact report"
+            ],
+            "escalation_path": "Ops Manager → Director if >$500",
+            "sla_minutes": 120
+          },
+          {
+            "exception_type": "Missing documentation",
+            "trigger_condition": "Required doc not received within 48h of deadline",
+            "auto_handle_or_escalate": "auto",
+            "handling_steps": [
+              "Auto-send reminder to customer",
+              "Escalate to account manager at 24h",
+              "Escalate to director at deadline"
+            ],
+            "escalation_path": "Auto-reminder → Account Manager → Director",
+            "sla_minutes": 2880
+          },
+          {
+            "exception_type": "D&D approaching",
+            "trigger_condition": "Container free time expires in 24h",
+            "auto_handle_or_escalate": "auto",
+            "handling_steps": [
+              "Alert customer + ops immediately",
+              "Capture acknowledgment timestamp",
+              "Track actual pickup vs free time",
+              "Auto-document responsibility for billing"
+            ],
+            "escalation_path": "Customer alert → Ops Manager → Finance",
+            "sla_minutes": 1440
+          }
+        ],
+        "exceptions_to_productize": [
+          "D&D prevention workflow (standard for all shipments)",
+          "Document readiness checklist (per trade lane)"
+        ],
+        "fallback_behaviors": [
+          {
+            "failure_mode": "Carrier API unavailable",
+            "fallback_action": "Queue request, alert ops for manual check, retry in 15min"
+          },
+          {
+            "failure_mode": "Customer unresponsive",
+            "fallback_action": "Escalate to director, document all attempts, proceed with available info"
+          }
+        ]
+      },
+
+      "audit_trail": {
+        "events_to_log": [
+          {
+            "event_type": "quote_issued",
+            "trigger": "Quote sent to customer",
+            "data_captured": ["Rate", "Terms", "Validity period", "Customer", "Timestamp"],
+            "retention_days": 1095
+          },
+          {
+            "event_type": "rate_change_notification",
+            "trigger": "Carrier rate or surcharge changes",
+            "data_captured": ["Old rate", "New rate", "Effective date", "Shipments affected"],
+            "retention_days": 1095
+          },
+          {
+            "event_type": "document_received",
+            "trigger": "Customer submits required doc",
+            "data_captured": ["Doc type", "Timestamp", "Shipment ID", "Submitter"],
+            "retention_days": 2555
+          },
+          {
+            "event_type": "dd_alert_sent",
+            "trigger": "D&D warning sent to customer",
+            "data_captured": ["Container", "Free time expiry", "Alert timestamp", "Recipient"],
+            "retention_days": 1095
+          },
+          {
+            "event_type": "decision_made",
+            "trigger": "Any exception decision",
+            "data_captured": ["Decision type", "Approver", "Rationale", "Amount if applicable"],
+            "retention_days": 2555
+          }
+        ],
+        "audit_fields_per_entity": {
+          "Shipment": ["created_by", "created_at", "modified_by", "modified_at", "quote_locked_at", "rate_version"],
+          "Quote": ["created_at", "valid_until", "customer_accepted_at", "rate_source", "margin_approved_by"],
+          "Exception": ["created_at", "assigned_to", "resolved_at", "resolution_method", "approved_by"]
+        },
+        "compliance_reports_needed": ["ISF filing audit", "D&D responsibility summary", "Quote accuracy report"],
+        "dispute_prevention_measures": [
+          "Mandatory quote acceptance before booking",
+          "D&D alert acknowledgment tracking",
+          "Document receipt timestamping"
+        ]
+      },
+
+      "knowledge_decisions": {
+        "knowledge_to_document": [
+          {
+            "knowledge_area": "Carrier relationship pricing",
+            "documentation_format": "decision_tree",
+            "owner": "Ops Director"
+          },
+          {
+            "knowledge_area": "Customer special requirements",
+            "documentation_format": "SOP",
+            "owner": "Account Managers"
+          },
+          {
+            "knowledge_area": "Customs exception handling",
+            "documentation_format": "checklist",
+            "owner": "Compliance Lead"
+          }
+        ],
+        "decision_rights_matrix": [
+          {
+            "decision_type": "Rate exception (honor expired rate)",
+            "approver_role": "Ops Manager",
+            "threshold": "Up to $500 margin impact",
+            "required_evidence": ["Original quote", "Rate change date", "Customer request"],
+            "sla_hours": 4,
+            "escalation_if_no_response": "Director auto-CC'd at 2h"
+          },
+          {
+            "decision_type": "D&D write-off",
+            "approver_role": "Finance Manager",
+            "threshold": "Up to $1,000",
+            "required_evidence": ["Timeline of events", "D&D alert acknowledgments", "Responsibility assessment"],
+            "sla_hours": 24,
+            "escalation_if_no_response": "Director required for >$1,000"
+          },
+          {
+            "decision_type": "Expedited shipping at company cost",
+            "approver_role": "Director",
+            "threshold": "Any amount",
+            "required_evidence": ["Customer relationship value", "Root cause of delay", "Cost estimate"],
+            "sla_hours": 2,
+            "escalation_if_no_response": "CEO if director unavailable"
+          }
+        ],
+        "approval_workflows_to_build": ["Rate exception approval", "D&D dispute resolution", "Credit extension"],
+        "auto_approve_rules": [
+          {
+            "condition": "Rate exception <$100 for A-tier customer",
+            "auto_decision": "Approve and notify manager"
+          },
+          {
+            "condition": "Document deadline extension <24h",
+            "auto_decision": "Approve and log"
+          }
+        ]
+      },
+
+      "handoffs_slas": {
+        "handoffs_to_eliminate": ["Sales calls Ops for every booking clarification"],
+        "handoffs_to_automate": ["Quote to booking data transfer", "Ops to Doc team assignments"],
+        "context_preservation_rules": [
+          {
+            "handoff": "Sales to Ops",
+            "required_fields": ["Customer special requirements", "Rate negotiation notes", "Urgency level"],
+            "auto_populated_from": "CRM + Quote system"
+          },
+          {
+            "handoff": "Ops to Documentation",
+            "required_fields": ["Docs already received", "Customer contact", "Deadline"],
+            "auto_populated_from": "Shipment record + Document tracker"
+          }
+        ],
+        "sla_timers": [
+          {
+            "process_step": "Quote response",
+            "sla_minutes": 120,
+            "reminder_at_minutes": 60,
+            "escalation_at_minutes": 120,
+            "escalation_to": "Sales Manager",
+            "auto_action_if_expired": "Flag in daily standup"
+          },
+          {
+            "process_step": "Customer inquiry response",
+            "sla_minutes": 30,
+            "reminder_at_minutes": 15,
+            "escalation_at_minutes": 30,
+            "escalation_to": "Account Manager",
+            "auto_action_if_expired": "Auto-send status from tracking"
+          },
+          {
+            "process_step": "Exception resolution",
+            "sla_minutes": 240,
+            "reminder_at_minutes": 120,
+            "escalation_at_minutes": 240,
+            "escalation_to": "Director",
+            "auto_action_if_expired": "Block billing until resolved"
+          }
+        ],
+        "stuck_case_rules": [
+          {
+            "condition": "Quote pending carrier rate >4h",
+            "action": "Auto-escalate to Ops Manager + call carrier directly"
+          },
+          {
+            "condition": "Document request no response >48h",
+            "action": "Escalate to Account Manager + director CC"
+          },
+          {
+            "condition": "Billing blocked >5 days",
+            "action": "Finance Director review required"
+          }
+        ],
+        "escalation_playbook": [
+          {
+            "trigger": "Customer complaint",
+            "level_1": "Account Manager - 2h response",
+            "level_2": "Ops Director - 4h if unresolved",
+            "level_3": "CEO - 24h if still unresolved"
+          },
+          {
+            "trigger": "Carrier non-response",
+            "level_1": "Primary contact follow-up - 2h",
+            "level_2": "Manager-to-manager call - 4h",
+            "level_3": "Exec escalation or alternative carrier - 8h"
+          }
+        ]
+      },
+
+      "channels_evidence": {
+        "channels_to_eliminate": ["Personal WhatsApp for business comms"],
+        "channels_to_integrate": ["Carrier email → Auto-ingest", "Phone calls → Transcribe + log"],
+        "recommended_primary_channel": "Company messaging system with full logging",
+        "channel_routing_rules": [
+          {
+            "message_type": "Rate request",
+            "should_go_to": "Quote system",
+            "auto_capture_to": "Shipment record"
+          },
+          {
+            "message_type": "Document submission",
+            "should_go_to": "Document portal",
+            "auto_capture_to": "Shipment record with timestamp"
+          },
+          {
+            "message_type": "Customer inquiry",
+            "should_go_to": "Ticketing system",
+            "auto_capture_to": "Customer record"
+          }
+        ],
+        "evidence_requirements_by_exception": [
+          {
+            "exception_type": "D&D dispute",
+            "required_evidence": ["Free time expiry proof", "Alert timestamps", "Customer acknowledgment", "Pickup timeline"],
+            "auto_capture_method": "Auto-log all events with immutable timestamps"
+          },
+          {
+            "exception_type": "Rate dispute",
+            "required_evidence": ["Original quote", "Validity period", "Customer acceptance", "Change notifications"],
+            "auto_capture_method": "Lock quote on customer acceptance, version all changes"
+          },
+          {
+            "exception_type": "Delay dispute",
+            "required_evidence": ["Doc request timestamps", "Receipt timestamps", "Submission timestamps"],
+            "auto_capture_method": "Document portal tracks all events"
+          }
+        ],
+        "system_of_record_design": {
+          "primary_entities": ["Shipment", "Quote", "Document", "Exception", "Customer"],
+          "required_attachments_per_entity": {
+            "Shipment": ["B/L", "Commercial Invoice", "Packing List", "Customs docs"],
+            "Quote": ["Rate sheet", "Customer acceptance"],
+            "Exception": ["Root cause docs", "Resolution approval"]
+          },
+          "auto_logging_rules": [
+            "All status changes logged with timestamp + actor",
+            "All document submissions logged with source + time",
+            "All approvals logged with approver + rationale"
+          ],
+          "retention_policy": "7 years for all shipment records"
+        }
+      },
+
+      "phase_1_quick_wins": [
+        "D&D alert workflow (prevent margin loss immediately)",
+        "Quote versioning + acceptance tracking (evidence for disputes)",
+        "Document collection reminder sequence (reduce customs delays)"
+      ],
+      "phase_2_foundation": [
+        "Full quote-to-booking automation",
+        "Decision rights matrix implementation",
+        "Customer status portal"
+      ],
+      "phase_3_scale": [
+        "Carrier rate auto-ingestion",
+        "Full channel consolidation",
+        "Predictive exception detection"
+      ],
+
+      "success_metrics": [
+        {
+          "metric_name": "D&D write-offs",
+          "baseline": "$8,000/month",
+          "target": "<$2,000/month",
+          "measurement_method": "QuickBooks D&D expense category"
+        },
+        {
+          "metric_name": "Quote response time",
+          "baseline": "4-24 hours",
+          "target": "<2 hours",
+          "measurement_method": "Quote system timestamps"
+        },
+        {
+          "metric_name": "Dispute win rate",
+          "baseline": "40%",
+          "target": ">85%",
+          "measurement_method": "Dispute resolution log"
+        },
+        {
+          "metric_name": "Ops time on exceptions",
+          "baseline": "25 hours/week",
+          "target": "<10 hours/week",
+          "measurement_method": "Time tracking on exception tickets"
+        }
+      ]
+    },
+
+    "executive_summary": "BlueWave Forwarding is hemorrhaging margin through D&D disputes they can't prove, rate exceptions without audit trails, and ops time lost to manual processes. The 6-pillar audit reveals 35% ops health score with immediate opportunities to prevent $8K+/month in margin leakage through D&D prevention workflows, quote versioning, and evidence capture. Phase 1 focuses on the two highest-impact exceptions (D&D and rate changes) with quick-win automation that pays for itself in month 1.",
+
+    "estimated_value_monthly": 14500,
+    "confidence_level": "high"
+  }
+}

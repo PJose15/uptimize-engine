@@ -10,6 +10,7 @@ export type ChannelRecommendation = "email" | "linkedin" | "instagram_dm" | "x_d
 export type EvidenceType = "website" | "social" | "job_post" | "review" | "news" | "other";
 
 export type PainCategory =
+  // Traditional pain categories
   | "Lead Handling Chaos"
   | "Inbox/DM Overload"
   | "Scheduling + No-Show Leakage"
@@ -17,8 +18,16 @@ export type PainCategory =
   | "Manual Reporting / No KPIs"
   | "Community Ops Burden"
   | "Fulfillment Bottlenecks"
-  | "EXCEPTION OVERLOAD"
-  | "RECONCILIATION/AUDIT GAP";
+  // 6-Pillar mapped categories (V3)
+  | "Shadow Ops Overload"       // Pillar 1
+  | "Exception Chaos"           // Pillar 2
+  | "Audit/Compliance Gap"      // Pillar 3
+  | "Tribal Knowledge Risk"     // Pillar 4
+  | "Decision Bottlenecks"      // Pillar 4
+  | "Handoff Friction"          // Pillar 5
+  | "SLA Failures"              // Pillar 5
+  | "Channel Chaos"             // Pillar 6
+  | "Evidence Gaps";            // Pillar 6
 
 export type Confidence = "high" | "medium" | "low";
 
