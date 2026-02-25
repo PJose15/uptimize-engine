@@ -57,6 +57,7 @@ export interface AgentResult {
     success: boolean;
     message: string;
     data?: {
+        agent?: string;
         provider: string;
         model: string;
         timestamp: string;

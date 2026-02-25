@@ -1,8 +1,8 @@
 # Uptimize Engine - Complete Project Overview
 
 > **Master Brief for AI Assistants**  
-> Last Updated: February 10, 2026  
-> Version: 1.0
+> Last Updated: February 25, 2026  
+> Version: 2.0 — Agentic Pivot Edition
 
 ---
 
@@ -22,19 +22,28 @@
 
 ## Who We Are
 
-**Uptimize** is an AI-powered operations automation company that eliminates "Shadow Operations" - the invisible, off-system work that happens in WhatsApp, spreadsheets, DMs, and people's heads,chaos spreaded workflows.
+**Uptimize** is an agentic operations company. We deploy autonomous AI agents that discover, diagnose, and resolve the invisible operational chaos — **Shadow Operations** — that bleeds time, revenue, and trust from businesses of every size.
 
-**Our Mission:** Make operational chaos visible, measurable, and fixable through systematic AI automation.
+**Our Mission:** Make operational chaos visible, measurable, and autonomously resolvable.
 
-**Our Differentiator:** We don't just automate workflows - we **prove value** through 6 measurable operational pillars that traditional AI agencies ignore.
+**Our Differentiator:** We sell **measurable outcomes, not software access.** We don't just find problems and hand you a dashboard — our agents actually handle the work, and prove they did it through 6-pillar audit trails. SaaS is our control layer. Agents are the operators.
+
+**What We Are NOT:** We are not an automation agency 2.0. We don't just plug in Zapier flows and call it AI. We build persistent, goal-driven, decision-making systems that operate inside your business.
 
 ---
 
 ## What We Do
 
-We deliver **end-to-end operational transformation** through a 5-agent AI sales and delivery pipeline:
+We deliver **agentic outcomes** — autonomous AI agents that run parts of your business and prove they're doing it right.
 
-### The 5-Agent Pipeline
+### Two Products, One Engine
+
+| Layer | What It Is | Who Sees It |
+|-------|-----------|-------------|
+| **Internal Pipeline** (Factory) | 5-agent system that discovers, diagnoses, designs, builds, and proves | Uptimize operators |
+| **Deployed Agents** (Product) | Custom autonomous agents assembled from our skills framework | Clients |
+
+### The 5-Agent Internal Pipeline
 
 | Agent | Name | Purpose |
 |-------|------|---------|
@@ -44,34 +53,35 @@ We deliver **end-to-end operational transformation** through a 5-agent AI sales 
 | **Agent 4** | Systems Delivery | Build workflows, configure systems, deploy solution |
 | **Agent 5** | Client Success | Track adoption, prove ROI, drive expansion |
 
-Each agent is an AI-powered specialist that produces **structured deliverables** (JSON outputs) that feed into the next agent.
+Each agent is an AI-powered specialist that produces **structured deliverables** (JSON outputs) that feed into the next agent via handoff envelopes.
+
+Custom deployed agents are assembled from our **skills framework** — reusable capability modules (shadow ops discovery, exception mapping, ROI calculation, etc.) that compose into client-specific agents without rebuilding from scratch.
 
 ---
 
 ## Who We Serve
 
-### Primary Target Market
-**Operations leaders at mid-market companies (50-500 employees) who are:**
-- Drowning in manual work that doesn't get tracked
-- Losing money to "Shadow Ops" (WhatsApp follow-ups, spreadsheet hell, tribal knowledge)
-- Struggling with exceptions that break workflows
-- Unable to prove what happened (no audit trail)
+### Primary ICP: Operations-Heavy Businesses (Any Size)
+
+**Anyone drowning in invisible work they can't prove, track, or scale:**
+- Solopreneurs and small teams (1-49) — they have the MOST shadow ops and the least bandwidth
+- Mid-market operators (50-500) — scaling pain, tribal knowledge risk, exception chaos
+- Enterprise departments (500+) — compliance gaps, cross-team handoff failures
 
 ### Ideal Customer Profile (ICP)
-- **Title:** Operations Director, Head of Sales Ops, VP Operations, COO
-- **Company Size:** 50-500 employees
-- **Revenue:** $5M-$50M
+- **Title:** Founders, Operations Directors, COOs, Heads of Sales Ops, VPs of Operations
+- **Company Size:** Any — from solo operators to enterprise departments
+- **Industries:** Logistics, healthcare, legal, real estate, construction, fitness, creator economy, professional services, SaaS, agencies — any business with operational complexity
 - **Pain Points:**
   - "We spend hours every day on manual follow-ups"
   - "Work disappears into DMs and WhatsApp groups"
   - "We can't prove what happened when disputes arise"
   - "Exceptions break our processes constantly"
+  - "Only one person knows how this works"
+  - "We've tried AI tools but nothing stuck"
 
-### Secondary Markets
-- Sales teams managing 500+ leads/month
-- Customer success teams with complex onboarding
-- Service delivery teams with high ticket volume
-- Partnership/influencer relationship managers
+### What Makes Them Our Customer
+They don't need another tool to learn. They need an agent that works. They're ready to let intelligence handle the ops — as long as you can prove it's working.
 
 ---
 
@@ -94,7 +104,7 @@ Most companies have **two operating systems:**
    - Work falls through cracks
 
 **The Cost:**
-- 10-20 hours/week per person on invisible manual work
+- Targets **10-20 hours/week of recoverable shadow ops** per person
 - Deals lost because follow-ups were missed
 - Disputes lost because there's no proof
 - Knowledge walks out the door when people quit
@@ -496,9 +506,9 @@ npm run dev
 
 **Company:** Uptimize  
 **Product:** Uptimize Engine  
-**Tech Stack:** Next.js + TypeScript + Prisma + Claude AI  
-**Target Market:** Mid-market operations leaders (50-500 employees)  
-**Differentiation:** 6-Pillar measurable outcomes (not generic AI)
+**Tech Stack:** Next.js + TypeScript + Prisma + Multi-Model AI (Claude, GPT-4o, Gemini, Perplexity)  
+**Target Market:** Operations-heavy businesses of any size — from solopreneurs to enterprise departments  
+**Differentiation:** Agentic operations with 6-Pillar measurable proof — not software access, but outcome delivery
 
 **Partnership Opportunities:**
 - Implementation partners (agencies who deploy our solution)
@@ -530,6 +540,6 @@ npm run dev
 
 ---
 
-**Last Updated:** February 10, 2026  
-**Version:** 1.0  
-**Status:** Production-ready, awaiting deployment
+**Last Updated:** February 25, 2026  
+**Version:** 2.0 — Agentic Pivot  
+**Status:** Building for the future — governance, unified pipeline, multi-model routing

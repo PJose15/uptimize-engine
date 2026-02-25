@@ -249,7 +249,7 @@ export async function runOrchestrator(
             success: false,
             message: agent1Result.message || "Agent 1 failed",
             error: {
-                type: agent1Result.error?.type || ErrorType.MODEL_ERROR,
+                type: (agent1Result.error?.type || ErrorType.MODEL_ERROR) as ErrorType,
                 details: agent1Result.error?.details || "Unknown error",
                 timestamp: new Date().toISOString(),
             },
