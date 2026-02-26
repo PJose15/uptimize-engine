@@ -69,14 +69,14 @@ export async function POST(request: Request) {
 /**
  * GET /api/auth - Check session
  */
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<Response> {
     const token = request.headers.get('cookie')?.match(/session=([^;]+)/)?.[1];
 
     if (!token) {
         return NextResponse.json({ authenticated: false });
     }
 
-    const session = validateSession(token);
+    const session = await validateSession(token);
 
     if (!session) {
         return NextResponse.json({ authenticated: false });

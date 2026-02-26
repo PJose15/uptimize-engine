@@ -7,7 +7,7 @@
 
 import { executeWithFallback } from "../../fallback";
 import { logger } from "../../logger";
-import type { AgentMode } from "../../route";
+import type { AgentMode } from "../../types";
 import type {
   Agent4Context,
   Agent4Result,
@@ -471,7 +471,7 @@ export async function runAgent4SystemsDelivery(
   const startTime = Date.now();
 
   try {
-    logger.info("[Agent-4] Starting Systems Delivery Orchestrator", {
+    logger.info("[Agent-4] Starting Systems Delivery Orchestrator", {}, {
       task: task.substring(0, 100),
       mode,
       hasHandoffSpec: !!context.handoffSpec,
@@ -502,8 +502,8 @@ export async function runAgent4SystemsDelivery(
       const cleanedResponse = stripMarkdownCodeFences(result.message);
       parsedData = JSON.parse(cleanedResponse);
     } catch (parseError) {
-      logger.error("[Agent-4] JSON parsing failed", {
-        error: parseError,
+      logger.error("[Agent-4] JSON parsing failed", {}, {
+        error: parseError instanceof Error ? parseError.message : String(parseError),
         response: result.message.substring(0, 500),
       });
 
@@ -521,7 +521,7 @@ export async function runAgent4SystemsDelivery(
     // Validate structure
     const validation = validateDeliveryPackage(parsedData);
     if (!validation.valid) {
-      logger.error("[Agent-4] Validation failed", { errors: validation.errors });
+      logger.error("[Agent-4] Validation failed", {}, { errors: validation.errors });
 
       return {
         success: false,
@@ -537,9 +537,10 @@ export async function runAgent4SystemsDelivery(
     const latencyMs = Date.now() - startTime;
 
     logger.info("[Agent-4] Successfully generated delivery package", {
+      provider: result.metadata?.provider,
+    }, {
       latencyMs,
-      provider: result.provider,
-      model: result.model,
+      model: result.metadata?.model,
       workflowCount: parsedData.workflow_specs?.length || 0,
       agentCount: parsedData.agent_spec_sheets?.length || 0,
       milestoneCount: parsedData.build_plan?.milestones?.length || 0,
@@ -550,9 +551,9 @@ export async function runAgent4SystemsDelivery(
       message: "Delivery package generated successfully",
       data: parsedData,
       metadata: {
-        provider: result.provider || "unknown",
-        model: result.model || "unknown",
-        tokensUsed: result.tokensUsed,
+        provider: result.metadata?.provider || "unknown",
+        model: result.metadata?.model || "unknown",
+        tokensUsed: result.metadata?.tokensUsed,
         timestamp: new Date().toISOString(),
         latencyMs,
       },
@@ -560,8 +561,8 @@ export async function runAgent4SystemsDelivery(
   } catch (error) {
     const latencyMs = Date.now() - startTime;
 
-    logger.error("[Agent-4] Unexpected error", {
-      error,
+    logger.error("[Agent-4] Unexpected error", {}, {
+      error: error instanceof Error ? error.message : String(error),
       latencyMs,
     });
 

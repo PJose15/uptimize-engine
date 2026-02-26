@@ -296,9 +296,9 @@ export async function runAgent2OutboundAppointment(
       message: "Agent 2 executed successfully",
       data: parsedData,
       metadata: {
-        provider: result.metadata.provider,
-        model: result.metadata.model,
-        tokensUsed: result.metadata.tokensUsed,
+        provider: result.metadata?.provider || "unknown",
+        model: result.metadata?.model || "unknown",
+        tokensUsed: result.metadata?.tokensUsed,
         timestamp: new Date().toISOString(),
         latencyMs,
       },

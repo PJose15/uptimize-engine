@@ -287,7 +287,7 @@ export async function runOrchestrator(
             success: false,
             message: agent2Result.message || "Agent 2 failed",
             error: {
-                type: agent2Result.error?.type || ErrorType.MODEL_ERROR,
+                type: (agent2Result.error?.type || ErrorType.MODEL_ERROR) as ErrorType,
                 details: agent2Result.error?.details || "Unknown error",
                 timestamp: new Date().toISOString(),
             },
@@ -325,7 +325,7 @@ export async function runOrchestrator(
             success: false,
             message: agent3Result.message || "Agent 3 failed",
             error: {
-                type: agent3Result.error?.type || ErrorType.MODEL_ERROR,
+                type: (agent3Result.error?.type || ErrorType.MODEL_ERROR) as ErrorType,
                 details: agent3Result.error?.details || "Unknown error",
                 timestamp: new Date().toISOString(),
             },
@@ -363,7 +363,7 @@ export async function runOrchestrator(
             success: false,
             message: agent4Result.message || "Agent 4 failed",
             error: {
-                type: agent4Result.error?.type || ErrorType.MODEL_ERROR,
+                type: (agent4Result.error?.type || ErrorType.MODEL_ERROR) as ErrorType,
                 details: agent4Result.error?.details || "Unknown error",
                 timestamp: new Date().toISOString(),
             },

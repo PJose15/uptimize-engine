@@ -66,7 +66,7 @@ export function calculateCost(
     model: string,
     usage: TokenUsage
 ): CostEstimate {
-    const pricing = PRICING[provider]?.[model as keyof typeof PRICING[typeof provider]];
+    const pricing = (PRICING[provider] as Record<string, { input: number; output: number }>)[model];
 
     if (!pricing) {
         // Default to mid-range pricing if model not found

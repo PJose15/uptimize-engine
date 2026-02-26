@@ -1,4 +1,4 @@
-import { executeWithFallback } from "../fallback";
+import { executeWithFallback, FallbackResult } from "../fallback";
 import { AgentMode } from "../types";
 
 interface DailyBriefContext {
@@ -16,7 +16,7 @@ interface DailyBriefContext {
 export async function runDailyBrief(
     ctx: DailyBriefContext = {},
     mode: AgentMode = "fast"  // Default to fast for daily check-ins
-) {
+): Promise<FallbackResult> {
     const goal = ctx.goal || "grow the business";
     const yesterday = ctx.whatChangedYesterday || "No updates provided";
     const numbers = ctx.currentNumbers || {};

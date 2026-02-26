@@ -1,4 +1,4 @@
-import { executeWithFallback } from '../fallback';
+import { executeWithFallback, FallbackResult } from '../fallback';
 import { logger } from '../logger';
 import { getBestHooks } from '../memory/google-sheets';
 
@@ -48,7 +48,7 @@ export async function runZenthiaContentFactory(
     task: string,
     context: Record<string, any>,
     mode: 'fast' | 'balanced' | 'quality' = 'balanced'
-) {
+): Promise<FallbackResult> {
     // Get best hooks from memory
     const bestHooks = await getBestHooks(5);
     const memoryContext = bestHooks.length > 0

@@ -355,7 +355,7 @@ export class WorkflowEngine {
 
           if (handled.recovered) {
             exceptionsHandled.push({
-              step_id: currentStepId,
+              step_id: currentStepId!,
               exception_name: handled.exception_name,
               handling_result: handled.handling_result,
             });
@@ -364,7 +364,7 @@ export class WorkflowEngine {
             // Unrecoverable error
             context.status = "failed";
             context.step_history.push({
-              step_id: currentStepId,
+              step_id: currentStepId!,
               started_at: new Date().toISOString(),
               completed_at: new Date().toISOString(),
               status: "failed",
@@ -375,7 +375,7 @@ export class WorkflowEngine {
               event_type: "workflow_failed",
               actor: "system",
               action: "execution_error",
-              details: { step_id: currentStepId, error: stepError instanceof Error ? stepError.message : String(stepError) },
+              details: { step_id: currentStepId!, error: stepError instanceof Error ? stepError.message : String(stepError) },
             });
 
             return {
@@ -386,13 +386,13 @@ export class WorkflowEngine {
               completed_at: new Date().toISOString(),
               duration_ms: Date.now() - startTime,
               error: {
-                step_id: currentStepId,
+                step_id: currentStepId!,
                 error_type: "STEP_EXECUTION_ERROR",
                 message: stepError instanceof Error ? stepError.message : String(stepError),
                 recoverable: false,
               },
               audit_trail: context.audit_trail,
-              exceptions_handled,
+              exceptions_handled: exceptionsHandled,
             };
           }
         }
@@ -417,7 +417,7 @@ export class WorkflowEngine {
         duration_ms: Date.now() - startTime,
         output: context.variables as Record<string, unknown>,
         audit_trail: context.audit_trail,
-        exceptions_handled,
+        exceptions_handled: exceptionsHandled,
       };
 
     } catch (error) {

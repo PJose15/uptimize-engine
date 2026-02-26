@@ -91,13 +91,13 @@ export function validateAgentOutput(
     }
 
     // Log validation issues but don't fail hard
-    console.warn(`Agent ${agentNumber} output validation warnings:`, result.error.errors);
+    console.warn(`Agent ${agentNumber} output validation warnings:`, result.error.issues);
 
     // Return the original data but flag as having issues
     return {
         valid: false,
         data: parsed,
-        errors: result.error.errors.map(e => `${e.path.join('.')}: ${e.message}`),
+        errors: result.error.issues.map(e => `${e.path.join('.')}: ${e.message}`),
     };
 }
 

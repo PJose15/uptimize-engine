@@ -260,7 +260,7 @@ export default function HistoryPage() {
                                             <p className="text-xs text-zinc-500 mb-1">Status</p>
                                             <Badge variant={
                                                 selectedRun.status === 'success' ? 'success' :
-                                                    selectedRun.status === 'failed' ? 'destructive' : 'warning'
+                                                    selectedRun.status === 'failed' ? 'error' : 'warning'
                                             }>
                                                 {selectedRun.status.toUpperCase()}
                                             </Badge>

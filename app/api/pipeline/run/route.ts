@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { withRetry } from '@/lib/retry';
-import { withTimeout, getAgentTimeout } from '@/lib/timeout';
+import { withTimeoutAndAbort, getAgentTimeout } from '@/lib/timeout';
 import { validateInput, LeadInputSchema, validationErrorResponse } from '@/lib/validation';
 import { validateAgentOutput } from '@/lib/agent-schemas';
 import { estimateCost, aggregateCosts } from '@/lib/costs';
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
 
                 const agent1Start = Date.now();
                 const agent1Result = await withRetry(
-                    () => withTimeout(
+                    () => withTimeoutAndAbort(
                         (sig) => runAgent1MarketIntelligence(leads, {}, 'fast') as Promise<AgentResult>,
                         getAgentTimeout(1),
                         signal,
@@ -151,7 +151,7 @@ export async function POST(request: NextRequest) {
 
                 const agent2Start = Date.now();
                 const agent2Result = await withRetry(
-                    () => withTimeout(
+                    () => withTimeoutAndAbort(
                         (sig) => runAgent2OutboundAppointment(
                             'Create outreach campaigns for leads',
                             {
@@ -210,7 +210,7 @@ export async function POST(request: NextRequest) {
                     : { problem: 'Manual lead routing', impact: 'Lost deals', urgency: 'High' };
 
                 const agent3Result = await withRetry(
-                    () => withTimeout(
+                    () => withTimeoutAndAbort(
                         (sig) => runAgent3SalesEngineer(
                             'Run discovery and create proposal',
                             {
@@ -278,7 +278,7 @@ export async function POST(request: NextRequest) {
                 };
 
                 const agent4Result = await withRetry(
-                    () => withTimeout(
+                    () => withTimeoutAndAbort(
                         (sig) => runAgent4SystemsDelivery(
                             'Create delivery package',
                             {
@@ -357,7 +357,7 @@ export async function POST(request: NextRequest) {
                         };
 
                         const agent5Data = await withRetry(
-                            () => withTimeout(
+                            () => withTimeoutAndAbort(
                                 (sig) => runAgent5(
                                     { apiKey: anthropicKey },
                                     {

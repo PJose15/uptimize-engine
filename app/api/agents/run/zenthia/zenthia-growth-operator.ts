@@ -1,4 +1,4 @@
-import { executeWithFallback } from "../fallback";
+import { executeWithFallback, FallbackResult } from "../fallback";
 import { AgentMode } from "../types";
 import { getBestHooks } from "../memory/google-sheets";
 
@@ -16,7 +16,7 @@ export async function runZenthiaGrowthOperator(
   task: string,
   ctx: ZenthiaContext = {},
   mode: AgentMode = "balanced"
-) {
+): Promise<FallbackResult> {
   // Get best hooks from memory (defaults to mock if no DB)
   const bestHooks = await getBestHooks(3);
   const hooksContext = bestHooks.length > 0

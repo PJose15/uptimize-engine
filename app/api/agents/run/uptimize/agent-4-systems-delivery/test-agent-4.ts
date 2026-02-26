@@ -43,6 +43,8 @@ const mockHandoffSpec = {
     "Client team can operate system with 10-minute quickstart training",
     "KPI dashboard shows real-time metrics for response time and conversion",
   ],
+  topExceptionsToHandle: ["Lead enrichment API timeout", "Duplicate lead detection"],
+  auditTrailFieldsRequired: ["created_by", "created_at", "modified_by", "modified_at"],
   scopeReference: "SOW-2024-Q1-001-UptimizeAI",
   signedDate: "2024-01-15",
 };
@@ -350,6 +352,8 @@ async function testValidationChecks() {
         integrations: ["Zendesk", "Slack"],
         risks: ["High ticket volume", "SLA compliance"],
         definitionOfDone: ["99% uptime", "Response time <2min"],
+        topExceptionsToHandle: ["SLA breach", "Escalation failure"],
+        auditTrailFieldsRequired: ["ticket_id", "resolved_by", "resolved_at"],
       },
       clientTools: {
         available: ["Zendesk Support", "Slack"],
