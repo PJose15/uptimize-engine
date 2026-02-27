@@ -12,6 +12,7 @@ import {
     PermissionCheckResult,
     getPermissionChecker,
 } from "./tool-permissions";
+import { logAuditEntry, createApprovalIfNeeded } from "../portal-events";
 
 // ============================================================================
 // TYPES
@@ -317,6 +318,16 @@ export class ApprovalGateEngine {
         };
 
         this.pendingApprovals.set(request.request_id, request);
+
+        // Also write to portal DB
+        createApprovalIfNeeded({
+            action: params.actionDescription,
+            description: `${params.agentId} wants to use ${params.toolName} (cost: $${params.estimatedCostUsd.toFixed(2)}, batch: ${params.batchSize})`,
+            riskLevel: params.estimatedCostUsd > 5 ? 'high' : params.estimatedCostUsd > 1 ? 'medium' : 'low',
+            affectedSystem: params.toolName,
+            reason: `${params.level} permission requires approval`,
+        }).catch(() => {});
+
         return request;
     }
 
@@ -348,6 +359,17 @@ export class ApprovalGateEngine {
         };
 
         this.auditLog.push(record);
+
+        // Also write to portal DB
+        logAuditEntry({
+            action: `${params.actionType}: ${params.agentId} → ${params.toolName}`,
+            tool: params.toolName,
+            status: params.result === 'queued' ? 'approved' : params.result,
+            approvedBy: params.approvedBy || null,
+            costUsd: params.costUsd,
+            details: `Target: ${params.targetSystem}, Approval: ${params.approvalRequired}`,
+        }).catch(() => {});
+
         return record;
     }
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
     ScrollText,
     Search,
@@ -11,7 +11,8 @@ import {
     AlertCircle,
     Filter,
 } from 'lucide-react';
-import { mockAuditLog, type AuditEntry } from '../mock-data';
+import type { AuditEntry } from '../mock-data';
+import { CardSkeleton, ErrorBanner } from '../loading-skeleton';
 
 const statusConfig: Record<string, { color: string; icon: React.ReactNode }> = {
     success: {
@@ -35,21 +36,34 @@ const statusConfig: Record<string, { color: string; icon: React.ReactNode }> = {
 export default function AuditPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
+    const [auditLog, setAuditLog] = useState<AuditEntry[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    const filtered = mockAuditLog.filter((entry) => {
-        if (statusFilter !== 'all' && entry.status !== statusFilter) return false;
-        if (searchQuery) {
-            const q = searchQuery.toLowerCase();
-            return entry.action.toLowerCase().includes(q) ||
-                entry.tool.toLowerCase().includes(q) ||
-                entry.details.toLowerCase().includes(q);
+    const fetchAudit = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const params = new URLSearchParams();
+            if (statusFilter !== 'all') params.set('status', statusFilter);
+            if (searchQuery) params.set('search', searchQuery);
+            const res = await fetch(`/api/portal/audit?${params}`);
+            if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
+            setAuditLog(await res.json());
+        } catch (e) {
+            setError(e instanceof Error ? e.message : 'Unknown error');
+        } finally {
+            setLoading(false);
         }
-        return true;
-    });
+    }, [statusFilter, searchQuery]);
+
+    useEffect(() => {
+        fetchAudit();
+    }, [fetchAudit]);
 
     const exportCSV = () => {
         const headers = ['Timestamp', 'Action', 'Tool', 'Status', 'Approved By', 'Cost (USD)', 'Details'];
-        const rows = mockAuditLog.map(e => [
+        const rows = auditLog.map(e => [
             e.timestamp,
             e.action,
             e.tool,
@@ -86,6 +100,8 @@ export default function AuditPage() {
                 </button>
             </div>
 
+            {error && <div className="mb-4"><ErrorBanner message={error} onRetry={fetchAudit} /></div>}
+
             {/* Filters */}
             <div className="flex flex-wrap items-center gap-3 mb-5">
                 <div className="relative flex-1 min-w-[200px] max-w-sm">
@@ -116,42 +132,48 @@ export default function AuditPage() {
             </div>
 
             {/* Table */}
-            <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead>
-                            <tr className="border-b border-zinc-100 dark:border-zinc-800">
-                                <th className="text-left text-[11px] font-semibold text-zinc-500 uppercase tracking-wider px-5 py-3">Timestamp</th>
-                                <th className="text-left text-[11px] font-semibold text-zinc-500 uppercase tracking-wider px-5 py-3">Action</th>
-                                <th className="text-left text-[11px] font-semibold text-zinc-500 uppercase tracking-wider px-5 py-3">Tool</th>
-                                <th className="text-left text-[11px] font-semibold text-zinc-500 uppercase tracking-wider px-5 py-3">Status</th>
-                                <th className="text-left text-[11px] font-semibold text-zinc-500 uppercase tracking-wider px-5 py-3">By</th>
-                                <th className="text-right text-[11px] font-semibold text-zinc-500 uppercase tracking-wider px-5 py-3">Cost</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-zinc-50 dark:divide-zinc-800/50">
-                            {filtered.length === 0 ? (
-                                <tr>
-                                    <td colSpan={6} className="text-center py-12 text-zinc-400">
-                                        <ScrollText className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                                        <p className="text-sm">No matching audit entries</p>
-                                    </td>
-                                </tr>
-                            ) : (
-                                filtered.map((entry) => (
-                                    <AuditRow key={entry.id} entry={entry} />
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            {loading ? (
+                <CardSkeleton />
+            ) : (
+                <>
+                    <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead>
+                                    <tr className="border-b border-zinc-100 dark:border-zinc-800">
+                                        <th className="text-left text-[11px] font-semibold text-zinc-500 uppercase tracking-wider px-5 py-3">Timestamp</th>
+                                        <th className="text-left text-[11px] font-semibold text-zinc-500 uppercase tracking-wider px-5 py-3">Action</th>
+                                        <th className="text-left text-[11px] font-semibold text-zinc-500 uppercase tracking-wider px-5 py-3">Tool</th>
+                                        <th className="text-left text-[11px] font-semibold text-zinc-500 uppercase tracking-wider px-5 py-3">Status</th>
+                                        <th className="text-left text-[11px] font-semibold text-zinc-500 uppercase tracking-wider px-5 py-3">By</th>
+                                        <th className="text-right text-[11px] font-semibold text-zinc-500 uppercase tracking-wider px-5 py-3">Cost</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-zinc-50 dark:divide-zinc-800/50">
+                                    {auditLog.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={6} className="text-center py-12 text-zinc-400">
+                                                <ScrollText className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                                                <p className="text-sm">No matching audit entries</p>
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        auditLog.map((entry) => (
+                                            <AuditRow key={entry.id} entry={entry} />
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
 
-            {/* Footer */}
-            <div className="mt-4 flex items-center justify-between text-xs text-zinc-400">
-                <span>{filtered.length} of {mockAuditLog.length} entries</span>
-                <span>Total cost: ${filtered.reduce((s, e) => s + e.cost_usd, 0).toFixed(3)}</span>
-            </div>
+                    {/* Footer */}
+                    <div className="mt-4 flex items-center justify-between text-xs text-zinc-400">
+                        <span>{auditLog.length} entries</span>
+                        <span>Total cost: ${auditLog.reduce((s, e) => s + e.cost_usd, 0).toFixed(3)}</span>
+                    </div>
+                </>
+            )}
         </div>
     );
 }

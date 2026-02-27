@@ -7,14 +7,29 @@ import {
     ArrowUpRight,
     BarChart3,
 } from 'lucide-react';
-import {
-    mockPillarMetrics,
-    mockHoursSavedTrend,
-    mockHealthScoreTrend,
-    mockStats,
-} from '../mock-data';
+import { usePortalData } from '../use-portal-data';
+import { CardSkeleton, MetricSkeleton, ErrorBanner } from '../loading-skeleton';
+import type { PillarMetric } from '../mock-data';
+
+interface AnalyticsData {
+    pillar_metrics: PillarMetric[];
+    hours_saved_trend: { week: string; hours: number }[];
+    health_score_trend: { week: string; score: number }[];
+    stats: {
+        hours_saved_week: number;
+        health_score: number;
+        exceptions_auto_resolved: number;
+    } | null;
+}
 
 export default function AnalyticsPage() {
+    const { data, loading, error, refetch } = usePortalData<AnalyticsData>('/api/portal/analytics');
+
+    const pillarMetrics = data?.pillar_metrics || [];
+    const hoursSavedTrend = data?.hours_saved_trend || [];
+    const healthScoreTrend = data?.health_score_trend || [];
+    const stats = data?.stats;
+
     return (
         <div className="p-8 max-w-6xl">
             <div className="mb-6">
@@ -24,36 +39,66 @@ export default function AnalyticsPage() {
                 </p>
             </div>
 
+            {error && <div className="mb-6"><ErrorBanner message={error} onRetry={refetch} /></div>}
+
             {/* Top-level summary */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                <SummaryCard label="Hours Saved / Week" value={`${mockStats.hours_saved_week}h`} change="+106%" positive />
-                <SummaryCard label="Health Score" value={`${mockStats.health_score}/100`} change="+24%" positive />
-                <SummaryCard label="Exceptions Auto-Resolved" value={`${mockStats.exceptions_auto_resolved}%`} change="+42%" positive />
+                {loading || !stats ? (
+                    <>
+                        <MetricSkeleton />
+                        <MetricSkeleton />
+                        <MetricSkeleton />
+                    </>
+                ) : (
+                    <>
+                        <SummaryCard label="Hours Saved / Week" value={`${stats.hours_saved_week}h`} change="+106%" positive />
+                        <SummaryCard label="Health Score" value={`${stats.health_score}/100`} change="+24%" positive />
+                        <SummaryCard label="Exceptions Auto-Resolved" value={`${stats.exceptions_auto_resolved}%`} change="+42%" positive />
+                    </>
+                )}
             </div>
 
             {/* 6 Pillar Cards */}
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-4">6-Pillar Breakdown</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-                {mockPillarMetrics.map((pillar) => (
-                    <PillarCard key={pillar.pillar} pillar={pillar} />
-                ))}
-            </div>
+            {loading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+                    <CardSkeleton />
+                    <CardSkeleton />
+                    <CardSkeleton />
+                    <CardSkeleton />
+                    <CardSkeleton />
+                    <CardSkeleton />
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+                    {pillarMetrics.map((pillar) => (
+                        <PillarCard key={pillar.pillar} pillar={pillar} />
+                    ))}
+                </div>
+            )}
 
             {/* Trend Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <TrendChart
-                    title="Hours Saved Per Week"
-                    data={mockHoursSavedTrend.map(d => ({ label: d.week, value: d.hours }))}
-                    suffix="h"
-                    color="emerald"
-                />
-                <TrendChart
-                    title="Health Score Trend"
-                    data={mockHealthScoreTrend.map(d => ({ label: d.week, value: d.score }))}
-                    suffix="/100"
-                    color="violet"
-                />
-            </div>
+            {loading ? (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <CardSkeleton />
+                    <CardSkeleton />
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <TrendChart
+                        title="Hours Saved Per Week"
+                        data={hoursSavedTrend.map(d => ({ label: d.week, value: d.hours }))}
+                        suffix="h"
+                        color="emerald"
+                    />
+                    <TrendChart
+                        title="Health Score Trend"
+                        data={healthScoreTrend.map(d => ({ label: d.week, value: d.score }))}
+                        suffix="/100"
+                        color="violet"
+                    />
+                </div>
+            )}
         </div>
     );
 }
@@ -83,7 +128,7 @@ function SummaryCard({ label, value, change, positive }: {
     );
 }
 
-function PillarCard({ pillar }: { pillar: typeof mockPillarMetrics[0] }) {
+function PillarCard({ pillar }: { pillar: PillarMetric }) {
     const improvement = pillar.trend === 'down'
         ? ((pillar.before - pillar.after) / pillar.before * 100)
         : ((pillar.after - pillar.before) / Math.max(pillar.before, 1) * 100);

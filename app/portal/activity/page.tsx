@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
     CheckCircle2,
     XCircle,
@@ -9,7 +9,8 @@ import {
     Filter,
     Search,
 } from 'lucide-react';
-import { mockActivity, type ActivityEntry } from '../mock-data';
+import type { ActivityEntry } from '../mock-data';
+import { CardSkeleton, ErrorBanner } from '../loading-skeleton';
 
 const pillarFilters = ['All', 'Shadow Ops', 'Exceptions', 'Audit Trail', 'Knowledge', 'Handoffs', 'Channels'];
 const statusFilters = ['All', 'completed', 'pending', 'failed'];
@@ -18,13 +19,31 @@ export default function ActivityPage() {
     const [selectedPillar, setSelectedPillar] = useState('All');
     const [selectedStatus, setSelectedStatus] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
+    const [activity, setActivity] = useState<ActivityEntry[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    const filtered = mockActivity.filter((entry) => {
-        if (selectedPillar !== 'All' && entry.pillar !== selectedPillar) return false;
-        if (selectedStatus !== 'All' && entry.status !== selectedStatus) return false;
-        if (searchQuery && !entry.action.toLowerCase().includes(searchQuery.toLowerCase()) && !entry.description.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-        return true;
-    });
+    const fetchActivity = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const params = new URLSearchParams();
+            if (selectedPillar !== 'All') params.set('pillar', selectedPillar);
+            if (selectedStatus !== 'All') params.set('status', selectedStatus);
+            if (searchQuery) params.set('search', searchQuery);
+            const res = await fetch(`/api/portal/activity?${params}`);
+            if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
+            setActivity(await res.json());
+        } catch (e) {
+            setError(e instanceof Error ? e.message : 'Unknown error');
+        } finally {
+            setLoading(false);
+        }
+    }, [selectedPillar, selectedStatus, searchQuery]);
+
+    useEffect(() => {
+        fetchActivity();
+    }, [fetchActivity]);
 
     return (
         <div className="p-8 max-w-5xl">
@@ -32,6 +51,8 @@ export default function ActivityPage() {
                 <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">Activity Feed</h1>
                 <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Everything your agent has done, in human-readable form.</p>
             </div>
+
+            {error && <div className="mb-4"><ErrorBanner message={error} onRetry={fetchActivity} /></div>}
 
             {/* Filters */}
             <div className="flex flex-wrap items-center gap-3 mb-6">
@@ -82,18 +103,26 @@ export default function ActivityPage() {
             </div>
 
             {/* Timeline */}
-            <div className="space-y-0">
-                {filtered.length === 0 ? (
-                    <div className="text-center py-16 text-zinc-400">
-                        <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        <p className="text-sm">No matching activities found</p>
-                    </div>
-                ) : (
-                    filtered.map((entry, i) => (
-                        <ActivityRow key={entry.id} entry={entry} isLast={i === filtered.length - 1} />
-                    ))
-                )}
-            </div>
+            {loading ? (
+                <div className="space-y-4">
+                    <CardSkeleton />
+                    <CardSkeleton />
+                    <CardSkeleton />
+                </div>
+            ) : (
+                <div className="space-y-0">
+                    {activity.length === 0 ? (
+                        <div className="text-center py-16 text-zinc-400">
+                            <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                            <p className="text-sm">No matching activities found</p>
+                        </div>
+                    ) : (
+                        activity.map((entry, i) => (
+                            <ActivityRow key={entry.id} entry={entry} isLast={i === activity.length - 1} />
+                        ))
+                    )}
+                </div>
+            )}
         </div>
     );
 }

@@ -12,7 +12,9 @@ import {
     Zap,
     ChevronRight,
 } from 'lucide-react';
-import { mockClient } from './mock-data';
+import { usePortalData } from './use-portal-data';
+import { SidebarSkeleton } from './loading-skeleton';
+import type { ClientInfo } from './mock-data';
 
 const navItems = [
     { href: '/portal', label: 'Overview', icon: LayoutDashboard, exact: true },
@@ -29,7 +31,10 @@ export default function PortalLayout({
     children: React.ReactNode;
 }) {
     const pathname = usePathname();
-    const client = mockClient;
+    const { data: client, loading: clientLoading } = usePortalData<ClientInfo>('/api/portal/client');
+    const { data: stats } = usePortalData<{ pending_approvals: number }>('/api/portal/stats');
+
+    const pendingCount = stats?.pending_approvals ?? 0;
 
     return (
         <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex">
@@ -48,18 +53,22 @@ export default function PortalLayout({
                     </div>
 
                     {/* Agent Status */}
-                    <div className="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-3">
-                        <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-medium text-zinc-600 dark:text-zinc-300">{client.agent.name}</span>
-                            <span className="inline-flex items-center gap-1">
-                                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                                <span className="text-xs text-emerald-600 dark:text-emerald-400">Active</span>
-                            </span>
+                    {clientLoading || !client ? (
+                        <SidebarSkeleton />
+                    ) : (
+                        <div className="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-3">
+                            <div className="flex items-center justify-between mb-1">
+                                <span className="text-xs font-medium text-zinc-600 dark:text-zinc-300">{client.agent.name}</span>
+                                <span className="inline-flex items-center gap-1">
+                                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                                    <span className="text-xs text-emerald-600 dark:text-emerald-400">Active</span>
+                                </span>
+                            </div>
+                            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-snug">
+                                {client.agent.description}
+                            </p>
                         </div>
-                        <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-snug">
-                            {client.agent.description}
-                        </p>
-                    </div>
+                    )}
                 </div>
 
                 {/* Navigation */}
@@ -84,9 +93,9 @@ export default function PortalLayout({
                             >
                                 <Icon className={`h-4 w-4 ${isActive ? 'text-violet-600 dark:text-violet-400' : ''}`} />
                                 {item.label}
-                                {item.label === 'Approvals' && (
+                                {item.label === 'Approvals' && pendingCount > 0 && (
                                     <span className="ml-auto bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 text-[11px] font-semibold px-2 py-0.5 rounded-full">
-                                        2
+                                        {pendingCount}
                                     </span>
                                 )}
                             </Link>
@@ -96,16 +105,26 @@ export default function PortalLayout({
 
                 {/* Client Info */}
                 <div className="p-4 border-t border-zinc-200 dark:border-zinc-800">
-                    <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center text-white text-xs font-semibold">
-                            {client.name.split(' ').map(n => n[0]).join('')}
+                    {clientLoading || !client ? (
+                        <div className="animate-pulse flex items-center gap-3">
+                            <div className="h-8 w-8 rounded-full bg-zinc-200 dark:bg-zinc-700" />
+                            <div className="flex-1">
+                                <div className="h-3 bg-zinc-200 dark:bg-zinc-700 rounded w-20 mb-1" />
+                                <div className="h-2 bg-zinc-200 dark:bg-zinc-700 rounded w-28" />
+                            </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">{client.name}</p>
-                            <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">{client.company}</p>
+                    ) : (
+                        <div className="flex items-center gap-3">
+                            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center text-white text-xs font-semibold">
+                                {client.name.split(' ').map(n => n[0]).join('')}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">{client.name}</p>
+                                <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">{client.company}</p>
+                            </div>
+                            <ChevronRight className="h-4 w-4 text-zinc-400" />
                         </div>
-                        <ChevronRight className="h-4 w-4 text-zinc-400" />
-                    </div>
+                    )}
                 </div>
             </aside>
 

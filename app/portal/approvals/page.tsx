@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
     ShieldCheck,
     CheckCircle2,
@@ -9,17 +9,41 @@ import {
     AlertTriangle,
     MessageSquare,
 } from 'lucide-react';
-import { mockApprovals, type ApprovalItem } from '../mock-data';
+import type { ApprovalItem } from '../mock-data';
+import { CardSkeleton, ErrorBanner } from '../loading-skeleton';
 
 export default function ApprovalsPage() {
-    const [approvals, setApprovals] = useState(mockApprovals);
+    const [approvals, setApprovals] = useState<ApprovalItem[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'pending' | 'history'>('pending');
     const [noteInput, setNoteInput] = useState<Record<string, string>>({});
+    const [deciding, setDeciding] = useState<string | null>(null);
+
+    const fetchApprovals = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await fetch('/api/portal/approvals');
+            if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
+            setApprovals(await res.json());
+        } catch (e) {
+            setError(e instanceof Error ? e.message : 'Unknown error');
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchApprovals();
+    }, [fetchApprovals]);
 
     const pending = approvals.filter(a => a.status === 'pending');
     const history = approvals.filter(a => a.status !== 'pending');
 
-    const handleDecision = (id: string, decision: 'approved' | 'denied') => {
+    const handleDecision = async (id: string, decision: 'approved' | 'denied') => {
+        setDeciding(id);
+        // Optimistic update
         setApprovals(prev => prev.map(a =>
             a.id === id ? {
                 ...a,
@@ -29,7 +53,42 @@ export default function ApprovalsPage() {
                 note: noteInput[id] || null,
             } : a
         ));
+
+        try {
+            const res = await fetch('/api/portal/approvals', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id,
+                    decision,
+                    decided_by: 'Portal User',
+                    note: noteInput[id] || null,
+                }),
+            });
+
+            if (!res.ok) {
+                // Revert on failure
+                fetchApprovals();
+            }
+        } catch {
+            // Revert on error
+            fetchApprovals();
+        } finally {
+            setDeciding(null);
+        }
     };
+
+    if (loading) {
+        return (
+            <div className="p-8 max-w-5xl space-y-4">
+                <div className="mb-6">
+                    <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">Approvals</h1>
+                </div>
+                <CardSkeleton />
+                <CardSkeleton />
+            </div>
+        );
+    }
 
     return (
         <div className="p-8 max-w-5xl">
@@ -39,6 +98,8 @@ export default function ApprovalsPage() {
                     Review and approve actions your agent needs permission for.
                 </p>
             </div>
+
+            {error && <div className="mb-4"><ErrorBanner message={error} onRetry={fetchApprovals} /></div>}
 
             {/* Tabs */}
             <div className="flex items-center gap-1 mb-6 bg-zinc-100 dark:bg-zinc-800 rounded-lg p-1 w-fit">
@@ -84,6 +145,7 @@ export default function ApprovalsPage() {
                                 onNoteChange={(val) => setNoteInput(prev => ({ ...prev, [item.id]: val }))}
                                 onApprove={() => handleDecision(item.id, 'approved')}
                                 onDeny={() => handleDecision(item.id, 'denied')}
+                                disabled={deciding === item.id}
                             />
                         ))}
                     </div>
@@ -99,12 +161,13 @@ export default function ApprovalsPage() {
     );
 }
 
-function ApprovalCard({ item, note, onNoteChange, onApprove, onDeny }: {
+function ApprovalCard({ item, note, onNoteChange, onApprove, onDeny, disabled }: {
     item: ApprovalItem;
     note: string;
     onNoteChange: (val: string) => void;
     onApprove: () => void;
     onDeny: () => void;
+    disabled?: boolean;
 }) {
     return (
         <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6">
@@ -155,14 +218,16 @@ function ApprovalCard({ item, note, onNoteChange, onApprove, onDeny }: {
             <div className="flex items-center gap-3">
                 <button
                     onClick={onApprove}
-                    className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl bg-violet-600 text-white hover:bg-violet-700 transition-colors shadow-sm"
+                    disabled={disabled}
+                    className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl bg-violet-600 text-white hover:bg-violet-700 transition-colors shadow-sm disabled:opacity-50"
                 >
                     <CheckCircle2 className="h-4 w-4" />
                     Approve
                 </button>
                 <button
                     onClick={onDeny}
-                    className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                    disabled={disabled}
+                    className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
                 >
                     <XCircle className="h-4 w-4" />
                     Deny

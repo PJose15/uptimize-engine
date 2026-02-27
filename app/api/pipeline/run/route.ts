@@ -7,6 +7,7 @@ import { estimateCost, aggregateCosts } from '@/lib/costs';
 import { saveRun, generateRunId } from '@/lib/history';
 import { startRun, updateRunAgent, completeRun, isRunCancelled } from '@/lib/pipeline-state';
 import { checkRateLimit, getClientId, RATE_LIMITS, rateLimitResponse } from '@/lib/rate-limit';
+import { logActivityEvent, logAuditEntry, refreshPortalStats } from '@/lib/portal-events';
 
 // Import agent functions
 import { runAgent1MarketIntelligence } from '../../agents/run/uptimize/agent-1-market-intelligence/agent';
@@ -137,6 +138,10 @@ export async function POST(request: NextRequest) {
                     result: { success: agent1Result.success, data: agent1Result.data }
                 });
 
+                // Portal logging for Agent 1
+                logActivityEvent({ action: 'Agent 1: Market Intelligence completed', description: `Analyzed leads and produced target pack`, status: agent1Result.success ? 'completed' : 'failed', pillar: 'Shadow Ops', toolUsed: 'web_search', costUsd: agent1Cost, durationMs: agent1Duration, pipelineRunId: runId }).catch(() => {});
+                logAuditEntry({ action: 'Market Intelligence scan', tool: 'web_search', status: agent1Result.success ? 'success' : 'failed', costUsd: agent1Cost, details: `Duration: ${agent1Duration}ms, Run: ${runId}` }).catch(() => {});
+
                 if (!agent1Result.success) {
                     send({ type: 'error', message: 'Agent 1 failed', details: agent1Result.error });
                     completeRun(runId, 'failed');
@@ -190,6 +195,10 @@ export async function POST(request: NextRequest) {
                     totalCost,
                     result: { success: agent2Result.success, data: agent2Result.data }
                 });
+
+                // Portal logging for Agent 2
+                logActivityEvent({ action: 'Agent 2: Outbound campaigns created', description: 'Generated outreach campaigns for qualified leads', status: agent2Result.success ? 'completed' : 'failed', pillar: 'Handoffs', toolUsed: 'Email', costUsd: agent2Cost, durationMs: agent2Duration, pipelineRunId: runId }).catch(() => {});
+                logAuditEntry({ action: 'Outbound campaign generation', tool: 'Email', status: agent2Result.success ? 'success' : 'failed', costUsd: agent2Cost, details: `Duration: ${agent2Duration}ms, Run: ${runId}` }).catch(() => {});
 
                 if (!agent2Result.success) {
                     send({ type: 'error', message: 'Agent 2 failed', details: agent2Result.error });
@@ -248,6 +257,10 @@ export async function POST(request: NextRequest) {
                     totalCost,
                     result: { success: agent3Result.success, data: agent3Result.data }
                 });
+
+                // Portal logging for Agent 3
+                logActivityEvent({ action: 'Agent 3: Proposal generated', description: 'Ran discovery and created proposal/SOW', status: agent3Result.success ? 'completed' : 'failed', pillar: 'Audit Trail', toolUsed: 'Analytics', costUsd: agent3Cost, durationMs: agent3Duration, pipelineRunId: runId }).catch(() => {});
+                logAuditEntry({ action: 'Sales engineering proposal', tool: 'Analytics', status: agent3Result.success ? 'success' : 'failed', costUsd: agent3Cost, details: `Duration: ${agent3Duration}ms, Run: ${runId}` }).catch(() => {});
 
                 if (!agent3Result.success) {
                     send({ type: 'error', message: 'Agent 3 failed', details: agent3Result.error });
@@ -316,6 +329,10 @@ export async function POST(request: NextRequest) {
                     totalCost,
                     result: { success: agent4Result.success, data: agent4Result.data }
                 });
+
+                // Portal logging for Agent 4
+                logActivityEvent({ action: 'Agent 4: Delivery package created', description: 'Built workflows, integrations, and handoff kit', status: agent4Result.success ? 'completed' : 'failed', pillar: 'Knowledge', toolUsed: 'Internal', costUsd: agent4Cost, durationMs: agent4Duration, pipelineRunId: runId }).catch(() => {});
+                logAuditEntry({ action: 'Systems delivery build', tool: 'Internal', status: agent4Result.success ? 'success' : 'failed', costUsd: agent4Cost, details: `Duration: ${agent4Duration}ms, Run: ${runId}` }).catch(() => {});
 
                 if (!agent4Result.success) {
                     send({ type: 'error', message: 'Agent 4 failed', details: agent4Result.error });
@@ -414,6 +431,10 @@ export async function POST(request: NextRequest) {
                     result: results.agent5
                 });
 
+                // Portal logging for Agent 5
+                logActivityEvent({ action: 'Agent 5: Client success review', description: 'Generated health score, KPI tracking, and proof assets', status: agent5Result.success ? 'completed' : 'failed', pillar: 'Channels', toolUsed: 'Analytics', costUsd: agent5Cost, durationMs: agent5Duration, pipelineRunId: runId }).catch(() => {});
+                logAuditEntry({ action: 'Client success analysis', tool: 'Analytics', status: agent5Result.success ? 'success' : 'failed', costUsd: agent5Cost, details: `Duration: ${agent5Duration}ms, Run: ${runId}` }).catch(() => {});
+
                 // Complete
                 const totalDuration = Date.now() - pipelineStartTime;
 
@@ -442,6 +463,10 @@ export async function POST(request: NextRequest) {
                 });
 
                 completeRun(runId, 'completed');
+
+                // Refresh portal stats after pipeline completion
+                refreshPortalStats().catch(() => {});
+
                 controller.close();
 
             } catch (error) {

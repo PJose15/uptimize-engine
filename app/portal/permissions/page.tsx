@@ -1,7 +1,15 @@
 'use client';
 
 import { Lock, Eye, PenLine, Zap, Ban } from 'lucide-react';
-import { mockPermissions, mockClient } from '../mock-data';
+import { usePortalData } from '../use-portal-data';
+import { CardSkeleton, ErrorBanner } from '../loading-skeleton';
+import type { PermissionGroup, PermissionTool } from '../mock-data';
+
+interface ClientData {
+    name: string;
+    company: string;
+    agent: { name: string };
+}
 
 const accessConfig: Record<string, { label: string; color: string; icon: React.ReactNode; description: string }> = {
     read: {
@@ -31,14 +39,22 @@ const accessConfig: Record<string, { label: string; color: string; icon: React.R
 };
 
 export default function PermissionsPage() {
+    const { data: client, loading: clientLoading } = usePortalData<ClientData>('/api/portal/client');
+    const { data: permissions, loading: permsLoading, error, refetch } = usePortalData<PermissionGroup[]>('/api/portal/permissions');
+
+    const agentName = client?.agent?.name || 'your agent';
+    const loading = clientLoading || permsLoading;
+
     return (
         <div className="p-8 max-w-5xl">
             <div className="mb-6">
                 <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">Permissions</h1>
                 <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-                    What <span className="font-medium text-violet-600 dark:text-violet-400">{mockClient.agent.name}</span> is allowed to do — grouped by system.
+                    What <span className="font-medium text-violet-600 dark:text-violet-400">{agentName}</span> is allowed to do — grouped by system.
                 </p>
             </div>
+
+            {error && <div className="mb-4"><ErrorBanner message={error} onRetry={refetch} /></div>}
 
             {/* Access Level Legend */}
             <div className="flex items-center gap-4 mb-6 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
@@ -52,50 +68,58 @@ export default function PermissionsPage() {
             </div>
 
             {/* Permission Groups */}
-            <div className="space-y-4">
-                {mockPermissions.map((group) => (
-                    <div key={group.category} className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-                        {/* Group Header */}
-                        <div className="px-6 py-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center gap-3">
-                            <span className="text-xl">{group.icon}</span>
-                            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{group.category}</h3>
-                            <span className="text-xs text-zinc-400">
-                                {group.tools.length} permission{group.tools.length !== 1 ? 's' : ''}
-                            </span>
-                        </div>
+            {loading ? (
+                <div className="space-y-4">
+                    <CardSkeleton />
+                    <CardSkeleton />
+                    <CardSkeleton />
+                </div>
+            ) : (
+                <div className="space-y-4">
+                    {(permissions || []).map((group) => (
+                        <div key={group.category} className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+                            {/* Group Header */}
+                            <div className="px-6 py-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center gap-3">
+                                <span className="text-xl">{group.icon}</span>
+                                <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{group.category}</h3>
+                                <span className="text-xs text-zinc-400">
+                                    {group.tools.length} permission{group.tools.length !== 1 ? 's' : ''}
+                                </span>
+                            </div>
 
-                        {/* Tools list */}
-                        <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                            {group.tools.map((tool) => {
-                                const config = accessConfig[tool.access];
-                                return (
-                                    <div key={tool.id} className="px-6 py-3.5 flex items-center gap-4">
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2">
-                                                <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{tool.name}</p>
+                            {/* Tools list */}
+                            <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                                {group.tools.map((tool) => {
+                                    const config = accessConfig[tool.access];
+                                    return (
+                                        <div key={tool.id} className="px-6 py-3.5 flex items-center gap-4">
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2">
+                                                    <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{tool.name}</p>
+                                                </div>
+                                                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">{tool.description}</p>
                                             </div>
-                                            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">{tool.description}</p>
+
+                                            {/* Access Level Badge */}
+                                            <span className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg flex-shrink-0 ${config.color}`}>
+                                                {config.icon}
+                                                {config.label}
+                                            </span>
+
+                                            {/* Last used */}
+                                            <span className="text-[11px] text-zinc-400 w-28 text-right flex-shrink-0">
+                                                {tool.last_used
+                                                    ? `Used ${timeAgo(tool.last_used)}`
+                                                    : 'Never used'}
+                                            </span>
                                         </div>
-
-                                        {/* Access Level Badge */}
-                                        <span className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg flex-shrink-0 ${config.color}`}>
-                                            {config.icon}
-                                            {config.label}
-                                        </span>
-
-                                        {/* Last used */}
-                                        <span className="text-[11px] text-zinc-400 w-28 text-right flex-shrink-0">
-                                            {tool.last_used
-                                                ? `Used ${timeAgo(tool.last_used)}`
-                                                : 'Never used'}
-                                        </span>
-                                    </div>
-                                );
-                            })}
+                                    );
+                                })}
+                            </div>
                         </div>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
+            )}
 
             {/* Note */}
             <div className="mt-6 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 flex items-start gap-3">

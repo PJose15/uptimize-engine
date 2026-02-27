@@ -58,3 +58,91 @@ model Setting {
   key   String @unique
   value String // JSON text
 }
+
+// ============================================================================
+// PORTAL MODELS
+// ============================================================================
+
+model ClientConfig {
+  id          String   @id @default(cuid())
+  clientId    String   @unique
+  name        String
+  company     String
+  agentName   String
+  agentDesc   String   @default("")
+  agentStatus String   @default("active") // active, paused, maintenance
+  industry    String   @default("")
+  deployedAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@index([clientId])
+}
+
+model ActivityEvent {
+  id            String   @id @default(cuid())
+  timestamp     DateTime @default(now())
+  action        String
+  description   String
+  status        String   // completed, pending, failed, skipped
+  pillar        String
+  toolUsed      String?
+  costUsd       Float    @default(0)
+  durationMs    Int      @default(0)
+  pipelineRunId String?
+  clientId      String   @default("client_001")
+
+  @@index([timestamp])
+  @@index([status])
+  @@index([pillar])
+  @@index([clientId])
+}
+
+model ApprovalItem {
+  id             String   @id @default(cuid())
+  timestamp      DateTime @default(now())
+  action         String
+  description    String
+  riskLevel      String   // low, medium, high
+  affectedSystem String
+  reason         String
+  status         String   @default("pending") // pending, approved, denied, expired
+  decidedAt      DateTime?
+  decidedBy      String?
+  note           String?
+  clientId       String   @default("client_001")
+
+  @@index([status])
+  @@index([clientId])
+  @@index([timestamp])
+}
+
+model AuditEntry {
+  id         String   @id @default(cuid())
+  timestamp  DateTime @default(now())
+  action     String
+  tool       String
+  status     String   // success, denied, failed, approved
+  approvedBy String?
+  costUsd    Float    @default(0)
+  details    String
+  clientId   String   @default("client_001")
+
+  @@index([timestamp])
+  @@index([status])
+  @@index([clientId])
+}
+
+model PortalStats {
+  id                    String @id @default(cuid())
+  clientId              String @unique
+  actionsToday          Int    @default(0)
+  hoursSavedWeek        Float  @default(0)
+  pendingApprovals      Int    @default(0)
+  healthScore           Int    @default(0)
+  totalActionsMonth     Int    @default(0)
+  totalCostMonth        Float  @default(0)
+  successRate           Int    @default(0)
+  exceptionsAutoResolved Int   @default(0)
+
+  @@index([clientId])
+}
