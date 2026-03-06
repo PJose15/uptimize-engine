@@ -105,21 +105,6 @@ export function rateLimitResponse(result: RateLimitResult): Response {
 }
 
 /**
- * Convenience wrapper: check rate limit for a request and return a 429 Response if blocked, or null if allowed.
- */
-export async function rateLimit(
-    request: Request,
-    config: RateLimitConfig = RATE_LIMITS.api
-): Promise<Response | null> {
-    const clientId = getClientId(request);
-    const result = checkRateLimit(clientId, config);
-    if (!result.allowed) {
-        return rateLimitResponse(result);
-    }
-    return null;
-}
-
-/**
  * Clean up expired entries from store
  */
 function cleanupExpiredEntries(): void {
