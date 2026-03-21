@@ -2,7 +2,6 @@
 
 import { useParams } from 'next/navigation';
 import { useSession } from '@/lib/use-session';
-import { Button } from '@/components/ui';
 import { ArrowLeft, Loader2, FileText } from 'lucide-react';
 import Link from 'next/link';
 

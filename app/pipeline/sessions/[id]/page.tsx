@@ -6,7 +6,7 @@ import { useSession } from '@/lib/use-session';
 import { deriveStageStates, buildAgentContext } from '@/lib/stage-state-machine';
 import { StagePipelineFlow, StageCard, ProspectSelector, AgentOutputViewer } from '@/components/pipeline';
 import { Button, Badge } from '@/components/ui';
-import { ArrowLeft, Loader2, Pause, Play, FileText } from 'lucide-react';
+import { ArrowLeft, Loader2, FileText, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import type { LeadRecord } from '@/app/api/agents/run/uptimize/agent-1-market-intelligence/types';
 
@@ -233,16 +233,34 @@ export default function SessionWorkspacePage() {
                   : undefined
               }
               onApprove={
-                stage.state === 'review' && stage.number >= 3
-                  ? () => handleApproveStage(stage.number)
-                  : stage.state === 'review' && stage.number === 5
-                    ? handleCompleteSession
+                stage.state === 'review' && stage.number === 5
+                  ? handleCompleteSession
+                  : stage.state === 'review' && stage.number >= 3
+                    ? () => handleApproveStage(stage.number)
                     : undefined
               }
               onViewOutput={
                 output ? () => toggleOutput(stage.number) : undefined
               }
             >
+              {/* Agent 1 Review: No prospects fallback */}
+              {stage.number === 1 && stage.state === 'review' && prospects.length === 0 && (
+                <div className="bg-amber-50 dark:bg-amber-900/10 rounded-xl p-4">
+                  <p className="text-sm text-amber-700 dark:text-amber-300 mb-3">
+                    No prospects were found. Try adjusting your query and re-running Agent 1.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleRunAgent(1)}
+                    disabled={runningAgent !== null}
+                  >
+                    <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                    Re-run Agent 1
+                  </Button>
+                </div>
+              )}
+
               {/* Agent 1 Review: Prospect Selector */}
               {stage.number === 1 && stage.state === 'review' && prospects.length > 0 && (
                 <ProspectSelector
@@ -260,6 +278,33 @@ export default function SessionWorkspacePage() {
                     setSelectedProspectIds(prev => prev.filter(x => x !== id));
                   }}
                 />
+              )}
+
+              {/* Agent 2 Review: No bookings fallback */}
+              {stage.number === 2 && stage.state === 'review' && bookings.length === 0 && (
+                <div className="bg-amber-50 dark:bg-amber-900/10 rounded-xl p-4">
+                  <p className="text-sm text-amber-700 dark:text-amber-300 mb-3">
+                    No booked meetings found. Re-run Agent 2 or skip to Sales Engineer.
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleRunAgent(2)}
+                      disabled={runningAgent !== null}
+                    >
+                      <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                      Re-run Agent 2
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => saveBookingSelection([])}
+                      disabled={saving}
+                    >
+                      Skip & Advance
+                    </Button>
+                  </div>
+                </div>
               )}
 
               {/* Agent 2 Review: Booking Selector */}

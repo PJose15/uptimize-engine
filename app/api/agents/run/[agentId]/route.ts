@@ -10,7 +10,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { validateSession } from '@/lib/auth';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 import { validateAgentOutput } from '@/lib/agent-schemas';
-import { estimateCost } from '@/lib/costs';
 import { logActivityEvent, logAuditEntry } from '@/lib/portal-events';
 import { withRetry } from '@/lib/retry';
 import { withTimeoutAndAbort } from '@/lib/timeout';
@@ -184,7 +183,7 @@ export async function POST(
                             {
                                 apiKey: process.env.ANTHROPIC_API_KEY!,
                                 model: 'claude-sonnet-4-20250514',
-                                maxTokens: 1000,
+                                maxTokens: 8000,
                             },
                             context as unknown as Parameters<typeof runAgent5>[1]
                         ),

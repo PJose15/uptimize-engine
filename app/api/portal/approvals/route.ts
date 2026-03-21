@@ -43,6 +43,7 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
     try {
+        const clientId = await getClientIdFromRequest(request);
         const body = await request.json();
         const { id, decision, decided_by, note } = body;
 
@@ -56,6 +57,9 @@ export async function PATCH(request: NextRequest) {
         const item = await prisma.approvalItem.findUnique({ where: { id } });
         if (!item) {
             return NextResponse.json({ error: 'Approval not found' }, { status: 404 });
+        }
+        if (item.clientId !== clientId) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
         if (item.status !== 'pending') {
             return NextResponse.json({ error: 'Approval already decided' }, { status: 409 });
@@ -98,6 +102,10 @@ export async function PATCH(request: NextRequest) {
             note: updated.note,
         });
     } catch (error) {
+        const msg = error instanceof Error ? error.message : '';
+        if (msg === 'Unauthenticated' || msg === 'No session token' || msg === 'Session expired') {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
         console.error('Portal approvals PATCH error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
