@@ -71,7 +71,6 @@ export function useSession(id: string): UseSessionResult {
       await withSaving(async () => {
         await patchSession(id, {
           selectedProspects: ids,
-          currentStage: 1,
         });
       });
     },
@@ -83,7 +82,6 @@ export function useSession(id: string): UseSessionResult {
       await withSaving(async () => {
         await patchSession(id, {
           selectedBookings: ids,
-          currentStage: 2,
         });
       });
     },

@@ -1238,7 +1238,7 @@ function parseQueryIntent(query: string): NonNullable<Agent1Input["queryIntent"]
   const lower = query.toLowerCase();
 
   // Extract count
-  const countMatch = lower.match(/(\d+)\s+/);
+  const countMatch = lower.match(/^(?:find|get|search\s+for|look\s+for)?\s*(\d+)\s+/i);
   const count = countMatch ? parseInt(countMatch[1], 10) : 10;
 
   // Extract location (after "in" or "from" or "near")

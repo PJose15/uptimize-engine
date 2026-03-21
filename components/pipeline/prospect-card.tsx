@@ -1,7 +1,6 @@
 'use client';
 
-import { Button } from '@/components/ui';
-import { Badge } from '@/components/ui';
+import { Button, Badge } from '@/components/ui';
 import { Check, X, Ban } from 'lucide-react';
 import type { LeadRecord } from '@/app/api/agents/run/uptimize/agent-1-market-intelligence/types';
 

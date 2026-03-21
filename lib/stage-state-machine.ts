@@ -88,12 +88,15 @@ function deriveIndividualState(session: SessionData, stageNum: number): StageSta
   if (stageNum === 1) {
     if (!hasOutput) return 'ready';
     if (session.selectedProspects === null || session.selectedProspects === undefined) return 'review';
+    if (Array.isArray(session.selectedProspects) && session.selectedProspects.length === 0) return 'review';
     return 'approved';
   }
 
   if (stageNum === 2) {
-    // Locked until stage 1 is approved (has output + selectedProspects)
-    const stage1Approved = getAgentOutput(session, 1) != null && session.selectedProspects != null;
+    // Locked until stage 1 is approved (has output + non-empty selectedProspects)
+    const hasProspects = session.selectedProspects != null
+      && (!Array.isArray(session.selectedProspects) || session.selectedProspects.length > 0);
+    const stage1Approved = getAgentOutput(session, 1) != null && hasProspects;
     if (!stage1Approved) return 'locked';
     if (!hasOutput) return 'ready';
     if (session.selectedBookings === null || session.selectedBookings === undefined) return 'review';

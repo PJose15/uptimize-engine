@@ -24,6 +24,9 @@ export async function searchBrave(query: string, count = 10): Promise<BraveWebRe
     const apiKey = process.env.BRAVE_API_KEY;
     if (!apiKey) throw new Error('BRAVE_API_KEY not configured');
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
     const response = await fetch(
         `https://api.search.brave.com/res/v1/web/search?q=${encodeURIComponent(query)}&count=${count}`,
         {
@@ -32,8 +35,11 @@ export async function searchBrave(query: string, count = 10): Promise<BraveWebRe
                 'Accept-Encoding': 'gzip',
                 'X-Subscription-Token': apiKey,
             },
+            signal: controller.signal,
         }
     );
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) throw new Error(`Brave search failed: ${response.status}`);
     const data = await response.json();
@@ -173,10 +179,14 @@ export function formatBraveResearchForPrompt(
 // ---- Helpers ----
 
 function isBusinessResult(result: BraveWebResult): boolean {
-    const lowerUrl = result.url.toLowerCase();
-    const skipDomains = ['wikipedia.org', 'yelp.com', 'facebook.com', 'instagram.com',
+    const skipDomains = ['wikipedia.org', 'facebook.com', 'instagram.com',
         'twitter.com', 'linkedin.com', 'youtube.com', 'reddit.com', 'tiktok.com'];
-    return !skipDomains.some(d => lowerUrl.includes(d));
+    try {
+        const hostname = new URL(result.url).hostname.toLowerCase();
+        return !skipDomains.some(d => hostname.endsWith(d));
+    } catch {
+        return true;
+    }
 }
 
 function extractDomain(url: string): string {

@@ -11,7 +11,7 @@ async function testResearch() {
 
     // 1. Check available research tools
     console.log('1. Checking available research tools...');
-    const tools = await getAvailableResearchTools();
+    const tools = getAvailableResearchTools();
     console.log('Available research tools:', JSON.stringify(tools, null, 2));
     console.log();
 

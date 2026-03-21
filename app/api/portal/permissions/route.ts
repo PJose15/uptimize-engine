@@ -23,12 +23,12 @@ export async function GET(request: NextRequest) {
             }
         }
 
-        // Enrich permissions with last_used
+        // Enrich permissions with last_used (match by tool id, not category name)
         for (const group of permissions) {
             for (const tool of group.tools) {
-                const categoryLower = group.category.toLowerCase();
-                if (toolLastUsed.has(categoryLower)) {
-                    tool.last_used = toolLastUsed.get(categoryLower) ?? null;
+                const toolIdLower = tool.id.toLowerCase();
+                if (toolLastUsed.has(toolIdLower)) {
+                    tool.last_used = toolLastUsed.get(toolIdLower) ?? null;
                 }
             }
         }

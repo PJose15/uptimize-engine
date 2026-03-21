@@ -159,6 +159,7 @@ export async function PATCH(
             currentStage: updated.currentStage,
             totalCost: updated.totalCost,
             updatedAt: updated.updatedAt.toISOString(),
+            completedAt: updated.completedAt?.toISOString() ?? null,
         });
 
     } catch (error) {
