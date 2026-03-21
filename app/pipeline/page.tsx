@@ -5,6 +5,7 @@ import { Button, Card, CardContent, CardHeader, CardTitle, Progress, Badge } fro
 import { AgentCard, PipelineFlow, type AgentStatus } from '@/components/dashboard';
 import Link from 'next/link';
 import {
+    ArrowRight,
     ArrowLeft,
     Play,
     Loader2,
@@ -253,6 +254,21 @@ export default function PipelinePage() {
 
     return (
         <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
+            {/* Stage-by-Stage Sessions Banner */}
+            <div className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white">
+                <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+                    <p className="text-sm font-medium">
+                        New: Stage-by-stage pipeline sessions with human review between each agent
+                    </p>
+                    <Link href="/pipeline/sessions">
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                            Open Sessions
+                            <ArrowRight className="h-4 w-4 ml-1.5" />
+                        </Button>
+                    </Link>
+                </div>
+            </div>
+
             {/* Header */}
             <header className="border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
                 <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
