@@ -1,14 +1,15 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { transformPermissions } from '@/lib/portal';
+import { getClientIdFromRequest, transformPermissions } from '@/lib/portal';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
+        const clientId = await getClientIdFromRequest(request);
         const permissions = transformPermissions();
 
         // Enrich with last_used from AuditEntry table
         const recentAudits = await prisma.auditEntry.findMany({
-            where: { clientId: 'client_001' },
+            where: { clientId },
             orderBy: { timestamp: 'desc' },
             take: 100,
         });
@@ -34,6 +35,10 @@ export async function GET() {
 
         return NextResponse.json(permissions);
     } catch (error) {
+        const msg = error instanceof Error ? error.message : '';
+        if (msg === 'Unauthenticated' || msg === 'No session token' || msg === 'Session expired') {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
         console.error('Portal permissions API error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }

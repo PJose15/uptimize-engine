@@ -45,12 +45,13 @@ async function main() {
     // PORTAL DATA
     // ========================================================================
 
-    // ClientConfig
+    // ClientConfig — linked to admin user
     const clientConfig = await prisma.clientConfig.upsert({
         where: { clientId: 'client_001' },
-        update: {},
+        update: { userId: admin.id },
         create: {
             clientId: 'client_001',
+            userId: admin.id,
             name: 'Sarah Chen',
             company: 'Meridian Logistics',
             agentName: 'Ops Handler',

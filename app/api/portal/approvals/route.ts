@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getClientIdFromRequest } from '@/lib/portal';
 
 export async function GET(request: NextRequest) {
     try {
+        const clientId = await getClientIdFromRequest(request);
         const { searchParams } = new URL(request.url);
         const status = searchParams.get('status');
 
-        const where: Record<string, unknown> = { clientId: 'client_001' };
+        const where: Record<string, unknown> = { clientId };
         if (status && status !== 'all') {
             where.status = status;
         }
@@ -30,6 +32,10 @@ export async function GET(request: NextRequest) {
             note: item.note,
         })));
     } catch (error) {
+        const msg = error instanceof Error ? error.message : '';
+        if (msg === 'Unauthenticated' || msg === 'No session token' || msg === 'Session expired') {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
         console.error('Portal approvals GET error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }

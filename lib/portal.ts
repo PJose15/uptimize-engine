@@ -2,8 +2,102 @@
  * Portal Utilities — Shared helpers for portal data derivation
  */
 
+import { prisma } from './prisma';
 import { getPermissionChecker } from './governance/tool-permissions';
 import type { PillarMetric, PermissionGroup } from '@/app/portal/mock-data';
+
+/**
+ * Resolve the clientId from an incoming request's session cookie.
+ * Looks up the session token → user → linked ClientConfig.
+ * If no ClientConfig exists for the user, creates a default one.
+ */
+export async function getClientIdFromRequest(request: Request): Promise<string> {
+    const cookieHeader = request.headers.get('cookie');
+    if (!cookieHeader) throw new Error('Unauthenticated');
+
+    // Extract session token from cookies
+    const sessionToken = extractSessionToken(cookieHeader);
+    if (!sessionToken) throw new Error('No session token');
+
+    // Look up session in DB
+    const session = await prisma.session.findUnique({
+        where: { token: sessionToken },
+        include: { user: true },
+    });
+
+    if (!session || session.expiresAt < new Date()) {
+        throw new Error('Session expired');
+    }
+
+    // Look up client config for this user
+    const clientConfig = await prisma.clientConfig.findFirst({
+        where: { userId: session.userId },
+    });
+
+    if (clientConfig) {
+        return clientConfig.clientId;
+    }
+
+    // Fallback: check if there's an unlinked client config and adopt it
+    // This handles the migration case where existing client_001 has no userId
+    const unlinked = await prisma.clientConfig.findFirst({
+        where: { userId: null },
+    });
+
+    if (unlinked) {
+        await prisma.clientConfig.update({
+            where: { id: unlinked.id },
+            data: { userId: session.userId },
+        });
+        return unlinked.clientId;
+    }
+
+    // Create a default client config for new users
+    const newClientId = `client_${session.userId.slice(0, 8)}`;
+    await prisma.clientConfig.create({
+        data: {
+            clientId: newClientId,
+            userId: session.userId,
+            name: session.user.username,
+            company: 'New Company',
+            agentName: 'Agent',
+            agentDesc: 'Uptimize operations agent',
+            agentStatus: 'active',
+            industry: 'general',
+        },
+    });
+
+    // Also initialize portal stats
+    await prisma.portalStats.create({
+        data: {
+            clientId: newClientId,
+            actionsToday: 0,
+            hoursSavedWeek: 0,
+            pendingApprovals: 0,
+            healthScore: 0,
+            totalActionsMonth: 0,
+            totalCostMonth: 0,
+            successRate: 0,
+            exceptionsAutoResolved: 0,
+        },
+    });
+
+    return newClientId;
+}
+
+/**
+ * Extract session token value from a raw Cookie header string.
+ */
+function extractSessionToken(cookieHeader: string): string | null {
+    const cookies = cookieHeader.split(';').map(c => c.trim());
+    for (const cookie of cookies) {
+        const [name, ...rest] = cookie.split('=');
+        if (name.trim() === 'session') {
+            return rest.join('=').trim();
+        }
+    }
+    return null;
+}
 
 /**
  * Extract 6-pillar metrics from Agent 5 output.

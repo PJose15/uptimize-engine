@@ -1,10 +1,12 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getClientIdFromRequest } from '@/lib/portal';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
+        const clientId = await getClientIdFromRequest(request);
         const config = await prisma.clientConfig.findFirst({
-            where: { clientId: 'client_001' },
+            where: { clientId },
         });
 
         if (!config) {
@@ -25,6 +27,10 @@ export async function GET() {
             },
         });
     } catch (error) {
+        const msg = error instanceof Error ? error.message : '';
+        if (msg === 'Unauthenticated' || msg === 'No session token' || msg === 'Session expired') {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
         console.error('Portal client API error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }

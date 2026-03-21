@@ -11,12 +11,13 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(cuid())
-  username  String    @unique
-  password  String
-  role      String    @default("admin")
-  createdAt DateTime  @default(now())
-  sessions  Session[]
+  id            String         @id @default(cuid())
+  username      String         @unique
+  password      String
+  role          String         @default("admin")
+  createdAt     DateTime       @default(now())
+  sessions      Session[]
+  clientConfigs ClientConfig[]
 }
 
 model Session {
@@ -66,6 +67,8 @@ model Setting {
 model ClientConfig {
   id          String   @id @default(cuid())
   clientId    String   @unique
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
   name        String
   company     String
   agentName   String
@@ -76,6 +79,7 @@ model ClientConfig {
   createdAt   DateTime @default(now())
 
   @@index([clientId])
+  @@index([userId])
 }
 
 model ActivityEvent {
@@ -145,4 +149,38 @@ model PortalStats {
   exceptionsAutoResolved Int   @default(0)
 
   @@index([clientId])
+}
+
+// ============================================================================
+// PIPELINE SESSION (Stage-by-Stage State Machine)
+// ============================================================================
+
+model PipelineSession {
+  id                String    @id @default(cuid())
+  sessionId         String    @unique @default(cuid())
+  clientId          String
+  label             String    // e.g., "10 Gyms - Ponce PR - March 2026"
+  status            String    @default("active") // active, paused, completed, archived
+  currentStage      Int       @default(0)        // 0=init, 1=targeted, 2=outreach, 3=audit, 4=building, 5=success
+
+  // Outputs stored as JSON text per stage
+  agent1Output      String?   // Target Pack JSON
+  agent2Output      String?   // Bookings + campaigns JSON
+  agent3Output      String?   // Money leak map + proposal JSON
+  agent4Output      String?   // Delivery package JSON
+  agent5Output      String?   // Health score + success package JSON
+
+  // Selections at each review gate
+  selectedProspects String?   // JSON array of selected lead IDs from Agent 1
+  selectedBookings  String?   // JSON array of selected bookings from Agent 2
+
+  // Metadata
+  totalCost         Float     @default(0)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  completedAt       DateTime?
+
+  @@index([clientId])
+  @@index([status])
+  @@index([createdAt])
 }

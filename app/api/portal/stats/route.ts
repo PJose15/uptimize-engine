@@ -1,10 +1,12 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getClientIdFromRequest } from '@/lib/portal';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
+        const clientId = await getClientIdFromRequest(request);
         const stats = await prisma.portalStats.findUnique({
-            where: { clientId: 'client_001' },
+            where: { clientId },
         });
 
         if (!stats) {
@@ -13,7 +15,7 @@ export async function GET() {
 
         // Get live pending count
         const pendingCount = await prisma.approvalItem.count({
-            where: { clientId: 'client_001', status: 'pending' },
+            where: { clientId, status: 'pending' },
         });
 
         return NextResponse.json({
@@ -27,6 +29,10 @@ export async function GET() {
             exceptions_auto_resolved: stats.exceptionsAutoResolved,
         });
     } catch (error) {
+        const msg = error instanceof Error ? error.message : '';
+        if (msg === 'Unauthenticated' || msg === 'No session token' || msg === 'Session expired') {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
         console.error('Portal stats API error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }

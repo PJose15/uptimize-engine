@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { extractPillarMetrics } from '@/lib/portal';
+import { extractPillarMetrics, getClientIdFromRequest } from '@/lib/portal';
 import type { PillarMetric } from '@/app/portal/mock-data';
 
 // Seed fallback data matching mock-data.ts exactly
@@ -31,8 +31,10 @@ const SEED_HEALTH_SCORE_TREND = [
     { week: 'Feb 24', score: 92 },
 ];
 
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
+        const clientId = await getClientIdFromRequest(request);
+
         // Try to derive pillar metrics from the most recent Agent 5 pipeline run
         let pillarMetrics = SEED_PILLAR_METRICS;
         let hoursSavedTrend = SEED_HOURS_SAVED_TREND;
@@ -59,7 +61,7 @@ export async function GET() {
         }
 
         const stats = await prisma.portalStats.findUnique({
-            where: { clientId: 'client_001' },
+            where: { clientId },
         });
 
         return NextResponse.json({
@@ -73,6 +75,10 @@ export async function GET() {
             } : null,
         });
     } catch (error) {
+        const msg = error instanceof Error ? error.message : '';
+        if (msg === 'Unauthenticated' || msg === 'No session token' || msg === 'Session expired') {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
         console.error('Portal analytics API error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }

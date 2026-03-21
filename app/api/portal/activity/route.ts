@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getClientIdFromRequest } from '@/lib/portal';
 
 export async function GET(request: NextRequest) {
     try {
+        const clientId = await getClientIdFromRequest(request);
         const { searchParams } = new URL(request.url);
         const pillar = searchParams.get('pillar');
         const status = searchParams.get('status');
         const search = searchParams.get('search');
         const limit = parseInt(searchParams.get('limit') || '50', 10);
 
-        const where: Record<string, unknown> = { clientId: 'client_001' };
+        const where: Record<string, unknown> = { clientId };
 
         if (pillar && pillar !== 'All') {
             where.pillar = pillar;
@@ -42,6 +44,10 @@ export async function GET(request: NextRequest) {
             duration_ms: e.durationMs,
         })));
     } catch (error) {
+        const msg = error instanceof Error ? error.message : '';
+        if (msg === 'Unauthenticated' || msg === 'No session token' || msg === 'Session expired') {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
         console.error('Portal activity API error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
