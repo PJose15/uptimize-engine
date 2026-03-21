@@ -12,7 +12,7 @@
 
 import { executeWithFallback } from "../../fallback";
 import { AgentMode } from "../../types";
-import { Agent1Context, Agent1Result, TargetPackOutput, LeadRecord } from "./types";
+import { Agent1Context, Agent1Result, Agent1Input, TargetPackOutput, LeadRecord } from "./types";
 import { MCPClient } from "../../mcp/mcp-client";
 import {
   ALL_RESEARCH_SERVERS,
@@ -21,6 +21,11 @@ import {
   planResearch,
   type ResearchGoal,
 } from "../../mcp/research-servers";
+import {
+  findBusinessesInArea,
+  researchBusinessViaBrave,
+  formatBraveResearchForPrompt,
+} from "@/lib/research/brave-search";
 
 /**
  * System prompt for Agent 1 (v2 - Shadow Ops Edition)
@@ -1037,6 +1042,7 @@ export async function researchAndScoreCompany(
 export function getAvailableResearchTools(): {
   servers: string[];
   tools: Record<string, string[]>;
+  brave_search_available: boolean;
 } {
   return {
     servers: ALL_RESEARCH_SERVERS.map(s => s.name),
@@ -1047,5 +1053,211 @@ export function getAvailableResearchTools(): {
       social: ["search_twitter", "get_twitter_profile", "search_facebook", "get_facebook_page", "search_instagram", "get_instagram_business", "monitor_mentions"],
       industry: ["get_company_data", "get_industry_associations", "get_regulatory_filings", "get_competitor_landscape", "get_market_trends"],
     },
+    brave_search_available: !!process.env.BRAVE_API_KEY,
   };
+}
+
+// ============================================================================
+// SPRINT 2: SHADOW OPS DETECTION PROMPT ENHANCEMENT
+// ============================================================================
+
+const SHADOW_OPS_DETECTION_PROMPT = `
+When researching each business, actively look for these Shadow Ops signals:
+
+GHOST WORK INDICATORS (work happening outside systems):
+- Reviews mentioning "call us to book" or "DM us" → manual booking via phone/DM
+- No online booking visible on website → WhatsApp/phone-based scheduling
+- Job postings for "administrative assistant" at small business → someone handling chaos manually
+- Reviews mentioning slow response times → no follow-up automation
+- Multiple phone numbers or emails in listings → scattered communication
+- "Cash only" or no clear payment system → manual billing
+- Reviews mentioning "had to remind them" → no automated reminders
+
+EXCEPTION & FIREFIGHT SIGNALS:
+- 3-star reviews mentioning specific recurring problems → systematic exception
+- Complaint patterns in reviews → unresolved operational gaps
+- "They fixed it but it happened again" language → no root cause resolution
+
+AUDIT TRAIL GAPS:
+- No response to negative reviews → no monitoring or reputation management
+- Inconsistent hours listed across platforms → no centralized info management
+
+KNOWLEDGE & DECISION BOTTLENECKS:
+- "Ask for [owner name]" in reviews → single point of failure, tribal knowledge
+- "Owner personally helped me" → owner in operational weeds, not scaling
+
+HANDOFF & SLA SIGNALS:
+- Reviews mentioning wait times → SLA problems
+- "Had to follow up multiple times" → broken handoff process
+
+CHANNEL SCATTER:
+- Business listed on 5 platforms with different info → no single source of truth
+- Responding to some reviews but not others → inconsistent monitoring
+
+Score shadow_ops_density_0_10 based on how many of these signals are present.
+A score of 8-10 = high priority target (lots of chaos = lots of value we can deliver).
+`;
+
+// ============================================================================
+// SPRINT 2: QUERY-BASED DISCOVERY (Natural Language → Target Pack)
+// ============================================================================
+
+/**
+ * Run Agent 1 with a natural language query.
+ * Parses the query, finds businesses via Brave Search, researches them, returns Target Pack.
+ *
+ * Example queries:
+ *   "Find 10 gyms in Ponce, Puerto Rico"
+ *   "Find 5 logistics companies in Miami with 10-50 employees"
+ */
+export async function runAgent1FromQuery(
+  input: Agent1Input
+): Promise<Agent1Result> {
+  const startTime = Date.now();
+
+  try {
+    // If a prospect list is provided directly, use research mode
+    if (input.prospect_list && input.prospect_list.length > 0) {
+      return runAgent1WithResearch(
+        `Analyze and rank these ${input.prospect_list.length} prospects`,
+        input.prospect_list,
+        input.context ?? {},
+        input.mode
+      );
+    }
+
+    // If no query, error
+    if (!input.query && !input.queryIntent) {
+      return {
+        success: false,
+        message: "Either 'query' or 'queryIntent' or 'prospect_list' is required",
+        error: { type: "INVALID_INPUT", details: "No query provided", timestamp: new Date().toISOString() },
+      };
+    }
+
+    // Extract intent from query (or use provided queryIntent)
+    const intent = input.queryIntent ?? parseQueryIntent(input.query!);
+    const count = intent.count ?? 10;
+
+    // Step 1: Find businesses via Brave Search
+    let researchSection = "";
+    const hasBrave = !!process.env.BRAVE_API_KEY;
+
+    if (hasBrave) {
+      console.log(`[Agent 1] Searching for ${count} ${intent.industry} businesses in ${intent.location}...`);
+      const businesses = await findBusinessesInArea(intent.industry, intent.location, count);
+      console.log(`[Agent 1] Found ${businesses.length} businesses. Researching...`);
+
+      // Step 2: Research each business
+      const depth = input.context?.research_depth ?? "standard";
+      const researchResults: string[] = [];
+
+      // Research in batches of 3 to avoid rate limits
+      for (let i = 0; i < businesses.length; i += 3) {
+        const batch = businesses.slice(i, i + 3);
+        const batchResults = await Promise.all(
+          batch.map(b => researchBusinessViaBrave(b.name, intent.location, depth))
+        );
+        batch.forEach((b, idx) => {
+          researchResults.push(formatBraveResearchForPrompt(b.name, batchResults[idx]));
+        });
+      }
+
+      researchSection = `\n\n## REAL RESEARCH DATA (from web search)\n\n${researchResults.join("\n---\n\n")}`;
+    }
+
+    // Step 3: Build enhanced prompt with research data + shadow ops detection
+    const task = input.query ?? `Find ${count} ${intent.industry} businesses in ${intent.location}`;
+    const context: Agent1ResearchContext = {
+      mode: input.context?.mode ?? "Daily Target Pack",
+      output_pack_size: count,
+      ...(input.context?.shadow_ops_focus ? { custom_pain_categories: input.context.shadow_ops_focus } : {}),
+    };
+
+    const basePrompt = buildPrompt(task, context);
+    const enhancedPrompt = basePrompt
+      + SHADOW_OPS_DETECTION_PROMPT
+      + researchSection
+      + (researchSection ? "\n\nIMPORTANT: Use the research data above as PRIMARY evidence. Cite sources. Score shadow_ops_density based on real signals found." : "")
+      + "\n\nCRITICAL: Return ONLY valid JSON. No markdown code fences.";
+
+    // Step 4: Execute with fallback
+    const result = await executeWithFallback(enhancedPrompt, input.mode);
+
+    if (!result.success) {
+      return {
+        success: false,
+        message: result.message,
+        error: { type: result.error?.type || "UNKNOWN_ERROR", details: result.error?.details || "Unknown error", timestamp: new Date().toISOString() },
+        metadata: { provider: result.metadata?.provider || "unknown", model: result.metadata?.model || "unknown", tokensUsed: result.metadata?.tokensUsed, timestamp: new Date().toISOString(), latencyMs: Date.now() - startTime },
+      };
+    }
+
+    // Parse JSON response
+    let rawResponse = result.message.trim();
+    const patterns = [/```json\s*\n([\s\S]*?)\n```/, /```\s*\n([\s\S]*?)\n```/, /```json([\s\S]*?)```/, /```([\s\S]*?)```/];
+    for (const pattern of patterns) {
+      const match = rawResponse.match(pattern);
+      if (match) { rawResponse = match[1].trim(); break; }
+    }
+
+    const parsed: TargetPackOutput = JSON.parse(rawResponse);
+    if (!parsed.run_metadata || !parsed.target_pack_primary) {
+      throw new Error("Missing required fields in output");
+    }
+
+    return {
+      success: true,
+      message: `Target pack generated: ${parsed.target_pack_primary.length} primary leads${hasBrave ? " (with live research)" : ""}`,
+      data: parsed,
+      metadata: {
+        provider: result.metadata?.provider || "unknown",
+        model: result.metadata?.model || "unknown",
+        tokensUsed: result.metadata?.tokensUsed,
+        timestamp: new Date().toISOString(),
+        latencyMs: Date.now() - startTime,
+      },
+    };
+
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return {
+      success: false,
+      message: "Query-based agent execution failed",
+      error: { type: "QUERY_ERROR", details: errorMessage, timestamp: new Date().toISOString() },
+      metadata: { provider: "unknown", model: "unknown", timestamp: new Date().toISOString(), latencyMs: Date.now() - startTime },
+    };
+  }
+}
+
+/**
+ * Parse a natural language query into structured intent.
+ * e.g. "Find 10 gyms in Ponce, Puerto Rico" → { industry: "gyms", location: "Ponce, Puerto Rico", count: 10 }
+ */
+function parseQueryIntent(query: string): NonNullable<Agent1Input["queryIntent"]> {
+  const lower = query.toLowerCase();
+
+  // Extract count
+  const countMatch = lower.match(/(\d+)\s+/);
+  const count = countMatch ? parseInt(countMatch[1], 10) : 10;
+
+  // Extract location (after "in" or "from" or "near")
+  const locationMatch = query.match(/\b(?:in|from|near|around)\s+(.+?)(?:\s+with|\s+that|\s+who|$)/i);
+  const location = locationMatch ? locationMatch[1].trim() : "United States";
+
+  // Extract industry (between count and location keyword)
+  const industryMatch = query.match(/(?:\d+\s+)?(.+?)\s+(?:in|from|near|around)\s/i);
+  let industry = industryMatch ? industryMatch[1].trim() : query.trim();
+  // Remove leading "find" or "search for"
+  industry = industry.replace(/^(?:find|search\s+for|look\s+for|get)\s+/i, "").trim();
+  // Remove count if still present
+  industry = industry.replace(/^\d+\s+/, "").trim();
+
+  // Extract business size
+  let businessSize: string | undefined;
+  if (lower.includes("small")) businessSize = "small";
+  else if (lower.includes("medium") || lower.includes("mid")) businessSize = "medium";
+  else if (lower.includes("enterprise") || lower.includes("large")) businessSize = "enterprise";
+
+  return { industry, location, businessSize, count };
 }

@@ -3,5 +3,5 @@
  * Entry point for the agent
  */
 
-export { runAgent1MarketIntelligence } from "./agent";
+export { runAgent1MarketIntelligence, runAgent1WithResearch, runAgent1FromQuery, getAvailableResearchTools } from "./agent";
 export * from "./types";

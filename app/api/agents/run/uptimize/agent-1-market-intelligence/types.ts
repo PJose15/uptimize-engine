@@ -133,6 +133,50 @@ export interface Agent1Context {
   custom_trigger_events?: string[];
 }
 
+// Natural language query input (Sprint 2)
+export interface Agent1Input {
+  // Option A: Natural language discovery
+  query?: string;                    // "10 gyms in Ponce, Puerto Rico"
+  queryIntent?: {
+    industry: string;                // "fitness", "healthcare", "logistics"
+    location: string;                // "Ponce, Puerto Rico"
+    businessSize?: string;           // "small", "medium", "enterprise"
+    count?: number;                  // How many targets to find (default 10)
+  };
+
+  // Option B: Known list to research
+  prospect_list?: Array<{
+    name: string;
+    company: string;
+    domain?: string;
+    linkedin_url?: string;
+    address?: string;
+  }>;
+
+  // Context
+  context?: {
+    mode?: OutputMode;
+    enable_research?: boolean;
+    research_depth?: 'quick' | 'standard' | 'deep';
+    offer_positioning?: string;      // What Uptimize offers — for fit scoring
+    shadow_ops_focus?: string[];     // Which pillars to prioritize
+  };
+
+  mode: 'fast' | 'balanced' | 'quality';
+}
+
+// Business search result from web search
+export interface BusinessSearchResult {
+  name: string;
+  domain: string;
+  description: string;
+  url: string;
+  address?: string;
+  phone?: string;
+  rating?: number;
+  reviewCount?: number;
+}
+
 // Agent execution result
 export interface Agent1Result {
   success: boolean;
