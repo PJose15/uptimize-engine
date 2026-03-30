@@ -12,7 +12,7 @@ import {
     AlertCircle,
     XCircle,
 } from 'lucide-react';
-import { usePortalData } from './use-portal-data';
+import { usePortalPolling } from '@/lib/use-portal-polling';
 import { CardSkeleton, MetricSkeleton, ErrorBanner } from './loading-skeleton';
 import type { ActivityEntry, ApprovalItem } from './mock-data';
 
@@ -38,11 +38,11 @@ interface ClientData {
 }
 
 export default function PortalOverview() {
-    const { data: client, loading: clientLoading } = usePortalData<ClientData>('/api/portal/client');
-    const { data: stats, loading: statsLoading, error: statsError, refetch: refetchStats } = usePortalData<StatsData>('/api/portal/stats');
-    const { data: activity, loading: activityLoading } = usePortalData<ActivityEntry[]>('/api/portal/activity?limit=4');
-    const { data: approvals, loading: approvalsLoading } = usePortalData<ApprovalItem[]>('/api/portal/approvals?status=pending');
-    const { data: analytics, loading: analyticsLoading } = usePortalData<AnalyticsData>('/api/portal/analytics');
+    const { data: client, loading: clientLoading } = usePortalPolling<ClientData>('/api/portal/client', 60000);
+    const { data: stats, loading: statsLoading, error: statsError, refetch: refetchStats } = usePortalPolling<StatsData>('/api/portal/stats', 15000);
+    const { data: activity, loading: activityLoading } = usePortalPolling<ActivityEntry[]>('/api/portal/activity?limit=4', 30000);
+    const { data: approvals, loading: approvalsLoading } = usePortalPolling<ApprovalItem[]>('/api/portal/approvals?status=pending', 15000);
+    const { data: analytics, loading: analyticsLoading } = usePortalPolling<AnalyticsData>('/api/portal/analytics', 60000);
 
     const recentActivity = activity || [];
     const pendingApprovals = approvals || [];
@@ -122,7 +122,7 @@ export default function PortalOverview() {
                         </div>
                         <div className="flex items-end gap-2 h-32">
                             {hoursSavedTrend.map((point, i) => {
-                                const maxVal = Math.max(...hoursSavedTrend.map(p => p.hours));
+                                const maxVal = Math.max(1, ...hoursSavedTrend.map(p => p.hours));
                                 const height = (point.hours / maxVal) * 100;
                                 return (
                                     <div key={i} className="flex-1 flex flex-col items-center gap-1">
@@ -211,7 +211,7 @@ export default function PortalOverview() {
                         ) : (
                             <div className="space-y-3">
                                 {pendingApprovals.map((item) => (
-                                    <div key={item.id} className="border border-zinc-100 dark:border-zinc-800 rounded-xl p-3">
+                                    <Link key={item.id} href="/portal/approvals" className="block border border-zinc-100 dark:border-zinc-800 rounded-xl p-3 hover:border-violet-200 dark:hover:border-violet-800 transition-colors">
                                         <div className="flex items-start justify-between mb-1">
                                             <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 pr-2">{item.action}</p>
                                             <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 ${item.risk_level === 'high' ? 'bg-red-100 dark:bg-red-500/15 text-red-700 dark:text-red-300' :
@@ -221,16 +221,9 @@ export default function PortalOverview() {
                                                 {item.risk_level}
                                             </span>
                                         </div>
-                                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">{item.reason}</p>
-                                        <div className="flex gap-2">
-                                            <button className="text-xs font-medium px-3 py-1.5 rounded-lg bg-violet-600 text-white hover:bg-violet-700 transition-colors">
-                                                Approve
-                                            </button>
-                                            <button className="text-xs font-medium px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
-                                                Deny
-                                            </button>
-                                        </div>
-                                    </div>
+                                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">{item.reason}</p>
+                                        <span className="text-xs text-violet-600 dark:text-violet-400 font-medium">Review &rarr;</span>
+                                    </Link>
                                 ))}
                             </div>
                         )}
@@ -250,7 +243,7 @@ function MetricHero({ label, value, suffix, icon, color, href }: {
     value: number;
     suffix?: string;
     icon: React.ReactNode;
-    color: string;
+    color: 'violet' | 'emerald' | 'amber' | 'rose';
     href?: string;
 }) {
     const colorMap: Record<string, string> = {

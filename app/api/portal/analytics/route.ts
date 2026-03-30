@@ -40,20 +40,18 @@ export async function GET(request: NextRequest) {
         let hoursSavedTrend = SEED_HOURS_SAVED_TREND;
         let healthScoreTrend = SEED_HEALTH_SCORE_TREND;
 
-        const latestRun = await prisma.pipelineRun.findFirst({
-            where: { status: 'completed' },
-            orderBy: { timestamp: 'desc' },
+        // Use PipelineSession (has clientId) instead of legacy PipelineRun (no clientId)
+        const latestSession = await prisma.pipelineSession.findFirst({
+            where: { clientId, status: 'completed', agent5Output: { not: null } },
+            orderBy: { completedAt: 'desc' },
         });
 
-        if (latestRun) {
+        if (latestSession?.agent5Output) {
             try {
-                const results = JSON.parse(latestRun.results);
-                const agent5Data = results.agent5?.data;
-                if (agent5Data) {
-                    const derived = extractPillarMetrics(agent5Data);
-                    if (derived.length > 0) {
-                        pillarMetrics = derived;
-                    }
+                const agent5Data = JSON.parse(latestSession.agent5Output);
+                const derived = extractPillarMetrics(agent5Data?.data ?? agent5Data);
+                if (derived.length > 0) {
+                    pillarMetrics = derived;
                 }
             } catch {
                 // Use seed fallback

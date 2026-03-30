@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { Zap, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 
-export default function LoginPage() {
+function LoginForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { user, loading: authLoading, login } = useAuth();
@@ -116,11 +116,20 @@ export default function LoginPage() {
                         </Button>
                     </form>
 
-                    <p className="text-xs text-zinc-500 text-center mt-4">
-                        Default: admin / admin123
-                    </p>
                 </CardContent>
             </Card>
         </div>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-500" />
+            </div>
+        }>
+            <LoginForm />
+        </Suspense>
     );
 }

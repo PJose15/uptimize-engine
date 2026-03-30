@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getClientIdFromRequest } from '@/lib/portal';
+import type { Prisma } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
     try {
@@ -9,9 +10,9 @@ export async function GET(request: NextRequest) {
         const pillar = searchParams.get('pillar');
         const status = searchParams.get('status');
         const search = searchParams.get('search');
-        const limit = parseInt(searchParams.get('limit') || '50', 10);
+        const limit = parseInt(searchParams.get('limit') || '50', 10) || 50;
 
-        const where: Record<string, unknown> = { clientId };
+        const where: Prisma.ActivityEventWhereInput = { clientId };
 
         if (pillar && pillar !== 'All') {
             where.pillar = pillar;

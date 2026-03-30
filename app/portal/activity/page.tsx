@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import {
     CheckCircle2,
     XCircle,
@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import type { ActivityEntry } from '../mock-data';
 import { CardSkeleton, ErrorBanner } from '../loading-skeleton';
+import { usePortalPolling } from '@/lib/use-portal-polling';
 
 const pillarFilters = ['All', 'Shadow Ops', 'Exceptions', 'Audit Trail', 'Knowledge', 'Handoffs', 'Channels'];
 const statusFilters = ['All', 'completed', 'pending', 'failed'];
@@ -19,31 +20,16 @@ export default function ActivityPage() {
     const [selectedPillar, setSelectedPillar] = useState('All');
     const [selectedStatus, setSelectedStatus] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
-    const [activity, setActivity] = useState<ActivityEntry[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
 
-    const fetchActivity = useCallback(async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const params = new URLSearchParams();
-            if (selectedPillar !== 'All') params.set('pillar', selectedPillar);
-            if (selectedStatus !== 'All') params.set('status', selectedStatus);
-            if (searchQuery) params.set('search', searchQuery);
-            const res = await fetch(`/api/portal/activity?${params}`);
-            if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
-            setActivity(await res.json());
-        } catch (e) {
-            setError(e instanceof Error ? e.message : 'Unknown error');
-        } finally {
-            setLoading(false);
-        }
+    const activityUrl = useMemo(() => {
+        const params = new URLSearchParams();
+        if (selectedPillar !== 'All') params.set('pillar', selectedPillar);
+        if (selectedStatus !== 'All') params.set('status', selectedStatus);
+        if (searchQuery) params.set('search', searchQuery);
+        return `/api/portal/activity?${params}`;
     }, [selectedPillar, selectedStatus, searchQuery]);
 
-    useEffect(() => {
-        fetchActivity();
-    }, [fetchActivity]);
+    const { data: activity, loading, error, refetch: fetchActivity } = usePortalPolling<ActivityEntry[]>(activityUrl, 10000);
 
     return (
         <div className="p-8 max-w-5xl">
@@ -75,6 +61,8 @@ export default function ActivityPage() {
                         <button
                             key={pillar}
                             onClick={() => setSelectedPillar(pillar)}
+                            aria-label={`Filter by pillar: ${pillar}`}
+                            aria-pressed={selectedPillar === pillar}
                             className={`text-xs px-2.5 py-1.5 rounded-lg font-medium transition-colors ${selectedPillar === pillar
                                     ? 'bg-violet-100 dark:bg-violet-500/15 text-violet-700 dark:text-violet-300'
                                     : 'text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800'
@@ -91,6 +79,8 @@ export default function ActivityPage() {
                         <button
                             key={status}
                             onClick={() => setSelectedStatus(status)}
+                            aria-label={`Filter by status: ${status}`}
+                            aria-pressed={selectedStatus === status}
                             className={`text-xs px-2.5 py-1.5 rounded-lg font-medium transition-colors capitalize ${selectedStatus === status
                                     ? 'bg-violet-100 dark:bg-violet-500/15 text-violet-700 dark:text-violet-300'
                                     : 'text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800'
@@ -111,10 +101,14 @@ export default function ActivityPage() {
                 </div>
             ) : (
                 <div className="space-y-0">
-                    {activity.length === 0 ? (
+                    {!activity || activity.length === 0 ? (
                         <div className="text-center py-16 text-zinc-400">
                             <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                            <p className="text-sm">No matching activities found</p>
+                            <p className="text-sm">
+                                {selectedPillar !== 'All' || selectedStatus !== 'All' || searchQuery
+                                    ? 'No activities match your filters'
+                                    : 'No activities yet'}
+                            </p>
                         </div>
                     ) : (
                         activity.map((entry, i) => (

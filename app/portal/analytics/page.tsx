@@ -7,7 +7,7 @@ import {
     ArrowUpRight,
     BarChart3,
 } from 'lucide-react';
-import { usePortalData } from '../use-portal-data';
+import { usePortalPolling } from '@/lib/use-portal-polling';
 import { CardSkeleton, MetricSkeleton, ErrorBanner } from '../loading-skeleton';
 import type { PillarMetric } from '../mock-data';
 
@@ -23,12 +23,24 @@ interface AnalyticsData {
 }
 
 export default function AnalyticsPage() {
-    const { data, loading, error, refetch } = usePortalData<AnalyticsData>('/api/portal/analytics');
+    const { data, loading, error, refetch } = usePortalPolling<AnalyticsData>('/api/portal/analytics', 60000);
 
     const pillarMetrics = data?.pillar_metrics || [];
     const hoursSavedTrend = data?.hours_saved_trend || [];
     const healthScoreTrend = data?.health_score_trend || [];
     const stats = data?.stats;
+
+    // Derive change percentages from trend data
+    const calcChange = (arr: { hours?: number; score?: number }[], key: 'hours' | 'score') => {
+        if (arr.length < 2) return { change: '+0%', positive: true };
+        const first = (arr[0] as Record<string, number>)[key] || 0;
+        const last = (arr[arr.length - 1] as Record<string, number>)[key] || 0;
+        if (first === 0) return { change: `+${last}`, positive: last >= 0 };
+        const pct = Math.round(((last - first) / first) * 100);
+        return { change: `${pct >= 0 ? '+' : ''}${pct}%`, positive: pct >= 0 };
+    };
+    const hoursChange = calcChange(hoursSavedTrend, 'hours');
+    const healthChange = calcChange(healthScoreTrend, 'score');
 
     return (
         <div className="p-8 max-w-6xl">
@@ -51,9 +63,9 @@ export default function AnalyticsPage() {
                     </>
                 ) : (
                     <>
-                        <SummaryCard label="Hours Saved / Week" value={`${stats.hours_saved_week}h`} change="+106%" positive />
-                        <SummaryCard label="Health Score" value={`${stats.health_score}/100`} change="+24%" positive />
-                        <SummaryCard label="Exceptions Auto-Resolved" value={`${stats.exceptions_auto_resolved}%`} change="+42%" positive />
+                        <SummaryCard label="Hours Saved / Week" value={`${stats.hours_saved_week}h`} change={hoursChange.change} positive={hoursChange.positive} />
+                        <SummaryCard label="Health Score" value={`${stats.health_score}/100`} change={healthChange.change} positive={healthChange.positive} />
+                        <SummaryCard label="Exceptions Auto-Resolved" value={`${stats.exceptions_auto_resolved}%`} change="" positive />
                     </>
                 )}
             </div>
@@ -194,7 +206,7 @@ function TrendChart({ title, data, suffix, color }: {
     suffix: string;
     color: 'emerald' | 'violet';
 }) {
-    const maxVal = Math.max(...data.map(d => d.value));
+    const maxVal = Math.max(1, ...data.map(d => d.value));
     const colorClass = color === 'emerald'
         ? 'from-emerald-500 to-teal-400'
         : 'from-violet-500 to-indigo-400';

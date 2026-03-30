@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import {
     ShieldCheck,
     CheckCircle2,
@@ -11,53 +11,27 @@ import {
 } from 'lucide-react';
 import type { ApprovalItem } from '../mock-data';
 import { CardSkeleton, ErrorBanner } from '../loading-skeleton';
+import { usePortalPolling } from '@/lib/use-portal-polling';
+import { getCSRFToken } from '@/lib/auth-context';
 
 export default function ApprovalsPage() {
-    const [approvals, setApprovals] = useState<ApprovalItem[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const { data: approvals, loading, error, refetch: fetchApprovals } = usePortalPolling<ApprovalItem[]>('/api/portal/approvals', 10000);
     const [activeTab, setActiveTab] = useState<'pending' | 'history'>('pending');
     const [noteInput, setNoteInput] = useState<Record<string, string>>({});
     const [deciding, setDeciding] = useState<string | null>(null);
+    const [decisionError, setDecisionError] = useState<string | null>(null);
 
-    const fetchApprovals = useCallback(async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const res = await fetch('/api/portal/approvals');
-            if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
-            setApprovals(await res.json());
-        } catch (e) {
-            setError(e instanceof Error ? e.message : 'Unknown error');
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        fetchApprovals();
-    }, [fetchApprovals]);
-
-    const pending = approvals.filter(a => a.status === 'pending');
-    const history = approvals.filter(a => a.status !== 'pending');
+    const allApprovals = approvals ?? [];
+    const pending = allApprovals.filter(a => a.status === 'pending');
+    const history = allApprovals.filter(a => a.status !== 'pending');
 
     const handleDecision = async (id: string, decision: 'approved' | 'denied') => {
         setDeciding(id);
-        // Optimistic update
-        setApprovals(prev => prev.map(a =>
-            a.id === id ? {
-                ...a,
-                status: decision,
-                decided_at: new Date().toISOString(),
-                decided_by: 'You',
-                note: noteInput[id] || null,
-            } : a
-        ));
-
+        setDecisionError(null);
         try {
             const res = await fetch('/api/portal/approvals', {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCSRFToken() },
                 body: JSON.stringify({
                     id,
                     decision,
@@ -65,16 +39,15 @@ export default function ApprovalsPage() {
                     note: noteInput[id] || null,
                 }),
             });
-
             if (!res.ok) {
-                // Revert on failure
-                fetchApprovals();
+                const body = await res.json().catch(() => ({}));
+                throw new Error(body.error || `Failed: ${res.status}`);
             }
-        } catch {
-            // Revert on error
-            fetchApprovals();
+        } catch (e) {
+            setDecisionError(e instanceof Error ? e.message : 'Failed to submit decision');
         } finally {
             setDeciding(null);
+            fetchApprovals();
         }
     };
 
@@ -100,6 +73,7 @@ export default function ApprovalsPage() {
             </div>
 
             {error && <div className="mb-4"><ErrorBanner message={error} onRetry={fetchApprovals} /></div>}
+            {decisionError && <div className="mb-4"><ErrorBanner message={decisionError} onRetry={() => setDecisionError(null)} /></div>}
 
             {/* Tabs */}
             <div className="flex items-center gap-1 mb-6 bg-zinc-100 dark:bg-zinc-800 rounded-lg p-1 w-fit">
@@ -257,7 +231,7 @@ function HistoryRow({ item }: { item: ApprovalItem }) {
                     {item.decided_by && <span className="text-xs text-zinc-400">by {item.decided_by}</span>}
                     {item.decided_at && <span className="text-xs text-zinc-400">• {new Date(item.decided_at).toLocaleString()}</span>}
                 </div>
-                {item.note && <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 italic">&rdquo;{item.note}&rdquo;</p>}
+                {item.note && <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 italic">{"\u201C"}{item.note}{"\u201D"}</p>}
             </div>
         </div>
     );

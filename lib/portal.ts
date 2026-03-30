@@ -52,35 +52,35 @@ export async function getClientIdFromRequest(request: Request): Promise<string> 
         return unlinked.clientId;
     }
 
-    // Create a default client config for new users
+    // Create a default client config + portal stats atomically
     const newClientId = `client_${session.userId.slice(0, 8)}`;
-    await prisma.clientConfig.create({
-        data: {
-            clientId: newClientId,
-            userId: session.userId,
-            name: session.user.username,
-            company: 'New Company',
-            agentName: 'Agent',
-            agentDesc: 'Uptimize operations agent',
-            agentStatus: 'active',
-            industry: 'general',
-        },
-    });
-
-    // Also initialize portal stats
-    await prisma.portalStats.create({
-        data: {
-            clientId: newClientId,
-            actionsToday: 0,
-            hoursSavedWeek: 0,
-            pendingApprovals: 0,
-            healthScore: 0,
-            totalActionsMonth: 0,
-            totalCostMonth: 0,
-            successRate: 0,
-            exceptionsAutoResolved: 0,
-        },
-    });
+    await prisma.$transaction([
+        prisma.clientConfig.create({
+            data: {
+                clientId: newClientId,
+                userId: session.userId,
+                name: session.user.username,
+                company: 'New Company',
+                agentName: 'Agent',
+                agentDesc: 'Uptimize operations agent',
+                agentStatus: 'active',
+                industry: 'general',
+            },
+        }),
+        prisma.portalStats.create({
+            data: {
+                clientId: newClientId,
+                actionsToday: 0,
+                hoursSavedWeek: 0,
+                pendingApprovals: 0,
+                healthScore: 0,
+                totalActionsMonth: 0,
+                totalCostMonth: 0,
+                successRate: 0,
+                exceptionsAutoResolved: 0,
+            },
+        }),
+    ]);
 
     return newClientId;
 }
