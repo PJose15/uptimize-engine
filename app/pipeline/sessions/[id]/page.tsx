@@ -176,7 +176,7 @@ export default function SessionWorkspacePage() {
         </div>
 
         <div className="flex items-center gap-2">
-          {session.status === 'completed' && (
+          {(session.status === 'completed' || !!session.agent3Output) && (
             <Link href={`/pipeline/sessions/${session.id}/report`}>
               <Button variant="outline" size="sm">
                 <FileText className="h-3.5 w-3.5 mr-1.5" />

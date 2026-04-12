@@ -1138,7 +1138,7 @@ uptimize-engine/
 │   │   │   │   ├── agent-3-sales-engineer/ (agent, types, index, schema)
 │   │   │   │   ├── agent-4-systems-delivery/ (agent, types, index, schema)
 │   │   │   │   └── agent-5-client-success/ (agent, types, index, schema)
-│   │   │   └── zenthia/ (content-factory, daily-brief, growth-operator)
+│   │   │   └── internal/ (smartgym, pvision venture agents)
 │   │   ├── pipeline/ (run/route, batch/route, cancel/route, pipeline-state)
 │   │   ├── portal/ (client, stats, activity, approvals, analytics, permissions, audit)
 │   │   ├── auth/route.ts

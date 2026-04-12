@@ -6,14 +6,27 @@ const prisma = new PrismaClient();
 async function main() {
     console.log('🌱 Seeding database...');
 
-    // Create default admin user
-    const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD || 'admin123', 10);
+    // Require admin credentials from environment — no fallbacks
+    const adminUsername = process.env.ADMIN_USERNAME;
+    const adminPassword = process.env.ADMIN_PASSWORD;
+
+    if (!adminUsername) {
+        throw new Error('ADMIN_USERNAME env var is required. Set it in .env before seeding.');
+    }
+    if (!adminPassword) {
+        throw new Error('ADMIN_PASSWORD env var is required. Set it in .env before seeding.');
+    }
+    if (adminPassword.length < 12) {
+        throw new Error('ADMIN_PASSWORD must be at least 12 characters.');
+    }
+
+    const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
     const admin = await prisma.user.upsert({
-        where: { username: 'admin' },
+        where: { username: adminUsername },
         update: {},
         create: {
-            username: 'admin',
+            username: adminUsername,
             password: hashedPassword,
             role: 'admin',
         },

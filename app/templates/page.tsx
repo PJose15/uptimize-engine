@@ -12,6 +12,7 @@ import {
     FileText,
     Check
 } from 'lucide-react';
+import { getCSRFToken } from '@/lib/auth-context';
 
 interface LeadTemplate {
     id: string;
@@ -55,7 +56,7 @@ export default function TemplatesPage() {
                 // Update existing
                 const res = await fetch(`/api/templates?id=${editing.id}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCSRFToken() },
                     body: JSON.stringify(form)
                 });
                 if (res.ok) {
@@ -66,7 +67,7 @@ export default function TemplatesPage() {
                 // Create new
                 const res = await fetch('/api/templates', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCSRFToken() },
                     body: JSON.stringify(form)
                 });
                 if (res.ok) {
@@ -83,7 +84,7 @@ export default function TemplatesPage() {
     const deleteTemplate = async (id: string) => {
         if (!confirm('Delete this template?')) return;
         try {
-            const res = await fetch(`/api/templates?id=${id}`, { method: 'DELETE' });
+            const res = await fetch(`/api/templates?id=${id}`, { method: 'DELETE', headers: { 'X-CSRF-Token': getCSRFToken() } });
             if (res.ok) {
                 setTemplates(prev => prev.filter(t => t.id !== id));
             }

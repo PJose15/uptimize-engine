@@ -138,7 +138,7 @@ async function testBasicExecution() {
         const firstMessage = result.data.message_library[0];
         console.log(`\n💬 Sample Message for ${firstMessage.lead_id}:`);
         console.log(`   Channel: ${firstMessage.channel}`);
-        console.log(`   Problem-First: ${firstMessage.track_messages.problem_first.substring(0, 100)}...`);
+        console.log(`   Problem-First: ${firstMessage.track_messages.problem_first.email.substring(0, 100)}...`);
         console.log(`   Follow-up Touches: ${firstMessage.followup_sequence.length}`);
       }
 

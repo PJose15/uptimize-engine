@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { validateSession } from '@/lib/auth';
 import { getClientIdFromRequest } from '@/lib/portal';
+import { validateCSRFToken } from '@/lib/csrf';
 
 function getSessionToken(request: NextRequest): string | null {
     const cookieHeader = request.headers.get('cookie');
@@ -65,7 +66,7 @@ export async function GET(
             agent5Output: safeJsonParse(pipelineSession.agent5Output),
             selectedProspects: safeJsonParse(pipelineSession.selectedProspects),
             selectedBookings: safeJsonParse(pipelineSession.selectedBookings),
-            totalCost: pipelineSession.totalCost,
+            totalCost: pipelineSession.totalCostUsd,
             createdAt: pipelineSession.createdAt.toISOString(),
             updatedAt: pipelineSession.updatedAt.toISOString(),
             completedAt: pipelineSession.completedAt?.toISOString() ?? null,
@@ -87,8 +88,11 @@ export async function PATCH(
 ) {
     try {
         const { id } = await params;
+        const csrfToken = request.headers.get('x-csrf-token');
         const token = getSessionToken(request);
-        if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        if (!csrfToken || !token || !validateCSRFToken(csrfToken, token)) {
+            return NextResponse.json({ error: 'Invalid CSRF token' }, { status: 403 });
+        }
         const session = await validateSession(token);
         if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -139,7 +143,7 @@ export async function PATCH(
 
         // Accumulate cost
         if (typeof body.addCost === 'number' && body.addCost > 0) {
-            updateData.totalCost = existing.totalCost + body.addCost;
+            updateData.totalCostUsd = existing.totalCostUsd + body.addCost;
         }
 
         if (Object.keys(updateData).length === 0) {
@@ -157,7 +161,7 @@ export async function PATCH(
             label: updated.label,
             status: updated.status,
             currentStage: updated.currentStage,
-            totalCost: updated.totalCost,
+            totalCost: updated.totalCostUsd,
             updatedAt: updated.updatedAt.toISOString(),
             completedAt: updated.completedAt?.toISOString() ?? null,
         });
@@ -178,8 +182,11 @@ export async function DELETE(
 ) {
     try {
         const { id } = await params;
+        const csrfToken = request.headers.get('x-csrf-token');
         const token = getSessionToken(request);
-        if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        if (!csrfToken || !token || !validateCSRFToken(csrfToken, token)) {
+            return NextResponse.json({ error: 'Invalid CSRF token' }, { status: 403 });
+        }
         const session = await validateSession(token);
         if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 

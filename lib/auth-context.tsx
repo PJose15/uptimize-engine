@@ -20,6 +20,13 @@ const AuthContext = createContext<AuthContextType | null>(null);
 // Routes that don't require authentication
 const publicRoutes = ['/login', '/api', '/portal'];
 
+/** Read the csrf-token cookie value from document.cookie */
+export function getCSRFToken(): string {
+    if (typeof document === 'undefined') return '';
+    const match = document.cookie.match(/(?:^|;\s*)csrf-token=([^;]*)/);
+    return match ? match[1] : '';
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
@@ -86,7 +93,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             await fetch('/api/auth', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': getCSRFToken(),
+                },
                 body: JSON.stringify({ action: 'logout' }),
             });
         } finally {

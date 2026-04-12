@@ -43,7 +43,7 @@ export const SettingsSchema = z.object({
 export const WebhookTriggerSchema = z.object({
     leads: z.string().min(10).max(50000),
     callbackUrl: z.string().url().optional(),
-    metadata: z.record(z.unknown()).optional(),
+    metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 // API Key validation

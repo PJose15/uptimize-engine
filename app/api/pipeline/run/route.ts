@@ -8,6 +8,7 @@ import { saveRun, generateRunId } from '@/lib/history';
 import { startRun, updateRunAgent, completeRun, isRunCancelled } from '@/lib/pipeline-state';
 import { checkRateLimit, getClientId, RATE_LIMITS, rateLimitResponse } from '@/lib/rate-limit';
 import { logActivityEvent, logAuditEntry, refreshPortalStats } from '@/lib/portal-events';
+import { validateCSRFToken } from '@/lib/csrf';
 
 // Import agent functions
 import { runAgent1MarketIntelligence } from '../../agents/run/uptimize/agent-1-market-intelligence/agent';
@@ -53,6 +54,16 @@ function safeGet<T>(obj: unknown, ...keys: string[]): T | undefined {
 }
 
 export async function POST(request: NextRequest) {
+    // CSRF validation (only when session cookie is present — server-to-server calls like webhooks skip this)
+    const csrfToken = request.headers.get('x-csrf-token');
+    const sessionToken = request.headers.get('cookie')?.match(/session=([^;]+)/)?.[1];
+    if (sessionToken && (!csrfToken || !validateCSRFToken(csrfToken, sessionToken))) {
+        return new Response(JSON.stringify({ error: 'Invalid CSRF token' }), {
+            status: 403,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
     const encoder = new TextEncoder();
 
     // Rate limiting

@@ -6,6 +6,7 @@
 export {
   Agent5ClientSuccess,
   runAgent5,
+  runAgent5Orchestrated,
   AGENT_5_SYSTEM_PROMPT,
   type Agent5Config,
   type Agent5Input,
@@ -37,6 +38,9 @@ export type {
   WeeklyWinReportTemplate,
   TestimonialRequest,
   CaseStudyOutline,
+  SixPillarProgress,
+  PillarMetrics,
+  Agent5Result,
 } from './types';
 
 export { calculateHealthScore, determineRiskLevel } from './types';

@@ -1,14 +1,16 @@
 /**
  * Rate Limiting Utility
- * In-memory rate limiter with sliding window
+ * In-memory rate limiter with sliding window + DB-backed option for production.
  */
 
-interface RateLimitEntry {
+import { prisma } from '@/lib/prisma';
+
+interface RateLimitMemEntry {
     count: number;
     resetTime: number;
 }
 
-const rateLimitStore = new Map<string, RateLimitEntry>();
+const rateLimitStore = new Map<string, RateLimitMemEntry>();
 
 export interface RateLimitConfig {
     windowMs: number;      // Time window in milliseconds
@@ -29,8 +31,13 @@ export interface RateLimitResult {
     resetIn: number;  // ms until reset
 }
 
+/** Returns true if DATABASE_URL points to PostgreSQL */
+function isPostgres(): boolean {
+    return (process.env.DATABASE_URL || '').startsWith('postgresql://');
+}
+
 /**
- * Check if a request is rate limited
+ * Check if a request is rate limited (in-memory)
  */
 export function checkRateLimit(
     identifier: string,
@@ -76,6 +83,79 @@ export function checkRateLimit(
 }
 
 /**
+ * DB-backed rate limiting — survives restarts and works across instances.
+ */
+export async function checkRateLimitDB(
+    identifier: string,
+    config: RateLimitConfig = RATE_LIMITS.api
+): Promise<RateLimitResult> {
+    const now = new Date();
+    const resetAt = new Date(now.getTime() + config.windowMs);
+
+    const existing = await prisma.rateLimitEntry.findUnique({
+        where: { key: identifier },
+    });
+
+    // No entry or expired — create fresh
+    if (!existing || existing.resetAt <= now) {
+        await prisma.rateLimitEntry.upsert({
+            where: { key: identifier },
+            update: { count: 1, resetAt },
+            create: { key: identifier, count: 1, resetAt },
+        });
+        return {
+            allowed: true,
+            remaining: config.maxRequests - 1,
+            resetIn: config.windowMs,
+        };
+    }
+
+    // Over limit
+    if (existing.count >= config.maxRequests) {
+        return {
+            allowed: false,
+            remaining: 0,
+            resetIn: existing.resetAt.getTime() - now.getTime(),
+        };
+    }
+
+    // Increment
+    await prisma.rateLimitEntry.update({
+        where: { key: identifier },
+        data: { count: existing.count + 1 },
+    });
+
+    return {
+        allowed: true,
+        remaining: config.maxRequests - (existing.count + 1),
+        resetIn: existing.resetAt.getTime() - now.getTime(),
+    };
+}
+
+/**
+ * Auto-select rate limiter: DB-backed for PostgreSQL, in-memory for SQLite.
+ */
+export async function checkRateLimitAuto(
+    identifier: string,
+    config: RateLimitConfig = RATE_LIMITS.api
+): Promise<RateLimitResult> {
+    if (isPostgres()) {
+        return checkRateLimitDB(identifier, config);
+    }
+    return checkRateLimit(identifier, config);
+}
+
+/**
+ * Clean up expired DB rate-limit entries.
+ */
+export async function cleanupExpiredRateLimits(): Promise<number> {
+    const result = await prisma.rateLimitEntry.deleteMany({
+        where: { resetAt: { lte: new Date() } },
+    });
+    return result.count;
+}
+
+/**
  * Get rate limit headers for response
  */
 export function getRateLimitHeaders(result: RateLimitResult): Record<string, string> {
@@ -105,7 +185,7 @@ export function rateLimitResponse(result: RateLimitResult): Response {
 }
 
 /**
- * Clean up expired entries from store
+ * Clean up expired entries from in-memory store
  */
 function cleanupExpiredEntries(): void {
     const now = Date.now();

@@ -78,6 +78,7 @@ export interface ExpansionMap {
   phase_2_recommendations: string[];
   phase_3_optional: string[];
   upsell_triggers: string[];
+  expansion_proposal?: string;
 }
 
 export interface ProofAssetPipeline {
@@ -89,11 +90,29 @@ export interface ProofAssetPipeline {
 
 export type RiskLevel = 'healthy' | 'watch' | 'at_risk';
 
+export interface PillarMetrics {
+  baseline: string | number;
+  current: string | number;
+  trend: 'up' | 'down' | 'stable';
+}
+
+export interface SixPillarProgress {
+  shadow_ops: { hours_saved: PillarMetrics; tasks_automated: PillarMetrics; incidents_detected: number; };
+  exceptions: { count: PillarMetrics; auto_handle_rate: PillarMetrics; avg_resolution_hours: PillarMetrics; };
+  audit_trail: { completeness_pct: PillarMetrics; disputes_won: number; compliance_score: PillarMetrics; };
+  knowledge_decisions: { documented_pct: PillarMetrics; avg_approval_hours: PillarMetrics; escalations: number; };
+  handoffs_slas: { sla_hit_rate: PillarMetrics; avg_handoff_minutes: PillarMetrics; stuck_cases: PillarMetrics; };
+  channels_evidence: { capture_rate: PillarMetrics; shadow_incidents: number; findability_score: PillarMetrics; };
+}
+
 export interface ClientHealthScore {
   score_0_100: number;
   risk_level: RiskLevel;
   drivers: string[];
   interventions: string[];
+  quick_win_this_week: string;
+  proof_ready: boolean;
+  per_pillar_health: { pillar: number; name: string; score: number; note: string; }[];
 }
 
 /**
@@ -102,6 +121,7 @@ export interface ClientHealthScore {
 export interface Agent5ClientSuccessPackage {
   onboarding_plan: OnboardingPlan;
   adoption_dashboard: AdoptionDashboard;
+  six_pillar_progress: SixPillarProgress;
   weekly_win_report: WeeklyWinReport;
   issues_and_tickets: Ticket[];
   shadow_ops_reduction_report: ShadowOpsReductionReport;
@@ -218,4 +238,12 @@ export interface CaseStudyOutline {
   }[];
   quote: string;
   next_phase: string;
+}
+
+export interface Agent5Result {
+  success: boolean;
+  message: string;
+  data?: Agent5ClientSuccessPackage;
+  metadata?: { provider: string; model: string; tokensUsed?: number; timestamp: string; latencyMs: number; };
+  error?: { type: string; details: string; timestamp: string; };
 }

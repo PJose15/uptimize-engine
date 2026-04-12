@@ -1,10 +1,11 @@
+// @vitest-environment node
 /**
  * Agent 4: Systems Builder & Delivery Tests
  * Uses real API calls
  */
 
 import { describe, it, expect } from 'vitest';
-import { runAgent4SystemsDelivery } from '../app/api/agents/run/uptimize/agent-4-systems-delivery/agent';
+import { runAgent4SystemsDelivery } from '../../app/api/agents/run/uptimize/agent-4-systems-delivery/agent';
 
 describe('Agent 4: Systems Builder', () => {
     const mockHandoffSpec = {
@@ -56,7 +57,7 @@ describe('Agent 4: Systems Builder', () => {
             'Build system with exception handling',
             {
                 handoffSpec: mockHandoffSpec,
-                clientTools: { available: ['Slack'] },
+                clientTools: { available: ['Slack'], restricted: [] },
                 targetTimelineDays: 7
             },
             'fast'
@@ -86,7 +87,7 @@ describe('Agent 4: Systems Builder', () => {
             'Generate full delivery with handoff kit',
             {
                 handoffSpec: mockHandoffSpec,
-                clientTools: { available: ['Slack', 'Google Sheets'] },
+                clientTools: { available: ['Slack', 'Google Sheets'], restricted: [] },
                 targetTimelineDays: 14
             },
             'fast'
@@ -121,7 +122,7 @@ describe('Agent 4: Systems Builder', () => {
             'Create system with fallback plans',
             {
                 handoffSpec: mockHandoffSpec,
-                clientTools: { available: ['Slack'] },
+                clientTools: { available: ['Slack'], restricted: [] },
                 targetTimelineDays: 10
             },
             'fast'

@@ -267,6 +267,8 @@ const JSON_SCHEMA_SPEC = `
   "required": [
     "pre_call_brief",
     "discovery_notes_structured",
+    "shadow_ops_map",
+    "exception_library",
     "value_calc",
     "solution_blueprint",
     "proposal_sow",
@@ -340,8 +342,9 @@ const JSON_SCHEMA_SPEC = `
     },
     "value_calc": {
       "type": "object",
-      "required": ["assumptions", "time_saved_per_week_hours", "cost_per_hour_assumption", "monthly_value_estimate", "notes"],
+      "required": ["dollar_value_summary", "assumptions", "time_saved_per_week_hours", "cost_per_hour_assumption", "monthly_value_estimate", "notes"],
       "properties": {
+        "dollar_value_summary": { "type": "string", "description": "Dollar-first one-sentence summary, e.g. '$14,400/year leaking from follow-up chaos + manual scheduling.'" },
         "assumptions": { "type": "array", "items": { "type": "string" } },
         "time_saved_per_week_hours": { "type": "number" },
         "cost_per_hour_assumption": { "type": "number" },
@@ -415,15 +418,61 @@ const JSON_SCHEMA_SPEC = `
         "risks": { "type": "array", "items": { "type": "string" } },
         "definition_of_done": { "type": "array", "items": { "type": "string" } }
       }
+    },
+    "shadow_ops_map": {
+      "type": "object",
+      "required": ["top_invisible_tasks_ranked", "off_system_channels", "context_loss_points", "audit_gaps"],
+      "properties": {
+        "top_invisible_tasks_ranked": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["task", "frequency", "impact", "why_it_exists", "estimated_weekly_hours"],
+            "properties": {
+              "task": { "type": "string" },
+              "frequency": { "type": "string", "enum": ["daily", "weekly", "monthly", "ad_hoc"] },
+              "impact": { "type": "string", "enum": ["high", "medium", "low"] },
+              "why_it_exists": { "type": "string" },
+              "estimated_weekly_hours": { "type": "number", "description": "Conservative estimate of weekly hours spent on this task" }
+            }
+          }
+        },
+        "off_system_channels": { "type": "array", "items": { "type": "string" } },
+        "context_loss_points": { "type": "array", "items": { "type": "string" } },
+        "audit_gaps": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "exception_library": {
+      "type": "object",
+      "required": ["top_exceptions_ranked", "exception_metrics_assumptions", "exceptions_to_productize"],
+      "properties": {
+        "top_exceptions_ranked": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["exception_name", "frequency", "impact", "current_handling", "desired_handling"],
+            "properties": {
+              "exception_name": { "type": "string" },
+              "frequency": { "type": "string", "enum": ["daily", "weekly", "monthly", "ad_hoc"] },
+              "impact": { "type": "string", "enum": ["high", "medium", "low"] },
+              "current_handling": { "type": "string" },
+              "desired_handling": { "type": "string" }
+            }
+          }
+        },
+        "exception_metrics_assumptions": { "type": "array", "items": { "type": "string" } },
+        "exceptions_to_productize": { "type": "array", "items": { "type": "string" } }
+      }
     }
   },
   "definitions": {
     "phase_block": {
       "type": "object",
-      "required": ["goal", "deliverables", "time_to_value", "dependencies"],
+      "required": ["goal", "deliverables", "leaks_addressed", "time_to_value", "dependencies"],
       "properties": {
         "goal": { "type": "string" },
         "deliverables": { "type": "array", "items": { "type": "string" } },
+        "leaks_addressed": { "type": "array", "items": { "type": "string" }, "description": "Which specific leaks from discovery_notes are fixed by this phase" },
         "time_to_value": { "type": "string" },
         "dependencies": { "type": "array", "items": { "type": "string" } }
       }
@@ -604,6 +653,10 @@ CRITICAL REQUIREMENTS:
 6. Phase 1 should always be a "fast win" (7-14 days to value).
 7. Close plan must include follow-up messages for Day 0, 2, 4, 7, and 10.
 8. Writing style: operator-grade, crisp, no fluff.
+9. value_calc must begin with dollar_value_summary: a one-sentence dollar-first statement, e.g. '$14,400/year leaking from follow-up chaos + manual scheduling.'
+10. shadow_ops_map.top_invisible_tasks_ranked: each task must include estimated_weekly_hours (conservative).
+11. solution_blueprint.phase_1.leaks_addressed: list which specific leaks from discovery_notes are fixed by Phase 1.
+12. proposal_sow.pricing_options must use exactly 3 tiers: 'Starter' (fixes #1 leak), 'Growth' (fixes top 3), 'Full System' (all pillars).
 
 CRITICAL: Return ONLY valid JSON. No markdown code fences. No trailing commas. Check your JSON validity before outputting.`;
 
@@ -672,6 +725,8 @@ export async function runAgent3SalesEngineer(
     // Validate basic structure
     if (!parsed.pre_call_brief ||
         !parsed.discovery_notes_structured ||
+        !parsed.shadow_ops_map ||
+        !parsed.exception_library ||
         !parsed.value_calc ||
         !parsed.solution_blueprint ||
         !parsed.proposal_sow ||

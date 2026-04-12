@@ -1,10 +1,11 @@
+// @vitest-environment node
 /**
  * Agent 2: Outbound & Appointment Setter Tests
  * Uses real API calls
  */
 
 import { describe, it, expect } from 'vitest';
-import { runAgent2OutboundAppointment } from '../app/api/agents/run/uptimize/agent-2-outbound-appointment/agent';
+import { runAgent2OutboundAppointment } from '../../app/api/agents/run/uptimize/agent-2-outbound-appointment/agent';
 
 describe('Agent 2: Outbound & Appointment', () => {
     const mockTargetPack = {

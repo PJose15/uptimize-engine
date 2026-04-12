@@ -36,6 +36,31 @@ export interface Agent4Context {
   targetTimelineDays?: number;
 }
 
+export type IndustryVertical =
+  | 'fitness'
+  | 'healthcare_admin'
+  | 'real_estate'
+  | 'construction_contracting'
+  | 'private_equity'
+  | 'legal_services'
+  | 'field_service'
+  | 'retail'
+  | 'hospitality'
+  | 'logistics'
+  | 'professional_services'
+  | 'content_creator'
+  | 'ecommerce'
+  | 'general';
+
+export type BusinessSize = 'solo' | 'small' | 'medium' | 'enterprise';
+
+export interface VerticalContext {
+  industry: IndustryVertical;
+  businessSize: BusinessSize;
+  primaryTools: string[];
+  regulatoryContext?: string;
+}
+
 export interface Agent3HandoffSpec {
   buildModules: string[];
   integrations: string[];
@@ -43,6 +68,7 @@ export interface Agent3HandoffSpec {
   definitionOfDone: string[];
   topExceptionsToHandle: string[]; // v2
   auditTrailFieldsRequired: string[]; // v2
+  verticalContext?: VerticalContext;
   scopeReference?: string;
   signedDate?: string;
 }
@@ -101,7 +127,7 @@ export interface DeliveryPackageOutput {
   build_plan: BuildPlan;
   data_model: DataModel;
   workflow_specs: WorkflowSpec[];
-  agent_spec_sheets: AgentSpecSheet[];
+  agent_spec_sheets: ClientAgentSpec[];
   qa_plan_and_results: QAPlanAndResults;
   fallback_modes: FallbackMode[];
   client_handoff_kit: ClientHandoffKit;
@@ -172,20 +198,73 @@ export interface ExceptionPath {
 }
 
 // ========================================
-// AGENT SPEC SHEET
+// CLIENT AGENT SPEC (full instantiation spec)
 // ========================================
 
-export interface AgentSpecSheet {
+export interface ClientAgentSpec {
+  // Identity
   agent_name: string;
-  purpose: string;
+  agent_role: string;
+  agent_persona: string;
+
+  // Intelligence
+  system_prompt: string;
+  context_documents: string[];
+  memory_config: {
+    short_term: string;
+    long_term: string;
+    shared: string;
+  };
+
+  // Capabilities
+  allowed_tools: string[];
+  tool_configs: Record<string, {
+    api_endpoint?: string;
+    auth_method?: string;
+    rate_limits?: string;
+    fallback?: string;
+  }>;
+
+  // Boundaries
   allowed_actions: string[];
-  disallowed_actions: string[];
-  tool_permissions: string[];
-  input_contract: string[];
-  output_contract: string[];
-  guardrails: string[];
-  escalation_rules: string[];
-  logging: string[];
+  requires_approval: string[];
+  never_do: string[];
+
+  // Integration
+  data_sources: {
+    name: string;
+    type: string;
+    access_method: string;
+    fields_used: string[];
+  }[];
+  output_destinations: string[];
+
+  // Behavior
+  escalation_rules: {
+    trigger: string;
+    action: string;
+    notify: string;
+  }[];
+  fallback_behaviors: {
+    condition: string;
+    behavior: string;
+  }[];
+
+  // Monitoring
+  success_metrics: {
+    metric_name: string;
+    target: string;
+    measurement_method: string;
+  }[];
+  alert_conditions: {
+    condition: string;
+    severity: string;
+    action: string;
+  }[];
+
+  // Pillar mapping
+  pillars_addressed: string[];
+  money_leaks_resolved: string[];
 }
 
 // ========================================

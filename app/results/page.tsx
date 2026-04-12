@@ -15,6 +15,7 @@ import {
     ChevronDown,
     ChevronUp
 } from 'lucide-react';
+import { getCSRFToken } from '@/lib/auth-context';
 
 const SAMPLE_LEADS = `1. Sarah Chen, Operations Director at GrowthScale (200-person SaaS)
    - Currently tracks 500+ leads/month in spreadsheets
@@ -107,7 +108,7 @@ export default function ResultsPage() {
         try {
             const response = await fetch('/api/pipeline/run', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCSRFToken() },
                 body: JSON.stringify({ leads: SAMPLE_LEADS }),
             });
 

@@ -52,6 +52,7 @@ export interface DiscoveryNotesStructured {
 // ============================================================================
 
 export interface ValueCalc {
+  dollar_value_summary: string;
   assumptions: string[];
   time_saved_per_week_hours: number;
   cost_per_hour_assumption: number;
@@ -66,6 +67,7 @@ export interface ValueCalc {
 export interface PhaseBlock {
   goal: string;
   deliverables: string[];
+  leaks_addressed: string[];
   time_to_value: string;
   dependencies: string[];
 }
@@ -123,6 +125,7 @@ export interface ClosePlan {
 
 export interface ShadowOpsTask {
   task: string;
+  estimated_weekly_hours: number;
   frequency: "daily" | "weekly" | "monthly" | "ad_hoc";
   impact: "high" | "medium" | "low";
   why_it_exists: string;

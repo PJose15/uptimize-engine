@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui';
 import { ArrowLeft, Loader2, Sparkles } from 'lucide-react';
 import Link from 'next/link';
+import { getCSRFToken } from '@/lib/auth-context';
 
 const EXAMPLE_QUERIES = [
   'Find 10 gyms in Ponce, Puerto Rico',
@@ -29,7 +30,7 @@ export default function NewSessionPage() {
     try {
       const res = await fetch('/api/pipeline/sessions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCSRFToken() },
         body: JSON.stringify({ label: label.trim() }),
       });
 

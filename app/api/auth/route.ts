@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import { authenticate, logout, validateSession } from '@/lib/auth';
 import { checkRateLimit, getClientId, RATE_LIMITS, rateLimitResponse } from '@/lib/rate-limit';
+import { generateCSRFToken, validateCSRFToken } from '@/lib/csrf';
 
 /**
- * POST /api/auth - Login
+ * POST /api/auth - Login / Logout
  */
 export async function POST(request: Request) {
     // Rate limit login attempts
@@ -18,17 +19,20 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { username, password, action } = body;
 
-        // Logout action
+        // Logout action — requires valid CSRF token
         if (action === 'logout') {
-            const token = request.headers.get('cookie')?.match(/session=([^;]+)/)?.[1];
-            if (token) {
-                logout(token);
+            const sessionToken = request.headers.get('cookie')?.match(/session=([^;]+)/)?.[1];
+            const csrfToken = request.headers.get('x-csrf-token');
+
+            if (!csrfToken || !sessionToken || !validateCSRFToken(csrfToken, sessionToken)) {
+                return NextResponse.json({ error: 'Invalid CSRF token' }, { status: 403 });
             }
-            return NextResponse.json({ success: true }, {
-                headers: {
-                    'Set-Cookie': 'session=; Path=/; HttpOnly; Max-Age=0',
-                },
-            });
+
+            logout(sessionToken);
+            const headers = new Headers();
+            headers.append('Set-Cookie', 'session=; Path=/; HttpOnly; Max-Age=0');
+            headers.append('Set-Cookie', 'csrf-token=; Path=/; Max-Age=0');
+            return NextResponse.json({ success: true }, { headers });
         }
 
         // Login
@@ -48,13 +52,18 @@ export async function POST(request: Request) {
             );
         }
 
+        // Generate CSRF token tied to session
+        const csrfToken = generateCSRFToken(result.token!);
+        const isProduction = process.env.NODE_ENV === 'production';
+        const secureFlag = isProduction ? ' Secure;' : '';
+
+        const headers = new Headers();
+        headers.append('Set-Cookie', `session=${result.token}; Path=/; HttpOnly; SameSite=Strict;${secureFlag} Max-Age=86400`);
+        headers.append('Set-Cookie', `csrf-token=${csrfToken}; Path=/; SameSite=Strict;${secureFlag} Max-Age=86400`);
+
         return NextResponse.json(
             { success: true, message: 'Login successful' },
-            {
-                headers: {
-                    'Set-Cookie': `session=${result.token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=86400`,
-                },
-            }
+            { headers }
         );
 
     } catch (error) {

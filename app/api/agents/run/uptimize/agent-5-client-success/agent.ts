@@ -225,8 +225,12 @@ Return a single JSON object with:
 - issues_and_tickets (ticket list with severity/status/owner/pillar_affected)
 - optimization_backlog (prioritized list with pillar mapping)
 - expansion_map (Phase 2/3 recommendations mapped to pillar gaps)
+  - expansion_proposal: if expansion_readiness_score > 7, generate a specific proposal (module name, pillar extended, estimated value, suggested start). Otherwise null.
 - proof_asset_pipeline (testimonial + case study with pillar-specific ROI)
 - client_health_score (score 0-100 + risk level + per-pillar health + interventions)
+  - quick_win_this_week: ONE specific action (not generic) for the next 7 days to improve score
+  - proof_ready: true if score > 75 AND at least one pillar trends "up" AND no P1 tickets open
+  - per_pillar_health: for each pillar (1-6), score 0-100 + note
 
 You do not modify systems directly (Agent-4 does).
 No scope changes without change request process.
@@ -390,7 +394,8 @@ export class Agent5ClientSuccess {
     prompt += `6. Optimization backlog (prioritized improvements)\n`;
     prompt += `7. Expansion map (Phase 2/3 recommendations + triggers)\n`;
     prompt += `8. Proof asset pipeline (testimonial + case study + ROI points)\n`;
-    prompt += `9. Client health score (0-100 + risk level + drivers + interventions)\n\n`;
+    prompt += `9. Client health score (0-100 + risk level + drivers + interventions)\n`;
+    prompt += `10. Six-pillar progress snapshot (baseline → current → trend for each pillar)\n\n`;
 
     prompt += `Return ONLY the JSON object. No markdown fences, no explanations.`;
 
@@ -442,4 +447,97 @@ export async function runAgent5(
 ): Promise<Agent5ClientSuccessPackage> {
   const agent = new Agent5ClientSuccess(config);
   return agent.run(input);
+}
+
+/**
+ * Orchestrator-compatible wrapper for Agent 5
+ */
+export async function runAgent5Orchestrated(
+  task: string,
+  context: {
+    handoffKit?: Agent4HandoffKit;
+    currentWeekOf?: string;
+    usageData?: Agent5Input['usage_data'];
+    clientFeedback?: string;
+    openTickets?: Agent5Input['open_tickets'];
+    anthropicApiKey?: string;
+  },
+  mode: 'fast' | 'balanced' | 'quality' = 'balanced'
+): Promise<import('./types').Agent5Result> {
+  const startTime = Date.now();
+
+  try {
+    const apiKey = context.anthropicApiKey || process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      return {
+        success: false,
+        message: 'ANTHROPIC_API_KEY not provided',
+        error: { type: 'CONFIG_ERROR', details: 'Missing ANTHROPIC_API_KEY', timestamp: new Date().toISOString() },
+      };
+    }
+
+    const modelMap: Record<string, string> = {
+      fast: 'claude-haiku-4-5-20251001',
+      balanced: 'claude-sonnet-4-6',
+      quality: 'claude-opus-4-6',
+    };
+
+    const agent = new Agent5ClientSuccess({
+      apiKey,
+      model: modelMap[mode] || modelMap.balanced,
+    });
+
+    const input: Agent5Input = {
+      handoff_kit: context.handoffKit || {
+        project_id: 'unknown',
+        account_id: 'unknown',
+        client_name: 'unknown',
+        quickstart_5min: [],
+        daily_sop: [],
+        weekly_sop: [],
+        exception_sop: [],
+        training_plan: [],
+        admin_notes: [],
+        baseline_kpis: [],
+        workflows_delivered: [],
+        shadow_ops_baseline: [],
+        exception_library: [],
+      },
+      current_week_of: context.currentWeekOf || new Date().toISOString().split('T')[0],
+      usage_data: context.usageData,
+      client_feedback: context.clientFeedback,
+      open_tickets: context.openTickets,
+    };
+
+    const data = await agent.run(input);
+    const latencyMs = Date.now() - startTime;
+
+    return {
+      success: true,
+      message: 'Client success package generated successfully',
+      data,
+      metadata: {
+        provider: 'anthropic',
+        model: modelMap[mode] || modelMap.balanced,
+        timestamp: new Date().toISOString(),
+        latencyMs,
+      },
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: 'Agent 5 execution failed',
+      error: {
+        type: 'EXECUTION_ERROR',
+        details: error instanceof Error ? error.message : String(error),
+        timestamp: new Date().toISOString(),
+      },
+      metadata: {
+        provider: 'anthropic',
+        model: 'unknown',
+        timestamp: new Date().toISOString(),
+        latencyMs: Date.now() - startTime,
+      },
+    };
+  }
 }

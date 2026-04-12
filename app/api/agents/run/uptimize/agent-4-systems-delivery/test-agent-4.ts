@@ -177,7 +177,7 @@ async function testBasicDeliveryPackage() {
     console.log("\n--- Agent Spec Sheets ---");
     console.log("Total Agents:", result.data.agent_spec_sheets.length);
     result.data.agent_spec_sheets.forEach((agent, idx) => {
-      console.log(`  ${idx + 1}. ${agent.agent_name}: ${agent.purpose}`);
+      console.log(`  ${idx + 1}. ${agent.agent_name}: ${agent.agent_role}`);
     });
 
     console.log("\n--- QA ---");
@@ -270,10 +270,10 @@ async function testFullContextDeliveryPackage() {
     console.log("\n--- Agent Spec Sheets ---");
     result.data.agent_spec_sheets.forEach((agent, idx) => {
       console.log(`\n  Agent ${idx + 1}: ${agent.agent_name}`);
-      console.log(`  Purpose: ${agent.purpose}`);
+      console.log(`  Role: ${agent.agent_role}`);
       console.log(`  Allowed Actions: ${agent.allowed_actions.length}`);
-      console.log(`  Disallowed Actions: ${agent.disallowed_actions.length}`);
-      console.log(`  Guardrails: ${agent.guardrails.length}`);
+      console.log(`  Never Do: ${agent.never_do.length}`);
+      console.log(`  Pillars Addressed: ${agent.pillars_addressed.length}`);
       console.log(`  Escalation Rules: ${agent.escalation_rules.length}`);
     });
 

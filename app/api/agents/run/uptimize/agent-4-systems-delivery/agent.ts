@@ -31,6 +31,13 @@ Ship stable, adoptable systems that address ALL 6 PILLARS of the operational aud
 
 We do not ship demos. We ship reliable systems with tested failure modes.
 
+VERTICAL-AWARE BUILD INTELLIGENCE
+When verticalContext is provided:
+- Use the industry's actual common tools (fitness: Mindbody/Pike13; healthcare: EHR; field_service: ServiceTitan)
+- Size complexity to businessSize (solo: minimize; enterprise: add approval layers)
+- primaryTools override generic tool suggestions
+- Workflow specs must match the vertical's real operational constraints
+
 DELIVERY PRINCIPLES
 1) Time-to-value first: ship one end-to-end "wow" workflow quickly.
 2) Exception-first: top exceptions are first-class deliverables.
@@ -48,7 +55,7 @@ MANDATORY BUILD REQUIREMENTS (per workflow)
 - Quickstart usable in 5–10 minutes
 
 V3 AUTOMATION & MCP INTEGRATION REQUIREMENTS
-- Built-in Workflow Execution: Workflows can run natively WITHOUT requiring client to have Make/Zapier/Airtable
+- Built-in Workflow Execution: Workflows run natively on Uptimize infrastructure
 - MCP Integration: If client HAS external tools, connect via MCP (Model Context Protocol)
 - Hybrid Mode: Support both native execution AND MCP integration
 - Every workflow must specify: execution_mode ("native" | "mcp" | "hybrid")
@@ -111,7 +118,19 @@ Return a single JSON object with:
 - build_plan (milestones + acceptance criteria)
 - data_model (include audit trail fields)
 - workflow_specs (must include exception paths)
-- agent_spec_sheets (guardrails + permissions)
+- agent_spec_sheets (full ClientAgentSpec — see below)
+
+CLIENT AGENT SPEC REQUIREMENTS
+Each entry in agent_spec_sheets must be a complete ClientAgentSpec with:
+- Identity: agent_name, agent_role, agent_persona
+- Intelligence: system_prompt (full system prompt for the agent), context_documents, memory_config (short_term, long_term, shared)
+- Capabilities: allowed_tools, tool_configs (keyed by tool name, with api_endpoint, auth_method, rate_limits, fallback)
+- Boundaries: allowed_actions, requires_approval, never_do
+- Integration: data_sources (name, type, access_method, fields_used), output_destinations
+- Behavior: escalation_rules (trigger, action, notify), fallback_behaviors (condition, behavior)
+- Monitoring: success_metrics (metric_name, target, measurement_method), alert_conditions (condition, severity, action)
+- Pillar mapping: pillars_addressed, money_leaks_resolved
+Each spec must be detailed enough to instantiate a real running client agent.
 - qa_plan_and_results (include tool failure tests)
 - fallback_modes
 - client_handoff_kit (quickstart + SOPs + exception SOP)
@@ -140,7 +159,8 @@ const JSON_SCHEMA_SPEC = `
     "qa_plan_and_results",
     "fallback_modes",
     "client_handoff_kit",
-    "post_launch_monitoring"
+    "post_launch_monitoring",
+    "audit_trail_spec"
   ],
   "properties": {
     "build_plan": {
@@ -209,18 +229,90 @@ const JSON_SCHEMA_SPEC = `
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["agent_name", "purpose", "allowed_actions", "disallowed_actions", "tool_permissions", "input_contract", "output_contract", "guardrails", "escalation_rules", "logging"],
+        "required": ["agent_name", "agent_role", "agent_persona", "system_prompt", "context_documents", "memory_config", "allowed_tools", "tool_configs", "allowed_actions", "requires_approval", "never_do", "data_sources", "output_destinations", "escalation_rules", "fallback_behaviors", "success_metrics", "alert_conditions", "pillars_addressed", "money_leaks_resolved"],
         "properties": {
           "agent_name": { "type": "string" },
-          "purpose": { "type": "string" },
+          "agent_role": { "type": "string" },
+          "agent_persona": { "type": "string" },
+          "system_prompt": { "type": "string" },
+          "context_documents": { "type": "array", "items": { "type": "string" } },
+          "memory_config": {
+            "type": "object",
+            "required": ["short_term", "long_term", "shared"],
+            "properties": {
+              "short_term": { "type": "string" },
+              "long_term": { "type": "string" },
+              "shared": { "type": "string" }
+            }
+          },
+          "allowed_tools": { "type": "array", "items": { "type": "string" } },
+          "tool_configs": { "type": "object" },
           "allowed_actions": { "type": "array", "items": { "type": "string" } },
-          "disallowed_actions": { "type": "array", "items": { "type": "string" } },
-          "tool_permissions": { "type": "array", "items": { "type": "string" } },
-          "input_contract": { "type": "array", "items": { "type": "string" } },
-          "output_contract": { "type": "array", "items": { "type": "string" } },
-          "guardrails": { "type": "array", "items": { "type": "string" } },
-          "escalation_rules": { "type": "array", "items": { "type": "string" } },
-          "logging": { "type": "array", "items": { "type": "string" } }
+          "requires_approval": { "type": "array", "items": { "type": "string" } },
+          "never_do": { "type": "array", "items": { "type": "string" } },
+          "data_sources": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "type", "access_method", "fields_used"],
+              "properties": {
+                "name": { "type": "string" },
+                "type": { "type": "string" },
+                "access_method": { "type": "string" },
+                "fields_used": { "type": "array", "items": { "type": "string" } }
+              }
+            }
+          },
+          "output_destinations": { "type": "array", "items": { "type": "string" } },
+          "escalation_rules": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["trigger", "action", "notify"],
+              "properties": {
+                "trigger": { "type": "string" },
+                "action": { "type": "string" },
+                "notify": { "type": "string" }
+              }
+            }
+          },
+          "fallback_behaviors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["condition", "behavior"],
+              "properties": {
+                "condition": { "type": "string" },
+                "behavior": { "type": "string" }
+              }
+            }
+          },
+          "success_metrics": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["metric_name", "target", "measurement_method"],
+              "properties": {
+                "metric_name": { "type": "string" },
+                "target": { "type": "string" },
+                "measurement_method": { "type": "string" }
+              }
+            }
+          },
+          "alert_conditions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["condition", "severity", "action"],
+              "properties": {
+                "condition": { "type": "string" },
+                "severity": { "type": "string" },
+                "action": { "type": "string" }
+              }
+            }
+          },
+          "pillars_addressed": { "type": "array", "items": { "type": "string" } },
+          "money_leaks_resolved": { "type": "array", "items": { "type": "string" } }
         }
       }
     },
@@ -323,6 +415,19 @@ function buildPrompt(task: string, context: Agent4Context = {}): string {
       prompt += `Signed Date: ${context.handoffSpec.signedDate}\n`;
     }
     prompt += "\n";
+
+    // Add vertical context if available
+    if (context.handoffSpec?.verticalContext) {
+      const vc = context.handoffSpec.verticalContext;
+      prompt += `VERTICAL CONTEXT:\n`;
+      prompt += `Industry: ${vc.industry}\n`;
+      prompt += `Business Size: ${vc.businessSize}\n`;
+      prompt += `Primary Tools: ${vc.primaryTools.join(', ')}\n`;
+      if (vc.regulatoryContext) {
+        prompt += `Regulatory Context: ${vc.regulatoryContext}\n`;
+      }
+      prompt += `Generate workflow specs using tools and constraints typical for this vertical.\n\n`;
+    }
   }
 
   // Add client tools and access information
@@ -414,6 +519,7 @@ function validateDeliveryPackage(data: any): { valid: boolean; errors: string[] 
     "fallback_modes",
     "client_handoff_kit",
     "post_launch_monitoring",
+    "audit_trail_spec",
   ];
 
   for (const field of requiredFields) {
@@ -437,9 +543,19 @@ function validateDeliveryPackage(data: any): { valid: boolean; errors: string[] 
     errors.push("workflow_specs must be an array");
   }
 
-  // Validate agent_spec_sheets is an array
+  // Validate agent_spec_sheets is an array with ClientAgentSpec fields
   if (data.agent_spec_sheets && !Array.isArray(data.agent_spec_sheets)) {
     errors.push("agent_spec_sheets must be an array");
+  } else if (Array.isArray(data.agent_spec_sheets)) {
+    const requiredSpecFields = ["agent_name", "agent_role", "system_prompt", "allowed_actions", "escalation_rules", "pillars_addressed"];
+    for (let i = 0; i < data.agent_spec_sheets.length; i++) {
+      const spec = data.agent_spec_sheets[i];
+      for (const field of requiredSpecFields) {
+        if (!spec[field]) {
+          errors.push(`agent_spec_sheets[${i}] missing required field: ${field}`);
+        }
+      }
+    }
   }
 
   return {

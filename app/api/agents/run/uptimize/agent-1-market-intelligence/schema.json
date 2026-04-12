@@ -81,7 +81,9 @@
         "what_to_say",
         "hooks",
         "pattern_interrupt_question",
-        "cta"
+        "cta",
+        "evidence_tier",
+        "pillar_mapping"
       ],
       "properties": {
         "lead_id": { "type": "string" },
@@ -119,7 +121,21 @@
           }
         },
         "pattern_interrupt_question": { "type": "string" },
-        "cta": { "type": "string" }
+        "cta": { "type": "string" },
+        "evidence_tier": { "type": "string", "enum": ["Tier1", "Tier2", "Tier3"], "description": "Lowest evidence tier used across any claim" },
+        "pillar_mapping": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["pain", "pillar", "evidence", "tier"],
+            "properties": {
+              "pain": { "type": "string" },
+              "pillar": { "type": "integer", "minimum": 1, "maximum": 6 },
+              "evidence": { "type": "string" },
+              "tier": { "type": "string", "enum": ["Tier1", "Tier2", "Tier3"] }
+            }
+          }
+        }
       }
     }
   }

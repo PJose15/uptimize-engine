@@ -8,6 +8,7 @@
 import { useState, useCallback } from 'react';
 import { usePortalData } from '@/app/portal/use-portal-data';
 import type { SessionData } from './stage-state-machine';
+import { getCSRFToken } from '@/lib/auth-context';
 
 interface UseSessionResult {
   session: SessionData | null;
@@ -25,7 +26,7 @@ interface UseSessionResult {
 async function patchSession(id: string, body: Record<string, unknown>): Promise<unknown> {
   const res = await fetch(`/api/pipeline/sessions/${id}`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCSRFToken() },
     body: JSON.stringify(body),
   });
   if (!res.ok) {

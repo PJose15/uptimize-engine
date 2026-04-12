@@ -74,12 +74,13 @@
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["task", "frequency", "impact", "why_it_exists"],
+            "required": ["task", "frequency", "impact", "why_it_exists", "estimated_weekly_hours"],
             "properties": {
               "task": { "type": "string" },
               "frequency": { "type": "string", "enum": ["daily", "weekly", "monthly", "ad_hoc"] },
               "impact": { "type": "string", "enum": ["high", "medium", "low"] },
-              "why_it_exists": { "type": "string" }
+              "why_it_exists": { "type": "string" },
+              "estimated_weekly_hours": { "type": "number", "description": "Conservative estimate of weekly hours" }
             }
           }
         },
@@ -112,8 +113,9 @@
     },
     "value_calc": {
       "type": "object",
-      "required": ["assumptions", "time_saved_per_week_hours", "cost_per_hour_assumption", "monthly_value_estimate", "notes"],
+      "required": ["dollar_value_summary", "assumptions", "time_saved_per_week_hours", "cost_per_hour_assumption", "monthly_value_estimate", "notes"],
       "properties": {
+        "dollar_value_summary": { "type": "string", "description": "Dollar-first one-sentence summary" },
         "assumptions": { "type": "array", "items": { "type": "string" } },
         "time_saved_per_week_hours": { "type": "number" },
         "cost_per_hour_assumption": { "type": "number" },
@@ -196,10 +198,11 @@
   "definitions": {
     "phase_block": {
       "type": "object",
-      "required": ["goal", "deliverables", "time_to_value", "dependencies"],
+      "required": ["goal", "deliverables", "leaks_addressed", "time_to_value", "dependencies"],
       "properties": {
         "goal": { "type": "string" },
         "deliverables": { "type": "array", "items": { "type": "string" } },
+        "leaks_addressed": { "type": "array", "items": { "type": "string" }, "description": "Which specific leaks from discovery_notes are fixed by this phase" },
         "time_to_value": { "type": "string" },
         "dependencies": { "type": "array", "items": { "type": "string" } }
       }

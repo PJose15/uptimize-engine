@@ -103,6 +103,9 @@ export interface DailyPlanBlock {
   activity: ActivityType;
   count: number;
   channel: string;
+  suggested_send_day: string;
+  suggested_send_time_local: string;
+  send_schedule_rationale: string;
 }
 
 export type ActivityType =
@@ -122,10 +125,16 @@ export interface MessageLibraryEntry {
   followup_sequence: FollowupTouch[];
 }
 
+export interface ChannelVariant {
+  linkedin_dm: string;
+  email: string;
+  cold_call_script: string;
+}
+
 export interface TrackMessages {
-  pattern_interrupt: string; // v2: Pattern-Interrupt Question track (default)
-  problem_first: string;
-  proof_first: string;
+  pattern_interrupt: ChannelVariant;
+  problem_first: ChannelVariant;
+  proof_first: ChannelVariant;
 }
 
 export interface FollowupTouch {
@@ -154,6 +163,8 @@ export interface ConversationUpdate {
   new_stage: PipelineStage;
   tags: string[]; // v2: Add tags for categorization
   note: string;
+  pain_mentioned?: string;
+  pain_pillar_affected?: number;
 }
 
 export type PipelineStage =

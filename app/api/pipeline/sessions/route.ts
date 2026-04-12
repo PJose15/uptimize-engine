@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { validateSession } from '@/lib/auth';
 import { getClientIdFromRequest } from '@/lib/portal';
+import { validateCSRFToken } from '@/lib/csrf';
 
 function getSessionToken(request: NextRequest): string | null {
     const cookieHeader = request.headers.get('cookie');
@@ -21,8 +22,11 @@ function getSessionToken(request: NextRequest): string | null {
 
 export async function POST(request: NextRequest) {
     try {
+        const csrfToken = request.headers.get('x-csrf-token');
         const token = getSessionToken(request);
-        if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        if (!csrfToken || !token || !validateCSRFToken(csrfToken, token)) {
+            return NextResponse.json({ error: 'Invalid CSRF token' }, { status: 403 });
+        }
         const session = await validateSession(token);
         if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -42,7 +46,7 @@ export async function POST(request: NextRequest) {
                 clientId,
                 label: label.trim(),
                 status: 'active',
-                currentStage: 0,
+                currentStage: 'INITIATED',
             },
         });
 
@@ -53,7 +57,7 @@ export async function POST(request: NextRequest) {
             label: pipelineSession.label,
             status: pipelineSession.status,
             currentStage: pipelineSession.currentStage,
-            totalCost: pipelineSession.totalCost,
+            totalCost: pipelineSession.totalCostUsd,
             createdAt: pipelineSession.createdAt.toISOString(),
         }, { status: 201 });
 
@@ -97,7 +101,7 @@ export async function GET(request: NextRequest) {
             label: s.label,
             status: s.status,
             currentStage: s.currentStage,
-            totalCost: s.totalCost,
+            totalCost: s.totalCostUsd,
             createdAt: s.createdAt.toISOString(),
             updatedAt: s.updatedAt.toISOString(),
             completedAt: s.completedAt?.toISOString() ?? null,

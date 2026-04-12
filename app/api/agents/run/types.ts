@@ -64,6 +64,7 @@ export interface AgentResult {
         latencyMs: number;
         tokensUsed?: number;
         result?: any;  // Structured output from specialized agents (e.g., ZGO parsed JSON)
+        audit?: { invoked_at: string; agent_id: string; mode: string; task_preview: string; context_keys: string[]; };
     };
     usage?: UsageInfo;
     error?: {

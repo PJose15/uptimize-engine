@@ -38,12 +38,15 @@
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["block_name", "activity", "count", "channel"],
+            "required": ["block_name", "activity", "count", "channel", "suggested_send_day", "suggested_send_time_local", "send_schedule_rationale"],
             "properties": {
               "block_name": { "type": "string" },
               "activity": { "type": "string", "enum": ["new_outreach", "followups", "replies_qualification", "booking_admin"] },
               "count": { "type": "integer" },
-              "channel": { "type": "string" }
+              "channel": { "type": "string" },
+              "suggested_send_day": { "type": "string" },
+              "suggested_send_time_local": { "type": "string" },
+              "send_schedule_rationale": { "type": "string" }
             }
           }
         },
@@ -64,9 +67,33 @@
             "type": "object",
             "required": ["pattern_interrupt", "problem_first", "proof_first"],
             "properties": {
-              "pattern_interrupt": { "type": "string" },
-              "problem_first": { "type": "string" },
-              "proof_first": { "type": "string" }
+              "pattern_interrupt": {
+                "type": "object",
+                "required": ["linkedin_dm", "email", "cold_call_script"],
+                "properties": {
+                  "linkedin_dm": { "type": "string" },
+                  "email": { "type": "string" },
+                  "cold_call_script": { "type": "string" }
+                }
+              },
+              "problem_first": {
+                "type": "object",
+                "required": ["linkedin_dm", "email", "cold_call_script"],
+                "properties": {
+                  "linkedin_dm": { "type": "string" },
+                  "email": { "type": "string" },
+                  "cold_call_script": { "type": "string" }
+                }
+              },
+              "proof_first": {
+                "type": "object",
+                "required": ["linkedin_dm", "email", "cold_call_script"],
+                "properties": {
+                  "linkedin_dm": { "type": "string" },
+                  "email": { "type": "string" },
+                  "cold_call_script": { "type": "string" }
+                }
+              }
             }
           },
           "followup_sequence": {
@@ -96,7 +123,9 @@
           "old_stage": { "type": "string" },
           "new_stage": { "type": "string" },
           "tags": { "type": "array", "items": { "type": "string" } },
-          "note": { "type": "string" }
+          "note": { "type": "string" },
+          "pain_mentioned": { "type": "string" },
+          "pain_pillar_affected": { "type": "integer", "minimum": 1, "maximum": 6 }
         }
       }
     },

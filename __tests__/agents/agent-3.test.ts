@@ -1,10 +1,11 @@
+// @vitest-environment node
 /**
  * Agent 3: Sales Engineer & Offer Architect Tests
  * Uses real API calls
  */
 
 import { describe, it, expect } from 'vitest';
-import { runAgent3SalesEngineer } from '../app/api/agents/run/uptimize/agent-3-sales-engineer/agent';
+import { runAgent3SalesEngineer } from '../../app/api/agents/run/uptimize/agent-3-sales-engineer/agent';
 
 describe('Agent 3: Sales Engineer', () => {
     const mockQualifiedLead = {
@@ -24,7 +25,7 @@ describe('Agent 3: Sales Engineer', () => {
                     call_notes: 'Prospect mentioned spending 3 hours on manual routing',
                     call_duration_minutes: 45
                 },
-                mode: 'discovery'
+                mode: 'discovery_execution'
             },
             'fast'
         );
@@ -58,7 +59,7 @@ describe('Agent 3: Sales Engineer', () => {
                     call_notes: 'Many VIP leads slip through cracks',
                     call_duration_minutes: 30
                 },
-                mode: 'discovery'
+                mode: 'discovery_execution'
             },
             'fast'
         );

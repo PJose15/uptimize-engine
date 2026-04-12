@@ -6,6 +6,7 @@ import {
     deleteTemplate,
     getTemplateById
 } from '@/lib/templates';
+import { validateCSRFToken } from '@/lib/csrf';
 
 /**
  * GET /api/templates - Get all templates or a specific one
@@ -43,6 +44,12 @@ export async function GET(request: Request) {
  */
 export async function POST(request: Request) {
     try {
+        const csrfToken = request.headers.get('x-csrf-token');
+        const sessionToken = request.headers.get('cookie')?.match(/session=([^;]+)/)?.[1];
+        if (!csrfToken || !sessionToken || !validateCSRFToken(csrfToken, sessionToken)) {
+            return NextResponse.json({ error: 'Invalid CSRF token' }, { status: 403 });
+        }
+
         const body = await request.json();
 
         if (!body.name || !body.content) {
@@ -74,6 +81,12 @@ export async function POST(request: Request) {
  */
 export async function PUT(request: Request) {
     try {
+        const csrfToken = request.headers.get('x-csrf-token');
+        const sessionToken = request.headers.get('cookie')?.match(/session=([^;]+)/)?.[1];
+        if (!csrfToken || !sessionToken || !validateCSRFToken(csrfToken, sessionToken)) {
+            return NextResponse.json({ error: 'Invalid CSRF token' }, { status: 403 });
+        }
+
         const { searchParams } = new URL(request.url);
         const id = searchParams.get('id');
 
@@ -110,6 +123,12 @@ export async function PUT(request: Request) {
  */
 export async function DELETE(request: Request) {
     try {
+        const csrfToken = request.headers.get('x-csrf-token');
+        const sessionToken = request.headers.get('cookie')?.match(/session=([^;]+)/)?.[1];
+        if (!csrfToken || !sessionToken || !validateCSRFToken(csrfToken, sessionToken)) {
+            return NextResponse.json({ error: 'Invalid CSRF token' }, { status: 403 });
+        }
+
         const { searchParams } = new URL(request.url);
         const id = searchParams.get('id');
 

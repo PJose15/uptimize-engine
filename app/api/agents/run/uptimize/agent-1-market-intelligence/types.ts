@@ -9,6 +9,8 @@ export type ChannelRecommendation = "email" | "linkedin" | "instagram_dm" | "x_d
 
 export type EvidenceType = "website" | "social" | "job_post" | "review" | "news" | "other";
 
+export type EvidenceTier = "Tier1" | "Tier2" | "Tier3";
+
 export type PainCategory =
   // Traditional pain categories
   | "Lead Handling Chaos"
@@ -82,6 +84,13 @@ export interface LeadRecord {
   hooks: Hooks; // (v2)
   pattern_interrupt_question: string; // (v2)
   cta: string;
+  evidence_tier: EvidenceTier;
+  pillar_mapping: {
+    pain: string;
+    pillar: number;
+    evidence: string;
+    tier: EvidenceTier;
+  }[];
 }
 
 // Run metadata structure (v2)

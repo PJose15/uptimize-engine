@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getClientIdFromRequest } from '@/lib/portal';
+import { validateCSRFToken } from '@/lib/csrf';
 
 export async function GET(request: NextRequest) {
     try {
@@ -43,6 +44,12 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
     try {
+        const csrfToken = request.headers.get('x-csrf-token');
+        const sessionToken = request.headers.get('cookie')?.match(/session=([^;]+)/)?.[1];
+        if (!csrfToken || !sessionToken || !validateCSRFToken(csrfToken, sessionToken)) {
+            return NextResponse.json({ error: 'Invalid CSRF token' }, { status: 403 });
+        }
+
         const clientId = await getClientIdFromRequest(request);
         const body = await request.json();
         const { id, decision, decided_by, note } = body;

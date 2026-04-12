@@ -1,11 +1,18 @@
 import { NextResponse } from 'next/server';
 import { cancelRun, getRunStatus, getAllActiveRuns } from '@/lib/pipeline-state';
+import { validateCSRFToken } from '@/lib/csrf';
 
 /**
  * POST /api/pipeline/cancel - Cancel a running pipeline
  */
 export async function POST(request: Request) {
     try {
+        const csrfToken = request.headers.get('x-csrf-token');
+        const sessionToken = request.headers.get('cookie')?.match(/session=([^;]+)/)?.[1];
+        if (sessionToken && (!csrfToken || !validateCSRFToken(csrfToken, sessionToken))) {
+            return NextResponse.json({ error: 'Invalid CSRF token' }, { status: 403 });
+        }
+
         const body = await request.json();
         const { runId } = body;
 

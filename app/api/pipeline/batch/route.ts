@@ -1,10 +1,17 @@
 import { NextResponse } from 'next/server';
+import { validateCSRFToken } from '@/lib/csrf';
 
 /**
  * POST /api/pipeline/batch - Process multiple leads in parallel
  */
 export async function POST(request: Request) {
     try {
+        const csrfToken = request.headers.get('x-csrf-token');
+        const sessionToken = request.headers.get('cookie')?.match(/session=([^;]+)/)?.[1];
+        if (sessionToken && (!csrfToken || !validateCSRFToken(csrfToken, sessionToken))) {
+            return NextResponse.json({ error: 'Invalid CSRF token' }, { status: 403 });
+        }
+
         const body = await request.json();
         const { leads, concurrency = 2 } = body;
 

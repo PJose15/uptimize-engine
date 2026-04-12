@@ -32,7 +32,7 @@ export interface ClientCapabilities {
     communication?: "slack" | "teams" | "discord" | "none";
     sms?: "twilio" | "none";
     database?: "airtable" | "notion" | "sheets" | "postgres" | "none";
-    automation?: "make" | "zapier" | "n8n" | "none";
+    automation?: "zapier" | "none";
   };
 
   // MCP server configurations for their tools

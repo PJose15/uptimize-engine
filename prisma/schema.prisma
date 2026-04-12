@@ -7,7 +7,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:./dev.db"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -33,17 +33,23 @@ model Session {
 }
 
 model PipelineRun {
-  id        String   @id @default(cuid())
-  runId     String   @unique
-  timestamp DateTime @default(now())
-  leads     String   // JSON text
-  duration  Int      // milliseconds
-  cost      Float
-  status    String   // completed, failed, cancelled
-  results   String   // JSON text (stringified JSON)
+  id                  String           @id @default(cuid())
+  runId               String           @unique
+  timestamp           DateTime         @default(now())
+  leads               String           // JSON text
+  duration            Int              // milliseconds
+  cost                Float
+  status              String           // completed, failed, cancelled
+  results             String           // JSON text (stringified JSON)
+  agentId             String?          // V2: which agent produced this run
+  clientId            String?          // V2: client context
+  pipelineSessionId   String?          // V2: link to session
+  pipelineSession     PipelineSession? @relation(fields: [pipelineSessionId], references: [id])
 
   @@index([timestamp])
   @@index([status])
+  @@index([clientId])
+  @@index([pipelineSessionId])
 }
 
 model Template {
@@ -152,7 +158,7 @@ model PortalStats {
 }
 
 // ============================================================================
-// PIPELINE SESSION (Stage-by-Stage State Machine)
+// PIPELINE SESSION V2 (Event-Driven Gate Architecture)
 // ============================================================================
 
 model PipelineSession {
@@ -160,27 +166,509 @@ model PipelineSession {
   sessionId         String    @unique @default(cuid())
   clientId          String
   label             String    // e.g., "10 Gyms - Ponce PR - March 2026"
-  status            String    @default("active") // active, paused, completed, archived
-  currentStage      Int       @default(0)        // 0=init, 1=targeted, 2=outreach, 3=audit, 4=building, 5=success
+  status            String    @default("ACTIVE")    // ACTIVE, PAUSED, BLOCKED, COMPLETE, ABANDONED
+  currentStage      String    @default("INITIATED") // PipelineStage enum value
 
-  // Outputs stored as JSON text per stage
-  agent1Output      String?   // Target Pack JSON
-  agent2Output      String?   // Bookings + campaigns JSON
-  agent3Output      String?   // Money leak map + proposal JSON
-  agent4Output      String?   // Delivery package JSON
-  agent5Output      String?   // Health score + success package JSON
+  // Outputs stored as JSON text per agent
+  agent1Output      String?
+  agent2Output      String?
+  agent3Output      String?
+  agent4Output      String?
+  agent5Output      String?
+  agent6Output      String?   // V2: Closer & Onboarding
 
-  // Selections at each review gate
-  selectedProspects String?   // JSON array of selected lead IDs from Agent 1
-  selectedBookings  String?   // JSON array of selected bookings from Agent 2
+  // Gate decisions stored as JSON text
+  gate1Decision     String?
+  gate2Decision     String?
+  gate3Decision     String?
+  gate4Decision     String?
+  gate5Decision     String?
+
+  // V1 compat fields
+  selectedProspects String?
+  selectedBookings  String?
 
   // Metadata
-  totalCost         Float     @default(0)
+  totalCostUsd      Float     @default(0)
+  totalDurationMs   Int       @default(0)
+  createdBy         String?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   completedAt       DateTime?
 
+  // Relations
+  subAgentRuns      SubAgentRun[]
+  pipelineRuns      PipelineRun[]
+
   @@index([clientId])
   @@index([status])
+  @@index([currentStage])
   @@index([createdAt])
+}
+
+// ============================================================================
+// V1 COMPAT: Add sessionId to PipelineRun
+// ============================================================================
+
+// NOTE: PipelineRun model above already exists — we add pipelineSessionId via
+// the relation below. The actual PipelineRun model is updated in place.
+
+// ============================================================================
+// SUB-AGENT EXECUTION LOG
+// ============================================================================
+
+model SubAgentRun {
+  id                  String    @id @default(cuid())
+  subAgentId          String    // e.g., "1A-research-specialist"
+  parentAgentId       String    // e.g., "agent-1-market-intelligence"
+  pipelineRunId       String?
+  pipelineSessionId   String?
+  pipelineSession     PipelineSession? @relation(fields: [pipelineSessionId], references: [id])
+  clientId            String
+
+  // Task info
+  taskProfile         String    // from TASK_PROFILES
+  modelUsed           String
+  providerUsed        String
+
+  // Results
+  taskCompleted       Boolean   @default(false)
+  confidence          String    @default("medium") // high, medium, low
+  processingNotes     String?   // JSON array of strings
+  fallbacksUsed       String?   // JSON array of strings
+
+  // Escalation
+  escalationNeeded    Boolean   @default(false)
+  escalationSeverity  String?   // P1, P2, P3
+  escalationReason    String?
+
+  // Metrics
+  costUsd             Float     @default(0)
+  durationMs          Int       @default(0)
+  inputTokens         Int       @default(0)
+  outputTokens        Int       @default(0)
+
+  createdAt           DateTime  @default(now())
+
+  @@index([parentAgentId])
+  @@index([pipelineSessionId])
+  @@index([taskProfile, modelUsed])
+  @@index([clientId])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// AGENT 7: NURTURE RECORDS
+// ============================================================================
+
+model NurtureRecord {
+  id              String    @id @default(cuid())
+  leadId          String
+  company         String
+  contactName     String?
+  vertical        String
+  category        String    @default("warm") // hot, warm, cold, lost_deal
+  reason          String    @default("")
+  originalPain    String    @default("")
+  whatWasTried    String    @default("[]") // JSON array
+
+  // Readiness
+  readinessScore  Int       @default(0) // 0-10
+  reQualified     Boolean   @default(false)
+  archived        Boolean   @default(false)
+
+  // Touch tracking
+  lastTouch       DateTime?
+  nextTouch       DateTime?
+  touchCount      Int       @default(0)
+  signalsFound    String?   // JSON array of signal descriptions
+  lastProcessed   DateTime?
+
+  // Source
+  sourceRunId     String?
+  clientId        String
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([nextTouch])
+  @@index([archived, category])
+  @@index([readinessScore])
+  @@index([clientId])
+}
+
+// ============================================================================
+// AGENT 8: LEARNING SYSTEM
+// ============================================================================
+
+model LearningEvent {
+  id                  String    @id @default(cuid())
+  sourceAgentId       String
+  sourceRunId         String?
+  vertical            String
+  learningType        String    // money_leak, exception, integration_quirk, health_score_driver, outreach_hook, model_performance
+
+  key                 String
+  value               String    // JSON
+  dataPoints          Int       @default(1)
+  confidence          Float     @default(0.5)
+  significance        String    @default("flag_only") // flag_only, emerging, tentative, validated
+
+  applied             Boolean   @default(false)
+  requiresPedroReview Boolean   @default(false)
+
+  createdAt           DateTime  @default(now())
+
+  @@index([vertical, learningType])
+  @@index([applied])
+  @@index([significance])
+  @@index([createdAt])
+}
+
+model AgentLearning {
+  id              String    @id @default(cuid())
+  vertical        String
+  agentId         String
+  learningType    String
+  key             String
+
+  value           String    // JSON (anonymized)
+  confidence      Float     @default(0.5) // 0-1
+  label           String    @default("single_observation") // single_observation, emerging, validated, contradicted
+  dataPoints      Int       @default(1)
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  distributions   LearningDistribution[]
+
+  @@unique([vertical, agentId, learningType, key])
+  @@index([vertical, learningType])
+  @@index([confidence])
+}
+
+model LearningDistribution {
+  id                String    @id @default(cuid())
+  agentLearningId   String
+  agentLearning     AgentLearning @relation(fields: [agentLearningId], references: [id], onDelete: Cascade)
+  targetAgentId     String
+
+  effectiveFrom     DateTime  @default(now())
+  delivered         Boolean   @default(false)
+  deliveredAt       DateTime?
+
+  createdAt         DateTime  @default(now())
+
+  @@index([targetAgentId, delivered])
+  @@index([agentLearningId])
+}
+
+model AgentMemoryLog {
+  id              String    @id @default(cuid())
+  clientId        String
+  agentId         String
+  pipelineRunId   String?
+  memoriesRead    String    // JSON array of memory key strings
+
+  createdAt       DateTime  @default(now())
+
+  @@index([clientId, agentId])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// PORTFOLIO MANAGEMENT
+// ============================================================================
+
+model ClientPortfolio {
+  id                    String    @id @default(cuid())
+  clientId              String    @unique
+
+  // Lifecycle
+  stage                 String    @default("onboarding") // onboarding, active, expansion, at_risk, churned
+  vertical              String    @default("")
+  retainerUsd           Float     @default(0)
+  startDate             DateTime  @default(now())
+  weeklyHoursEstimate   Float     @default(0)
+
+  // Health metrics
+  currentHealthScore    Int       @default(0)
+  previousHealthScore   Int       @default(0)
+  healthTrend           String    @default("stable") // improving, stable, declining
+  healthScoreHistory    String    @default("[]") // JSON array of { weekOf, score }
+
+  // Expansion
+  expansionReady        Boolean   @default(false)
+  expansionReadySince   DateTime?
+  expansionStage        String?   // identified, proposed, negotiating, closed
+  expansionValueUsd     Float     @default(0)
+
+  // Alerts
+  hasOpenAlert          Boolean   @default(false)
+  alertDescription      String?
+  alertSeverity         String?   // P1, P2, P3
+
+  // Group (PE/Enterprise)
+  portfolioGroupId      String?
+  portfolioGroup        PortfolioGroup? @relation(fields: [portfolioGroupId], references: [id])
+
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([stage])
+  @@index([vertical])
+  @@index([expansionReady])
+  @@index([portfolioGroupId])
+}
+
+model PortfolioGroup {
+  id                String    @id @default(cuid())
+  groupName         String
+  groupType         String    @default("enterprise") // pe_firm, enterprise, multi_location
+  contactName       String?
+  contactEmail      String?
+  managementFeeUsd  Float     @default(0)
+  portfolioDiscount Float     @default(0.20)
+
+  clients           ClientPortfolio[]
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model PortfolioPattern {
+  id                  String    @id @default(cuid())
+  weekOf              String    // e.g., "2026-W15"
+  patternType         String    // health_decline, expansion_cluster, churn_risk, etc.
+  severity            String    @default("info") // info, warning, critical
+  description         String    @default("")
+  affectedClientIds   String    @default("[]") // JSON array
+  verticalsAffected   String    @default("[]") // JSON array
+
+  wasActedOn          Boolean   @default(false)
+  pedroNotes          String?
+  resolvedAt          DateTime?
+
+  createdAt           DateTime  @default(now())
+
+  @@index([weekOf])
+  @@index([wasActedOn])
+  @@index([severity])
+}
+
+// ============================================================================
+// OPERATIONAL AGENTS (9-13)
+// ============================================================================
+
+model BDRecord {
+  id              String    @id @default(cuid())
+  type            String    @default("prospect") // prospect, partner, referral
+  currentStage    String    @default("identified") // identified, researched, contacted, meeting_scheduled, proposal_sent, negotiating, won, lost
+  pipelineValueUsd Float   @default(0)
+
+  companyName     String
+  contactName     String?
+  contactEmail    String?
+  vertical        String    @default("")
+
+  lastContact     DateTime?
+  nextAction      String?
+  nextActionDue   DateTime?
+
+  researchBriefId String?
+  referredBy      String?   // clientId
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([type, currentStage])
+  @@index([nextActionDue])
+}
+
+model Commitment {
+  id              String    @id @default(cuid())
+  description     String
+  committedTo     String    // name of person/entity
+  committedToType String    @default("client") // client, partner, prospect, team
+  dueDate         DateTime
+  completedAt     DateTime?
+  deferredUntil   DateTime?
+  status          String    @default("open") // open, completed, deferred
+  priority        String    @default("P3") // P1, P2, P3, P4
+  source          String    @default("manual") // call_note, email, sow, bd_call, manual
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([status, dueDate])
+  @@index([priority])
+}
+
+model ContentDraft {
+  id              String    @id @default(cuid())
+  contentType     String    // linkedin_post, article, case_study_hook, thread, email
+  platform        String    @default("linkedin") // linkedin, twitter, email, blog
+  angle           String    @default("")
+  draftText       String    @default("")
+  sourceInsight   String?   // what triggered this content
+  approvalStatus  String    @default("draft") // draft, pending_review, approved, published, rejected
+  scheduledFor    DateTime?
+  publishedAt     DateTime?
+  performanceData String?   // JSON
+
+  clientId        String?
+  vertical        String    @default("")
+  sourceRunId     String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([approvalStatus])
+  @@index([platform])
+  @@index([scheduledFor])
+}
+
+model Invoice {
+  id              String    @id @default(cuid())
+  clientId        String
+  invoiceNumber   String    @unique
+  amountUsd       Float
+  dueDate         DateTime
+  paidAt          DateTime?
+  paymentStatus   String    @default("pending") // pending, sent, paid, overdue, write_off
+  lineItems       String    @default("[]") // JSON array
+  followUpCount   Int       @default(0)
+  lastFollowUpAt  DateTime?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([clientId, paymentStatus])
+  @@index([dueDate])
+  @@index([paymentStatus])
+}
+
+// ============================================================================
+// CLIENT CREDENTIALS (Agent 6B Onboarding)
+// ============================================================================
+
+model ClientCredential {
+  id                  String    @id @default(cuid())
+  clientId            String
+  integrationType     String    // hubspot, mailchimp, gcal, airtable, etc.
+  credentialKey       String    // e.g., "api_key", "oauth_token"
+  encryptedValue      String    // AES-256 encrypted, never plaintext
+  testConnectionPassed Boolean  @default(false)
+  lastTestedAt        DateTime?
+  lastUsedAt          DateTime?
+  addedByAgentId      String    @default("agent-6-closer")
+
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@unique([clientId, integrationType, credentialKey])
+  @@index([clientId])
+}
+
+// ============================================================================
+// COMPLIANCE (Agent 12)
+// ============================================================================
+
+model ComplianceRecord {
+  id              String    @id @default(cuid())
+  clientId        String
+  recordType      String    // contract, baa, renewal, sow_amendment
+  effectiveDate   DateTime
+  expiryDate      DateTime?
+  alertSentAt     DateTime?
+  status          String    @default("active") // active, expired, pending_renewal, terminated
+  requiresBAA     Boolean   @default(false)
+  baaSignedAt     DateTime?
+  documentRef     String?   // external storage link
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([clientId])
+  @@index([status])
+  @@index([expiryDate])
+}
+
+// ============================================================================
+// PORTAL USER SYSTEM (Separate from admin Users)
+// ============================================================================
+
+model PortalUser {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  passwordHash    String
+  clientId        String
+  role            String    @default("view_only") // view_only, approver
+  lastLoginAt     DateTime?
+
+  sessions        PortalSession[]
+  preferences     NotificationPreference?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([clientId])
+}
+
+model PortalSession {
+  id              String    @id @default(cuid())
+  token           String    @unique
+  portalUserId    String
+  portalUser      PortalUser @relation(fields: [portalUserId], references: [id], onDelete: Cascade)
+  expiresAt       DateTime
+  ipAddress       String?
+  userAgent       String?
+
+  createdAt       DateTime  @default(now())
+
+  @@index([portalUserId])
+  @@index([token])
+}
+
+model NotificationPreference {
+  id                    String    @id @default(cuid())
+  portalUserId          String    @unique
+  portalUser            PortalUser @relation(fields: [portalUserId], references: [id], onDelete: Cascade)
+
+  // Approvals
+  approvalEmail         Boolean   @default(true)
+  approvalSms           Boolean   @default(false)
+  approvalFrequency     String    @default("immediate") // immediate, daily_digest
+
+  // Weekly reports
+  weeklyReportEmail     Boolean   @default(true)
+  weeklyReportDay       String    @default("monday")
+  weeklyReportTime      String    @default("09:00")
+
+  // Health alerts
+  healthAlertEmail      Boolean   @default(true)
+  healthAlertThreshold  Int       @default(60) // alert if score drops below
+
+  // P1 alerts (cannot be disabled)
+  p1AlertEmail          Boolean   @default(true)
+  p1AlertSms            Boolean   @default(true)
+
+  timezone              String    @default("America/Puerto_Rico")
+
+  updatedAt             DateTime  @updatedAt
+}
+
+// ============================================================================
+// RATE LIMITING (DB-backed for production / multi-instance)
+// ============================================================================
+
+model RateLimitEntry {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  count     Int      @default(1)
+  resetAt   DateTime
+  createdAt DateTime @default(now())
+
+  @@index([key])
+  @@index([resetAt])
 }

@@ -63,3 +63,38 @@ body {
     background: #52525b;
   }
 }
+
+/* Print-mode: force light theme for PDF capture */
+.print-mode,
+.print-mode * {
+  color-scheme: light !important;
+}
+
+.print-mode {
+  background: #ffffff !important;
+  color: #18181b !important;
+}
+
+.print-mode .dark\:bg-zinc-900 {
+  background-color: #ffffff !important;
+}
+
+.print-mode .dark\:bg-zinc-800\/50,
+.print-mode .dark\:bg-zinc-800 {
+  background-color: #f4f4f5 !important;
+}
+
+.print-mode .dark\:border-zinc-800,
+.print-mode .dark\:border-zinc-700 {
+  border-color: #e4e4e7 !important;
+}
+
+.print-mode .dark\:text-zinc-100,
+.print-mode .dark\:text-zinc-200,
+.print-mode .dark\:text-zinc-300 {
+  color: #18181b !important;
+}
+
+.print-mode .dark\:text-zinc-400 {
+  color: #71717a !important;
+}

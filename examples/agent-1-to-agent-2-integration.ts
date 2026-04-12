@@ -72,12 +72,12 @@ INSTRUCTIONS:
 - Include confidence scores
   `.trim();
 
-  const agent1Context = {
-    segment_focus: "Course creators and community operators with scaling pain",
-    pain_categories: ["PAIN_FOLLOWUP", "PAIN_VISIBILITY", "PAIN_NOSHOW", "PAIN_INBOX"],
-    min_confidence: 0.6,
-    target_count: 5,
-    notes: "Focus on decision-makers with urgent scaling triggers"
+  const agent1Context: import("../app/api/agents/run/uptimize/agent-1-market-intelligence/agent").Agent1ResearchContext = {
+    enable_research: true,
+    research_depth: "standard",
+    candidate_pool_size: 50,
+    output_pack_size: 5,
+    custom_pain_categories: ["PAIN_FOLLOWUP", "PAIN_VISIBILITY", "PAIN_NOSHOW", "PAIN_INBOX"],
   };
 
   const agent1Result = await runAgent1MarketIntelligence(

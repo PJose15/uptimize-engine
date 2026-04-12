@@ -15,7 +15,7 @@ export type {
   DataModel,
   WorkflowSpec,
   ExceptionPath,
-  AgentSpecSheet,
+  ClientAgentSpec,
   QAPlanAndResults,
   TestCase,
   FallbackMode,

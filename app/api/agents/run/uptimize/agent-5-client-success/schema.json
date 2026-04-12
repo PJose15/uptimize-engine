@@ -5,6 +5,7 @@
   "required": [
     "onboarding_plan",
     "adoption_dashboard",
+    "six_pillar_progress",
     "weekly_win_report",
     "issues_and_tickets",
     "shadow_ops_reduction_report",
@@ -59,6 +60,66 @@
           }
         },
         "trend_notes": { "type": "string" }
+      }
+    },
+    "six_pillar_progress": {
+      "type": "object",
+      "required": ["shadow_ops", "exceptions", "audit_trail", "knowledge_decisions", "handoffs_slas", "channels_evidence"],
+      "properties": {
+        "shadow_ops": {
+          "type": "object",
+          "required": ["hours_saved", "tasks_automated", "incidents_detected"],
+          "properties": {
+            "hours_saved": { "$ref": "#/definitions/pillar_metrics" },
+            "tasks_automated": { "$ref": "#/definitions/pillar_metrics" },
+            "incidents_detected": { "type": "integer" }
+          }
+        },
+        "exceptions": {
+          "type": "object",
+          "required": ["count", "auto_handle_rate", "avg_resolution_hours"],
+          "properties": {
+            "count": { "$ref": "#/definitions/pillar_metrics" },
+            "auto_handle_rate": { "$ref": "#/definitions/pillar_metrics" },
+            "avg_resolution_hours": { "$ref": "#/definitions/pillar_metrics" }
+          }
+        },
+        "audit_trail": {
+          "type": "object",
+          "required": ["completeness_pct", "disputes_won", "compliance_score"],
+          "properties": {
+            "completeness_pct": { "$ref": "#/definitions/pillar_metrics" },
+            "disputes_won": { "type": "integer" },
+            "compliance_score": { "$ref": "#/definitions/pillar_metrics" }
+          }
+        },
+        "knowledge_decisions": {
+          "type": "object",
+          "required": ["documented_pct", "avg_approval_hours", "escalations"],
+          "properties": {
+            "documented_pct": { "$ref": "#/definitions/pillar_metrics" },
+            "avg_approval_hours": { "$ref": "#/definitions/pillar_metrics" },
+            "escalations": { "type": "integer" }
+          }
+        },
+        "handoffs_slas": {
+          "type": "object",
+          "required": ["sla_hit_rate", "avg_handoff_minutes", "stuck_cases"],
+          "properties": {
+            "sla_hit_rate": { "$ref": "#/definitions/pillar_metrics" },
+            "avg_handoff_minutes": { "$ref": "#/definitions/pillar_metrics" },
+            "stuck_cases": { "$ref": "#/definitions/pillar_metrics" }
+          }
+        },
+        "channels_evidence": {
+          "type": "object",
+          "required": ["capture_rate", "shadow_incidents", "findability_score"],
+          "properties": {
+            "capture_rate": { "$ref": "#/definitions/pillar_metrics" },
+            "shadow_incidents": { "type": "integer" },
+            "findability_score": { "$ref": "#/definitions/pillar_metrics" }
+          }
+        }
       }
     },
     "weekly_win_report": {
@@ -117,7 +178,8 @@
       "properties": {
         "phase_2_recommendations": { "type": "array", "items": { "type": "string" } },
         "phase_3_optional": { "type": "array", "items": { "type": "string" } },
-        "upsell_triggers": { "type": "array", "items": { "type": "string" } }
+        "upsell_triggers": { "type": "array", "items": { "type": "string" } },
+        "expansion_proposal": { "type": "string" }
       }
     },
     "proof_asset_pipeline": {
@@ -132,12 +194,38 @@
     },
     "client_health_score": {
       "type": "object",
-      "required": ["score_0_100", "risk_level", "drivers", "interventions"],
+      "required": ["score_0_100", "risk_level", "drivers", "interventions", "quick_win_this_week", "proof_ready", "per_pillar_health"],
       "properties": {
         "score_0_100": { "type": "integer", "minimum": 0, "maximum": 100 },
         "risk_level": { "type": "string", "enum": ["healthy", "watch", "at_risk"] },
         "drivers": { "type": "array", "items": { "type": "string" } },
-        "interventions": { "type": "array", "items": { "type": "string" } }
+        "interventions": { "type": "array", "items": { "type": "string" } },
+        "quick_win_this_week": { "type": "string" },
+        "proof_ready": { "type": "boolean" },
+        "per_pillar_health": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["pillar", "name", "score", "note"],
+            "properties": {
+              "pillar": { "type": "integer", "minimum": 1, "maximum": 6 },
+              "name": { "type": "string" },
+              "score": { "type": "integer", "minimum": 0, "maximum": 100 },
+              "note": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "pillar_metrics": {
+      "type": "object",
+      "required": ["baseline", "current", "trend"],
+      "properties": {
+        "baseline": { "type": ["string", "number"] },
+        "current": { "type": ["string", "number"] },
+        "trend": { "type": "string", "enum": ["up", "down", "stable"] }
       }
     }
   }

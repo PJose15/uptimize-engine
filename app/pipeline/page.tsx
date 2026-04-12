@@ -18,6 +18,7 @@ import {
     DollarSign,
     History as HistoryIcon
 } from 'lucide-react';
+import { getCSRFToken } from '@/lib/auth-context';
 
 const SAMPLE_LEADS = `1. Sarah Chen, Operations Director at GrowthScale (200-person SaaS)
    - Currently tracks 500+ leads/month in spreadsheets
@@ -86,7 +87,7 @@ export default function PipelinePage() {
         try {
             await fetch('/api/pipeline/cancel', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCSRFToken() },
                 body: JSON.stringify({ runId: pipeline.runId }),
             });
         } catch (error) {
@@ -109,7 +110,7 @@ export default function PipelinePage() {
         try {
             const response = await fetch('/api/pipeline/run', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCSRFToken() },
                 body: JSON.stringify({ leads }),
             });
 
