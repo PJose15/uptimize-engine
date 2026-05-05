@@ -7,10 +7,15 @@ export {
   Agent5ClientSuccess,
   runAgent5,
   runAgent5Orchestrated,
+  runAgent5SubAgent,
   AGENT_5_SYSTEM_PROMPT,
   type Agent5Config,
   type Agent5Input,
+  type RunAgent5SubAgentConfig,
 } from './agent';
+
+export type { HealthAnalystResult } from './subagents/5a-health-analyst';
+export type { WinReporterResult } from './subagents/5b-win-reporter';
 
 export type {
   Agent5ClientSuccessPackage,

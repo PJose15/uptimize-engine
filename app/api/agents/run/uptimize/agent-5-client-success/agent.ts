@@ -541,3 +541,159 @@ export async function runAgent5Orchestrated(
     };
   }
 }
+
+// ============================================================================
+// SPRINT 12.2 — SUB-AGENT ORCHESTRATOR PATH
+// ============================================================================
+// Adds the V2 sub-agent architecture (5A health analyst → 5B win reporter)
+// alongside the legacy single-call class above. Same Agent5ClientSuccessPackage
+// output, so it is interchangeable with runAgent5().
+//
+// Source: UPTIMIZE_CLAUDE_CODE_MASTER_V2.md (Sprint 12.2)
+
+import { runSequential, buildSubAgentContext } from '@/lib/subagent';
+import type { AgentSynthesisResult, SubAgentResult } from '@/lib/subagent';
+import { runHealthAnalyst, type HealthAnalystResult } from './subagents/5a-health-analyst';
+import { runWinReporter, type WinReporterResult } from './subagents/5b-win-reporter';
+
+const A5_TOTAL_TIMEOUT_MS = 120_000;
+const A5_TIME_SPLIT_A = 0.55;
+const A5_TIME_SPLIT_B = 0.40;
+
+export interface RunAgent5SubAgentConfig {
+  mode?: 'fast' | 'balanced' | 'quality';
+  pipelineRunId?: string;
+  memoryEntries?: Record<string, string>;
+  clientId?: string;
+}
+
+/**
+ * V2 sub-agent orchestrator path for Agent 5.
+ *
+ * Produces the same Agent5ClientSuccessPackage shape as the legacy class,
+ * but via 5A (health) + 5B (reports) sub-agents with proper cost tracking,
+ * sub-agent observability, and learning-collector compatibility.
+ */
+export async function runAgent5SubAgent(
+  input: Agent5Input,
+  config: RunAgent5SubAgentConfig = {},
+): Promise<AgentSynthesisResult<Agent5ClientSuccessPackage>> {
+  const mode = config.mode ?? 'balanced';
+  const clientId = config.clientId ?? input.handoff_kit.account_id ?? 'unknown';
+
+  const baseCtx = buildSubAgentContext({
+    parentAgentId: 'agent-5-client-success',
+    subAgentId: '5A-health-analyst',
+    clientId,
+    pipelineRunId: config.pipelineRunId,
+    task: 'Generate full client success package — health analysis then narrative reports',
+    taskProfile: 'health_analysis',
+    mode,
+    timeBudgetMs: A5_TOTAL_TIMEOUT_MS,
+    inputs: { agent5_input: input },
+    memoryEntries: config.memoryEntries ?? {},
+    maxResponseTokens: 4000,
+    confidenceRequired: 'high',
+  });
+
+  const { output, resultA, resultB } = await runSequential<
+    HealthAnalystResult,
+    WinReporterResult,
+    Agent5ClientSuccessPackage
+  >(baseCtx, {
+    pattern: 'sequential',
+    totalTimeoutMs: A5_TOTAL_TIMEOUT_MS,
+    timeSplitA: A5_TIME_SPLIT_A,
+    timeSplitB: A5_TIME_SPLIT_B,
+    runA: (ctx) => runHealthAnalyst({ ...ctx, sub_agent_id: '5A-health-analyst', task_profile: 'health_analysis' }),
+    runB: (ctx, aResult) =>
+      runWinReporter(
+        { ...ctx, sub_agent_id: '5B-win-reporter', task_profile: 'win_report' },
+        aResult,
+      ),
+    synthesize: (a, b) => synthesizeAgent5Output(a, b),
+  });
+
+  const subAgentResults: SubAgentResult<unknown>[] = [resultA, resultB];
+  const totalCost = subAgentResults.reduce((s, r) => s + r.cost_usd, 0);
+  const totalDuration = subAgentResults.reduce((s, r) => s + r.duration_ms, 0);
+  const requiresHumanAttention = subAgentResults.some(r => r.escalation_needed);
+
+  return {
+    agent_id: 'agent-5-client-success',
+    final_output: output,
+    sub_agent_results: subAgentResults,
+    total_cost_usd: totalCost,
+    total_duration_ms: totalDuration,
+    synthesis_notes: [
+      `Health score: ${output.client_health_score.score_0_100}/100 (${output.client_health_score.risk_level})`,
+      `Tickets: ${output.issues_and_tickets.length}, optimizations: ${output.optimization_backlog.length}`,
+      `Proof ready: ${output.client_health_score.proof_ready}`,
+    ],
+    overall_confidence: subAgentResults.some(r => r.confidence === 'low')
+      ? 'low'
+      : subAgentResults.some(r => r.confidence === 'medium') ? 'medium' : 'high',
+    requires_human_attention: requiresHumanAttention,
+    human_attention_reason: requiresHumanAttention
+      ? subAgentResults.filter(r => r.escalation_needed).map(r => r.escalation_reason).filter(Boolean).join('; ') || undefined
+      : undefined,
+  };
+}
+
+function synthesizeAgent5Output(
+  a: SubAgentResult<HealthAnalystResult>,
+  b: SubAgentResult<WinReporterResult>,
+): Agent5ClientSuccessPackage {
+  const health = a.result;
+  const reports = b.result;
+
+  // If both failed, emit an empty-but-valid shape so downstream code does not crash.
+  if (!health && !reports) {
+    return emptyPackage();
+  }
+
+  return {
+    onboarding_plan: reports?.onboarding_plan ?? emptyPackage().onboarding_plan,
+    adoption_dashboard: health?.adoption_dashboard ?? emptyPackage().adoption_dashboard,
+    six_pillar_progress: health?.six_pillar_progress ?? emptyPackage().six_pillar_progress,
+    weekly_win_report: reports?.weekly_win_report ?? emptyPackage().weekly_win_report,
+    issues_and_tickets: reports?.issues_and_tickets ?? [],
+    shadow_ops_reduction_report: health?.shadow_ops_reduction_report ?? emptyPackage().shadow_ops_reduction_report,
+    optimization_backlog: reports?.optimization_backlog ?? [],
+    expansion_map: reports?.expansion_map ?? emptyPackage().expansion_map,
+    proof_asset_pipeline: reports?.proof_asset_pipeline ?? emptyPackage().proof_asset_pipeline,
+    client_health_score: health?.client_health_score ?? emptyPackage().client_health_score,
+  };
+}
+
+function emptyPackage(): Agent5ClientSuccessPackage {
+  const stubMetric = { baseline: 0, current: 0, trend: 'stable' as const };
+  return {
+    onboarding_plan: { day_1: [], day_3: [], day_7: [], training_sessions: [] },
+    adoption_dashboard: {
+      kpis: [],
+      usage_signals: [],
+      exception_metrics: { exceptions_count_week: 0, top_exceptions: [], avg_time_to_resolution: '' },
+      auditability_metrics: { audit_trail_completeness: '', missing_log_events: [] },
+      trend_notes: '',
+    },
+    six_pillar_progress: {
+      shadow_ops: { hours_saved: stubMetric, tasks_automated: stubMetric, incidents_detected: 0 },
+      exceptions: { count: stubMetric, auto_handle_rate: stubMetric, avg_resolution_hours: stubMetric },
+      audit_trail: { completeness_pct: stubMetric, disputes_won: 0, compliance_score: stubMetric },
+      knowledge_decisions: { documented_pct: stubMetric, avg_approval_hours: stubMetric, escalations: 0 },
+      handoffs_slas: { sla_hit_rate: stubMetric, avg_handoff_minutes: stubMetric, stuck_cases: stubMetric },
+      channels_evidence: { capture_rate: stubMetric, shadow_incidents: 0, findability_score: stubMetric },
+    },
+    weekly_win_report: { week_of: new Date().toISOString().split('T')[0], wins: [], metrics_snapshot: [], what_broke: [], next_actions: [] },
+    issues_and_tickets: [],
+    shadow_ops_reduction_report: { before_list: [], after_list: [], delta_summary: '', new_shadow_ops_detected: [] },
+    optimization_backlog: [],
+    expansion_map: { phase_2_recommendations: [], phase_3_optional: [], upsell_triggers: [] },
+    proof_asset_pipeline: { testimonial_request_plan: [], case_study_draft_outline: [], roi_snapshot_points: [], proof_angles_to_market: [] },
+    client_health_score: {
+      score_0_100: 0, risk_level: 'at_risk', drivers: [], interventions: [],
+      quick_win_this_week: '', proof_ready: false, per_pillar_health: [],
+    },
+  };
+}
