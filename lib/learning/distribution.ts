@@ -16,7 +16,8 @@ export const LEARNING_DISTRIBUTION_MAP: Record<string, AgentId[]> = {
   'health_score_driver:risk_factor': ['agent-5-client-success', 'agent-9-revenue-intelligence'],
   'outreach_hook:effective':         ['agent-2-outbound-appointment', 'agent-7-nurture'],
   'outreach_hook:ineffective':       ['agent-2-outbound-appointment'],
-  'model_performance:degradation':   ['agent-8-intelligence'],
+  // model_performance learnings are routed to Pedro only (no agent distribution).
+  // Agent 8's worker explicitly skips distribution for this learning_type.
 };
 
 export function getDistributionTargets(learningType: string, key: string): AgentId[] {
