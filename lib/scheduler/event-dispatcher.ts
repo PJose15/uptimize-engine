@@ -90,20 +90,38 @@ export function onAgent6Complete(output: Record<string, unknown>, context: Dispa
     await collectFromAgent6(output as Parameters<typeof collectFromAgent6>[0], context.pipelineRunId ?? '');
   });
 
-  // Create compliance record on contract signed
-  const contractStatus = output.contract_status as { signed?: boolean; retainer_usd?: number } | undefined;
-  if (contractStatus?.signed) {
-    fireAndForget('agent6-compliance', async () => {
-      await prisma.complianceRecord.create({
-        data: {
-          clientId: context.clientId, recordType: 'contract',
-          effectiveDate: new Date(), status: 'active',
-        },
-      });
+  // Contract signed handling — supports both legacy and Sprint 10 v2 shapes
+  const contractStatus = output.contract_status as
+    | {
+        signed?: boolean;
+        signed_at?: string;
+        retainer_usd?: number;
+        agreed_terms?: { build_fee_usd?: number; monthly_retainer_usd?: number; payment_terms?: string };
+        baa_required?: boolean;
+      }
+    | undefined;
+  const isSigned = Boolean(contractStatus?.signed) || Boolean(contractStatus?.signed_at);
+
+  if (isSigned) {
+    const retainer = contractStatus?.agreed_terms?.monthly_retainer_usd ?? contractStatus?.retainer_usd ?? 0;
+
+    fireAndForget('agent6-portfolio', async () => {
       await prisma.clientPortfolio.upsert({
         where: { clientId: context.clientId },
-        update: { stage: 'active', retainerUsd: contractStatus.retainer_usd ?? 0 },
-        create: { clientId: context.clientId, stage: 'active', vertical: context.vertical ?? '', retainerUsd: contractStatus.retainer_usd ?? 0 },
+        update: { stage: 'active', retainerUsd: retainer },
+        create: { clientId: context.clientId, stage: 'active', vertical: context.vertical ?? '', retainerUsd: retainer },
+      });
+    });
+
+    // Sprint 13.4 wiring: notify Agent 12 (compliance) of the signed contract.
+    // Worker handles ComplianceRecord creation + initial invoice generation.
+    fireAndForget('agent6-to-agent12', async () => {
+      const { notifyAgent12OfContractSigned } = await import('@/app/api/agents/run/operational/agent-12-compliance/worker');
+      await notifyAgent12OfContractSigned({
+        clientId: context.clientId,
+        signedAt: contractStatus?.signed_at ?? new Date().toISOString(),
+        agreedTerms: contractStatus?.agreed_terms,
+        baaRequired: contractStatus?.baa_required,
       });
     });
   }

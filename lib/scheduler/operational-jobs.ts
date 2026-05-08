@@ -13,16 +13,49 @@ export const AGENT_SCHEDULES = {
   APPROVAL_EXPIRY:     '0 * * * *',      // Hourly
 } as const;
 
-// Stub runners — implementations in Sprint 13
-export async function runAgent13DailyBrief(): Promise<void> { /* Sprint 13 */ }
-export async function runAgent9WeeklyPortfolio(): Promise<void> { /* Sprint 13 */ }
-export async function runAgent11DailyBD(): Promise<void> { /* Sprint 13 */ }
-export async function runAgent12DailyCompliance(): Promise<void> { /* Sprint 13 */ }
-export async function runAgent10WeeklyContent(): Promise<void> { /* Sprint 13 */ }
-export async function runAgent8WeeklyBrief(): Promise<void> { /* Sprint 11 */ }
+// ============================================================================
+// OPERATIONAL AGENT RUNNERS (Sprint 13)
+// ============================================================================
+
+export async function runAgent13DailyBrief(): Promise<void> {
+  const { runDailyBrief } = await import('@/app/api/agents/run/operational/agent-13-internal-ops/worker');
+  const summary = await runDailyBrief();
+  console.log('[cron agent-13] daily brief:', summary);
+}
+
+export async function runAgent9WeeklyPortfolio(): Promise<void> {
+  const { runAgent9WeeklyPortfolio: runner } = await import('@/app/api/agents/run/operational/agent-9-revenue-intelligence/worker');
+  const summary = await runner();
+  console.log('[cron agent-9] weekly portfolio:', summary);
+}
+
+export async function runAgent11DailyBD(): Promise<void> {
+  const { runAgent11DailyBD: runner } = await import('@/app/api/agents/run/operational/agent-11-business-development/worker');
+  const summary = await runner();
+  console.log('[cron agent-11] daily BD:', summary);
+}
+
+export async function runAgent12DailyCompliance(): Promise<void> {
+  const { runDailyCompliance } = await import('@/app/api/agents/run/operational/agent-12-compliance/worker');
+  const summary = await runDailyCompliance();
+  console.log('[cron agent-12] daily compliance:', summary);
+}
+
+export async function runAgent10WeeklyContent(): Promise<void> {
+  const { runAgent10WeeklyContent: runner } = await import('@/app/api/agents/run/operational/agent-10-content/worker');
+  const summary = await runner();
+  console.log('[cron agent-10] weekly content:', summary);
+}
+
+export async function runAgent8WeeklyBrief(): Promise<void> {
+  const { generateWeeklyBrief } = await import('@/app/api/agents/run/uptimize/agent-8-intelligence/worker');
+  const weekStart = new Date();
+  weekStart.setDate(weekStart.getDate() - 7);
+  const result = await generateWeeklyBrief(weekStart.toISOString().split('T')[0]);
+  console.log('[cron agent-8] weekly brief:', { brief: !!result.brief, cost: result.cost_usd });
+}
 
 export async function runMaintenanceTasks(): Promise<void> {
-  // Cleanup expired rate limit entries and approvals
   const { prisma } = await import('@/lib/prisma');
   await prisma.rateLimitEntry.deleteMany({ where: { resetAt: { lt: new Date() } } });
   await prisma.approvalItem.updateMany({
