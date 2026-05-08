@@ -12,7 +12,6 @@ import { executeWithFallback } from '@/lib/providers/fallback';
 import type { SubAgentContext, SubAgentResult } from '@/lib/subagent';
 import { buildP1Failure } from '@/lib/subagent';
 import type {
-  Agent5Input,
   OnboardingPlan,
   WeeklyWinReport,
   Ticket,
@@ -20,6 +19,7 @@ import type {
   ExpansionMap,
   ProofAssetPipeline,
 } from '../types';
+import type { Agent5Input } from '../agent';
 import type { HealthAnalystResult } from './5a-health-analyst';
 
 const SYSTEM_PROMPT = `You are the Win Reporter sub-agent for the Uptimize Client Success system.

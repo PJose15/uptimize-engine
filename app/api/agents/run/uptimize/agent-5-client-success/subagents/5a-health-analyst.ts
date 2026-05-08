@@ -12,12 +12,12 @@ import { executeWithFallback } from '@/lib/providers/fallback';
 import type { SubAgentContext, SubAgentResult } from '@/lib/subagent';
 import { buildP1Failure } from '@/lib/subagent';
 import type {
-  Agent5Input,
   AdoptionDashboard,
   SixPillarProgress,
   ClientHealthScore,
   ShadowOpsReductionReport,
 } from '../types';
+import type { Agent5Input } from '../agent';
 
 const SYSTEM_PROMPT = `You are the Health Analyst sub-agent for the Uptimize Client Success system.
 
