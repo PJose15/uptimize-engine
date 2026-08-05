@@ -57,9 +57,12 @@ export async function runAgent8WeeklyBrief(): Promise<void> {
 
 export async function runMaintenanceTasks(): Promise<void> {
   const { prisma } = await import('@/lib/prisma');
+  const { expireStaleApprovals } = await import('@/lib/governance/approval-store');
+
   await prisma.rateLimitEntry.deleteMany({ where: { resetAt: { lt: new Date() } } });
-  await prisma.approvalItem.updateMany({
-    where: { status: 'pending', timestamp: { lt: new Date(Date.now() - 24 * 60 * 60 * 1000) } },
-    data: { status: 'expired' },
-  });
+
+  // Single definition of the expiry rule, shared with the gate's own check —
+  // otherwise the sweep and the gate could disagree about what has lapsed.
+  const expired = await expireStaleApprovals();
+  if (expired > 0) console.log(`[cron maintenance] expired ${expired} stale approvals`);
 }

@@ -69,6 +69,24 @@ did not supply, it logs and degrades to the legacy path rather than failing.
 Reported cost follows the same split — the sub-agent path reports measured
 cost, the legacy path a token-based estimate against a fixed model name.
 
+## Governance
+
+Any call an agent makes to a system outside this process goes through
+`withGovernance()` / `enforceGovernance()` in `lib/governance/enforce.ts`. The
+check happens *before* the call runs, so an action awaiting approval has not
+already happened.
+
+Three outcomes: **executed**, **denied** (policy refuses it), or
+**awaiting_approval** (queued for a human, not run). Approval state lives in
+the `ApprovalItem` table — the id the gate returns is the row id, so a decision
+made in the portal is visible to the next attempt. Pass that id back to resume.
+
+The permission matrix in `lib/governance/tool-permissions.ts` covers all 13
+agents and denies unknown agents and unregistered tools by default. Note that
+it also lists tools that have no implementation yet (`send_email`,
+`create_crm_contact`, …) — those entries are policy waiting for code, and
+gating them is a no-op until the tool exists.
+
 ## Architecture
 
 - `app/api/agents/run/uptimize/` — pipeline agents 1–8

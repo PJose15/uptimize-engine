@@ -4,7 +4,23 @@
  * Uses real API calls
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+
+// Agent 1's web search runs under the governance gate, which reaches the DB to
+// record approvals — so importing the agent now pulls in the Prisma client.
+// Stubbed here to keep this suite importable without a generated client.
+vi.mock('@/lib/prisma', () => ({
+    prisma: {
+        approvalItem: {
+            create: vi.fn(async () => ({ id: 'apr_test', status: 'pending', timestamp: new Date() })),
+            findUnique: vi.fn(async () => null),
+            updateMany: vi.fn(async () => ({ count: 0 })),
+        },
+        activityEvent: { create: vi.fn(async () => ({})) },
+        auditEntry: { create: vi.fn(async () => ({})) },
+    },
+}));
+
 import { runAgent1MarketIntelligence } from '../../app/api/agents/run/uptimize/agent-1-market-intelligence/agent';
 
 describe('Agent 1: Market Intelligence', () => {

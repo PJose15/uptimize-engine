@@ -83,7 +83,7 @@ export class IntegrationManager {
   private globalAuditTrail: AuditEvent[] = [];
 
   constructor() {
-    this.mcpClient = new MCPClient();
+    this.mcpClient = new MCPClient({ agentId: "integration_manager" });
     this.workflowEngine = new WorkflowEngine(this.mcpClient);
   }
 

@@ -299,7 +299,14 @@ describe('input mapping', () => {
         vi.mocked(runAgent4SubAgent).mockResolvedValue(synthesis({ agent_id: 'agent-4-systems-builder' }) as never);
 
         await runAgent4ViaSubAgents('delivery', {
-            handoffSpec: { buildModules: ['intake'] },
+            handoffSpec: {
+                buildModules: ['intake'],
+                integrations: [],
+                risks: [],
+                definitionOfDone: [],
+                topExceptionsToHandle: [],
+                auditTrailFieldsRequired: [],
+            },
             targetTimelineDays: 14,
         });
 

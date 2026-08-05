@@ -133,6 +133,143 @@ const DEFAULT_PERMISSIONS: Record<string, AgentPermissions> = {
         can_write_external: true,
         can_execute: false,
     },
+
+    // ------------------------------------------------------------------
+    // Agents 6-13
+    //
+    // checkPermission() denies unknown agents by default, so an agent absent
+    // from this matrix cannot make a governed call at all. These entries exist
+    // so agents 6-13 fail on policy rather than on being unregistered — and so
+    // the portal's permissions page reflects the whole fleet, not just 1-5.
+    // ------------------------------------------------------------------
+
+    agent6: {
+        agent_id: "agent6",
+        agent_name: "Closer & Onboarding",
+        allowed_levels: [PermissionLevel.READ, PermissionLevel.WRITE_INTERNAL, PermissionLevel.WRITE_EXTERNAL],
+        tool_permissions: [
+            { tool_name: "read_proposal", level: PermissionLevel.READ, requires_approval: false, description: "Read the proposal under negotiation" },
+            { tool_name: "save_close_plan", level: PermissionLevel.WRITE_INTERNAL, requires_approval: false, description: "Save close plan and objection handling" },
+            { tool_name: "store_client_credential", level: PermissionLevel.WRITE_INTERNAL, requires_approval: true, description: "Store an encrypted client integration credential" },
+            { tool_name: "send_contract", level: PermissionLevel.WRITE_EXTERNAL, requires_approval: true, description: "Send a contract for signature" },
+        ],
+        max_cost_per_action_usd: 3.00,
+        max_batch_size: 5,
+        can_write_external: true,
+        can_execute: false,
+    },
+
+    agent7: {
+        agent_id: "agent7",
+        agent_name: "Nurture",
+        allowed_levels: [PermissionLevel.READ, PermissionLevel.WRITE_INTERNAL, PermissionLevel.WRITE_EXTERNAL],
+        tool_permissions: [
+            { tool_name: "web_search", level: PermissionLevel.READ, requires_approval: false, description: "Search for re-engagement signals" },
+            { tool_name: "read_nurture_records", level: PermissionLevel.READ, requires_approval: false, description: "Read the nurture queue" },
+            { tool_name: "update_nurture_record", level: PermissionLevel.WRITE_INTERNAL, requires_approval: false, description: "Update touch schedule and readiness" },
+            { tool_name: "send_nurture_touch", level: PermissionLevel.WRITE_EXTERNAL, requires_approval: true, description: "Send a nurture message to a dormant lead" },
+        ],
+        max_cost_per_action_usd: 2.00,
+        max_batch_size: 25,
+        can_write_external: true,
+        can_execute: false,
+    },
+
+    agent8: {
+        agent_id: "agent8",
+        agent_name: "Intelligence Keeper",
+        allowed_levels: [PermissionLevel.READ, PermissionLevel.WRITE_INTERNAL],
+        tool_permissions: [
+            { tool_name: "read_learning_events", level: PermissionLevel.READ, requires_approval: false, description: "Read collected learning events" },
+            { tool_name: "read_pipeline_history", level: PermissionLevel.READ, requires_approval: false, description: "Read historical pipeline runs" },
+            { tool_name: "save_learning", level: PermissionLevel.WRITE_INTERNAL, requires_approval: false, description: "Persist an anonymized learning" },
+            { tool_name: "update_playbook", level: PermissionLevel.WRITE_INTERNAL, requires_approval: true, description: "Change agent playbooks from learned patterns" },
+        ],
+        max_cost_per_action_usd: 2.00,
+        max_batch_size: 50,
+        can_write_external: false,
+        can_execute: false,
+    },
+
+    agent9: {
+        agent_id: "agent9",
+        agent_name: "Revenue Intelligence",
+        allowed_levels: [PermissionLevel.READ, PermissionLevel.WRITE_INTERNAL],
+        tool_permissions: [
+            { tool_name: "read_portfolio", level: PermissionLevel.READ, requires_approval: false, description: "Read client portfolio state" },
+            { tool_name: "read_invoices", level: PermissionLevel.READ, requires_approval: false, description: "Read invoice and payment records" },
+            { tool_name: "save_portfolio_pattern", level: PermissionLevel.WRITE_INTERNAL, requires_approval: false, description: "Record a detected portfolio pattern" },
+            { tool_name: "update_portfolio_health", level: PermissionLevel.WRITE_INTERNAL, requires_approval: false, description: "Update client health scores" },
+        ],
+        max_cost_per_action_usd: 2.00,
+        max_batch_size: 50,
+        can_write_external: false,
+        can_execute: false,
+    },
+
+    agent10: {
+        agent_id: "agent10",
+        agent_name: "Content",
+        allowed_levels: [PermissionLevel.READ, PermissionLevel.WRITE_INTERNAL, PermissionLevel.WRITE_EXTERNAL],
+        tool_permissions: [
+            { tool_name: "web_search", level: PermissionLevel.READ, requires_approval: false, description: "Research content angles" },
+            { tool_name: "save_content_draft", level: PermissionLevel.WRITE_INTERNAL, requires_approval: false, description: "Save a draft for review" },
+            { tool_name: "publish_content", level: PermissionLevel.WRITE_EXTERNAL, requires_approval: true, description: "Publish content to an external platform" },
+        ],
+        max_cost_per_action_usd: 3.00,
+        max_batch_size: 10,
+        can_write_external: true,
+        can_execute: false,
+    },
+
+    agent11: {
+        agent_id: "agent11",
+        agent_name: "Business Development",
+        allowed_levels: [PermissionLevel.READ, PermissionLevel.WRITE_INTERNAL, PermissionLevel.WRITE_EXTERNAL],
+        tool_permissions: [
+            { tool_name: "web_search", level: PermissionLevel.READ, requires_approval: false, description: "Research prospects and partners" },
+            { tool_name: "read_bd_records", level: PermissionLevel.READ, requires_approval: false, description: "Read the BD pipeline" },
+            { tool_name: "update_bd_record", level: PermissionLevel.WRITE_INTERNAL, requires_approval: false, description: "Advance a BD record's stage" },
+            { tool_name: "contact_prospect", level: PermissionLevel.WRITE_EXTERNAL, requires_approval: true, description: "Reach out to a prospect or partner" },
+        ],
+        max_cost_per_action_usd: 3.00,
+        max_batch_size: 25,
+        can_write_external: true,
+        can_execute: false,
+    },
+
+    agent12: {
+        agent_id: "agent12",
+        agent_name: "Compliance & Invoicing",
+        allowed_levels: [PermissionLevel.READ, PermissionLevel.WRITE_INTERNAL, PermissionLevel.WRITE_EXTERNAL],
+        tool_permissions: [
+            { tool_name: "read_compliance_records", level: PermissionLevel.READ, requires_approval: false, description: "Read contract and BAA records" },
+            { tool_name: "read_invoices", level: PermissionLevel.READ, requires_approval: false, description: "Read invoice records" },
+            { tool_name: "create_invoice", level: PermissionLevel.WRITE_INTERNAL, requires_approval: false, description: "Draft an invoice" },
+            { tool_name: "send_invoice", level: PermissionLevel.WRITE_EXTERNAL, requires_approval: true, description: "Send an invoice to a client" },
+            { tool_name: "send_renewal_alert", level: PermissionLevel.WRITE_EXTERNAL, requires_approval: true, description: "Notify a client of an expiring contract" },
+        ],
+        max_cost_per_action_usd: 2.00,
+        max_batch_size: 25,
+        can_write_external: true,
+        can_execute: false,
+    },
+
+    agent13: {
+        agent_id: "agent13",
+        agent_name: "Internal Ops",
+        allowed_levels: [PermissionLevel.READ, PermissionLevel.WRITE_INTERNAL],
+        tool_permissions: [
+            { tool_name: "read_calendar", level: PermissionLevel.READ, requires_approval: false, description: "Read the operating calendar" },
+            { tool_name: "read_commitments", level: PermissionLevel.READ, requires_approval: false, description: "Read open commitments" },
+            { tool_name: "save_commitment", level: PermissionLevel.WRITE_INTERNAL, requires_approval: false, description: "Capture a commitment from a call or email" },
+            { tool_name: "update_commitment", level: PermissionLevel.WRITE_INTERNAL, requires_approval: false, description: "Complete or defer a commitment" },
+        ],
+        max_cost_per_action_usd: 1.00,
+        max_batch_size: 50,
+        can_write_external: false,
+        can_execute: false,
+    },
 };
 
 // ============================================================================

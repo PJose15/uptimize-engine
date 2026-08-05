@@ -12,7 +12,12 @@ import {
     PermissionCheckResult,
     getPermissionChecker,
 } from "./tool-permissions";
-import { logAuditEntry, createApprovalIfNeeded } from "../portal-events";
+import { logAuditEntry } from "../portal-events";
+import {
+    createApproval,
+    getApprovalDecision,
+    expireStaleApprovals,
+} from "./approval-store";
 
 // ============================================================================
 // TYPES
@@ -89,6 +94,10 @@ export class ApprovalGateEngine {
             inputSummary?: string;
             actionDescription?: string;
             reversible?: boolean;
+            /** Id of an approval already granted for this action — lets a
+             *  previously queued action resume on a later attempt. */
+            approvalId?: string;
+            clientId?: string;
         } = {}
     ): Promise<GateCheckResult> {
         const {
@@ -98,6 +107,8 @@ export class ApprovalGateEngine {
             inputSummary = "",
             actionDescription = `${agentId} calling ${toolName}`,
             reversible = false,
+            approvalId,
+            clientId,
         } = options;
 
         // Step 1: Permission check
@@ -129,9 +140,50 @@ export class ApprovalGateEngine {
             };
         }
 
-        // Step 3: If approval required, queue it
+        // Step 3: If approval required, honour any decision already made
         if (permResult.requires_approval) {
-            const approvalRequest = this.createApprovalRequest({
+            if (approvalId) {
+                const decision = await getApprovalDecision(approvalId);
+
+                if (decision === "approved") {
+                    const auditRecord = this.createAuditRecord({
+                        agentId,
+                        toolName,
+                        targetSystem,
+                        actionType: "tool_call",
+                        result: "success",
+                        costUsd: estimatedCostUsd,
+                        approvalRequired: true,
+                        approvedBy: "portal",
+                        reversible,
+                    });
+
+                    return { action: "proceed", permission_check: permResult, audit_record: auditRecord };
+                }
+
+                if (decision === "denied" || decision === "expired") {
+                    const auditRecord = this.createAuditRecord({
+                        agentId,
+                        toolName,
+                        targetSystem,
+                        actionType: "tool_call",
+                        result: decision === "denied" ? "denied" : "expired",
+                        costUsd: 0,
+                        approvalRequired: true,
+                        reversible,
+                    });
+
+                    return {
+                        action: "blocked",
+                        permission_check: { ...permResult, allowed: false, reason: `Approval ${decision}` },
+                        audit_record: auditRecord,
+                    };
+                }
+
+                // Still pending — fall through and report the same request back.
+            }
+
+            const approvalRequest = await this.createApprovalRequest({
                 agentId,
                 toolName,
                 level,
@@ -139,6 +191,8 @@ export class ApprovalGateEngine {
                 estimatedCostUsd,
                 batchSize,
                 inputSummary,
+                existingApprovalId: approvalId,
+                clientId,
             });
 
             const auditRecord = this.createAuditRecord({
@@ -236,11 +290,15 @@ export class ApprovalGateEngine {
     /**
      * Expire old pending requests
      */
-    expireStaleRequests(): ApprovalRequest[] {
+    async expireStaleRequests(): Promise<ApprovalRequest[]> {
+        // Authoritative sweep over the rows; the in-process map is then
+        // reconciled below so long-lived processes stay consistent.
+        await expireStaleApprovals(this.approvalTimeoutMs);
+
         const now = Date.now();
         const expired: ApprovalRequest[] = [];
 
-        for (const [id, request] of this.pendingApprovals) {
+        for (const [, request] of this.pendingApprovals) {
             if (request.status === "pending" && new Date(request.expires_at).getTime() < now) {
                 request.status = "expired";
                 expired.push(request);
@@ -290,7 +348,15 @@ export class ApprovalGateEngine {
     // PRIVATE HELPERS
     // ============================================================================
 
-    private createApprovalRequest(params: {
+    /**
+     * Record a request for human approval.
+     *
+     * request_id is the ApprovalItem row id, so the caller can hand it back on
+     * a later attempt and the gate will see whatever the portal decided. When
+     * the caller already holds a still-pending id, that row is reused instead
+     * of queueing a duplicate on every retry.
+     */
+    private async createApprovalRequest(params: {
         agentId: string;
         toolName: string;
         level: PermissionLevel;
@@ -298,10 +364,28 @@ export class ApprovalGateEngine {
         estimatedCostUsd: number;
         batchSize: number;
         inputSummary: string;
-    }): ApprovalRequest {
+        existingApprovalId?: string;
+        clientId?: string;
+    }): Promise<ApprovalRequest> {
         const now = new Date();
+
+        const { approvalId, expiresAt } = params.existingApprovalId
+            ? {
+                approvalId: params.existingApprovalId,
+                expiresAt: new Date(now.getTime() + this.approvalTimeoutMs),
+            }
+            : await createApproval({
+                agentId: params.agentId,
+                toolName: params.toolName,
+                actionDescription: params.actionDescription,
+                reason: `${params.level} permission requires approval`,
+                estimatedCostUsd: params.estimatedCostUsd,
+                batchSize: params.batchSize,
+                clientId: params.clientId,
+            });
+
         const request: ApprovalRequest = {
-            request_id: `apr_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
+            request_id: approvalId,
             agent_id: params.agentId,
             tool_name: params.toolName,
             permission_level: params.level,
@@ -310,23 +394,15 @@ export class ApprovalGateEngine {
             batch_size: params.batchSize,
             input_summary: params.inputSummary,
             created_at: now.toISOString(),
-            expires_at: new Date(now.getTime() + this.approvalTimeoutMs).toISOString(),
+            expires_at: expiresAt.toISOString(),
             status: "pending",
             decided_by: null,
             decided_at: null,
             decision_reason: null,
         };
 
+        // Retained for in-process introspection only; the row is authoritative.
         this.pendingApprovals.set(request.request_id, request);
-
-        // Also write to portal DB
-        createApprovalIfNeeded({
-            action: params.actionDescription,
-            description: `${params.agentId} wants to use ${params.toolName} (cost: $${params.estimatedCostUsd.toFixed(2)}, batch: ${params.batchSize})`,
-            riskLevel: params.estimatedCostUsd > 5 ? 'high' : params.estimatedCostUsd > 1 ? 'medium' : 'low',
-            affectedSystem: params.toolName,
-            reason: `${params.level} permission requires approval`,
-        }).catch(() => {});
 
         return request;
     }
