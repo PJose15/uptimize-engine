@@ -5,7 +5,25 @@
 
 import { createHmac } from 'crypto';
 
-const CSRF_SECRET = process.env.NEXTAUTH_SECRET || 'dev-secret-change-me';
+/**
+ * Signing secret for CSRF tokens. A shared default is worthless in production
+ * — anyone who knows it can mint valid tokens — so we refuse to start without
+ * a real secret outside development.
+ */
+function resolveSecret(): string {
+    const secret = process.env.NEXTAUTH_SECRET;
+
+    if (!secret) {
+        if (process.env.NODE_ENV === 'production') {
+            throw new Error('NEXTAUTH_SECRET is required in production (see .env.example)');
+        }
+        return 'dev-secret-change-me';
+    }
+
+    return secret;
+}
+
+const CSRF_SECRET = resolveSecret();
 const TOKEN_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
 
 /**

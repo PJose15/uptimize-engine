@@ -7,7 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { validateSession } from '@/lib/auth';
+import { getSessionFromRequest } from '@/lib/api-auth';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 import { validateAgentOutput } from '@/lib/agent-schemas';
 import { logActivityEvent, logAuditEntry } from '@/lib/portal-events';
@@ -50,20 +50,7 @@ export async function POST(
     }
 
     // Auth check
-    const cookieHeader = request.headers.get('cookie');
-    const sessionToken = cookieHeader
-        ?.split(';')
-        .map(c => c.trim())
-        .find(c => c.startsWith('session='))
-        ?.split('=')
-        .slice(1)
-        .join('=');
-
-    if (!sessionToken) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const session = await validateSession(sessionToken);
+    const session = await getSessionFromRequest(request);
     if (!session) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

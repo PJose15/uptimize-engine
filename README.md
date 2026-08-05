@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Uptimize Engine
 
-## Getting Started
+Agentic operations platform. A fleet of LLM agents runs Uptimize's sales and
+delivery pipeline, and a multi-tenant client portal reports what those agents
+did — measured against the 6-Pillar framework.
 
-First, run the development server:
+See [PROJECT_OVERVIEW.md](./PROJECT_OVERVIEW.md) for the business context and
+[UPTIMIZE-ENGINE-COMPLETE-REFERENCE.md](./UPTIMIZE-ENGINE-COMPLETE-REFERENCE.md)
+for the system reference.
+
+## Setup
 
 ```bash
+npm install
+cp .env.example .env      # then fill in the required values
+npx prisma generate
+npx prisma migrate dev
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The app validates its environment at boot (`lib/env.ts`, wired through
+`instrumentation.ts`) and refuses to start if a required variable is missing.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**Required:** `DATABASE_URL`, at least one AI provider key, and — in production
+— `NEXTAUTH_SECRET`. Every variable is documented in
+[.env.example](./.env.example).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Seeding the admin user
 
-## Learn More
+```bash
+npx prisma db seed
+```
 
-To learn more about Next.js, take a look at the following resources:
+Reads `ADMIN_USERNAME` and `ADMIN_PASSWORD` from `.env`. The password must be
+at least 12 characters; there are no default credentials.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Commands
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Command | What it does |
+|---|---|
+| `npm run dev` | Dev server on :3000 |
+| `npm run build` | Production build |
+| `npm run lint` | ESLint |
+| `npm run test` | Vitest, watch mode |
+| `npm run test:run` | Vitest, single pass |
+| `npm run test:agent1` … `test:agent5` | One agent's suite |
+| `npx prisma studio` | Browse the database on :5555 |
 
-## Deploy on Vercel
+Note that most of `__tests__/agents/` are **integration** tests that make live
+provider calls — they fail without API keys in `.env`, and they cost money when
+they pass. `__tests__/reports/` is pure unit-test coverage and runs offline.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Architecture
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `app/api/agents/run/uptimize/` — pipeline agents 1–8
+- `app/api/agents/run/operational/` — operational agents 9–13 (cron-driven)
+- `app/api/agents/run/internal/` — internal venture agents (SmartGym, PVision)
+- `app/api/pipeline/` — SSE pipeline execution, sessions, stage gates
+- `app/portal/` + `app/api/portal/` — client-facing portal
+- `lib/subagent/` — sub-agent composition patterns (sequential/parallel/conditional)
+- `lib/governance/` — tool permissions and approval gates
+- `lib/learning/` — cross-run learning collection and distribution
+- `lib/config/models.ts` — model tiers, task profiles, fallback chains, pricing
+
+## Security notes
+
+- Page routes are guarded by `middleware.ts`, which only checks that a session
+  cookie is **present** — the edge runtime cannot reach the database.
+- API routes must therefore authorize themselves, using `requireSession()` or
+  `getSessionFromRequest()` from `lib/api-auth.ts`. Adding a route to the
+  middleware list does not protect it.
+- `POST /api/webhooks/trigger` is closed (503) until `WEBHOOK_API_KEY` is set.
+  There is no default key.

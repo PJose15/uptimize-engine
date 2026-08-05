@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { runOrchestrator } from "./orchestrator";
 import { logger } from "./logger";
 import { randomUUID } from "crypto";
+import { requireSession } from "@/lib/api-auth";
+import { checkRateLimit, RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
 
 // Configure route timeout
 export const maxDuration = 60; // seconds
@@ -14,6 +16,21 @@ export async function POST(request: Request) {
     const startTime = Date.now();
 
     try {
+        // Auth — this endpoint spends money on provider calls, so it must not
+        // be reachable anonymously.
+        const auth = await requireSession(request);
+        if (auth instanceof Response) {
+            logger.warn("Unauthenticated agent run rejected", { requestId });
+            return auth;
+        }
+
+        // Rate limit per authenticated user
+        const rateLimitResult = checkRateLimit(`agent-run:${auth.username}`, RATE_LIMITS.api);
+        if (!rateLimitResult.allowed) {
+            logger.warn("Agent run rate limited", { requestId }, { username: auth.username });
+            return rateLimitResponse(rateLimitResult);
+        }
+
         // Validate content type
         const contentType = request.headers.get("content-type");
         if (!contentType?.includes("application/json")) {
