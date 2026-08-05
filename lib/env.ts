@@ -31,6 +31,7 @@ const OPTIONAL_CAPABILITIES: Array<{ vars: string[]; capability: string }> = [
     { vars: ['BRAVE_API_KEY'], capability: "Agent 1 live web research (falls back to model knowledge)" },
     { vars: ['GOOGLE_CLIENT_EMAIL', 'GOOGLE_PRIVATE_KEY', 'GOOGLE_SPREADSHEET_ID'], capability: 'Google Sheets lead ingestion' },
     { vars: ['WEBHOOK_API_KEY'], capability: 'POST /api/webhooks/trigger (returns 503 until set)' },
+    { vars: ['CRON_SECRET'], capability: 'scheduled agent jobs via /api/cron (returns 503 until set)' },
     { vars: ['SLACK_WEBHOOK_URL'], capability: 'Slack notifications' },
 ];
 

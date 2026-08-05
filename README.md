@@ -87,6 +87,33 @@ it also lists tools that have no implementation yet (`send_email`,
 `create_crm_contact`, …) — those entries are policy waiting for code, and
 gating them is a no-op until the tool exists.
 
+## Scheduled jobs
+
+Agents 8–13 run on a schedule rather than on request. `GET /api/cron/[job]`
+dispatches from the `CRON_JOBS` registry in `lib/scheduler/operational-jobs.ts`;
+`vercel.json` maps each schedule to a path. A test asserts the two agree —
+nothing at runtime does, and a mismatch fails silently in both directions.
+
+Requests must carry `Authorization: Bearer $CRON_SECRET`. Without the secret
+set, the endpoint returns 503 and nothing runs: these jobs spend money on model
+calls and write to client systems, so it fails closed rather than open. Vercel
+Cron supplies the header automatically from the project env var. The same
+endpoint accepts POST, so a job can be triggered by hand with the same
+credential:
+
+```bash
+curl -X POST -H "Authorization: Bearer $CRON_SECRET" \
+  https://<host>/api/cron/agent-13-daily-brief
+```
+
+Schedules are UTC — that is what Vercel evaluates them in. Comments in
+`AGENT_SCHEDULES` give the intended America/Puerto_Rico local time; PR does not
+observe DST, so these do not drift seasonally.
+
+**Deployment note:** there are 9 jobs, one of them hourly. Vercel's Hobby plan
+allows 2 cron jobs at daily granularity, so this configuration needs Pro — or
+an external scheduler pointed at the same endpoints.
+
 ## Learning pipeline
 
 Observations flow through four stages. Only the first two run today:
@@ -98,7 +125,9 @@ Observations flow through four stages. Only the first two run today:
    duplicates as independent corroboration.
 2. **Promote** — Agent 8's worker rolls `LearningEvent` rows into
    `AgentLearning` with confidence labels and creates `LearningDistribution`
-   notices. Runs on a cron that is **not yet wired** (see `AGENT_SCHEDULES`).
+   notices. Runs daily as the `agent-8-learning-queue` cron. (Note this is
+   `processLearningQueue()`, not `generateWeeklyBrief()` — the weekly brief
+   only reports on events and promotes nothing.)
 3. **Distribute** — `LEARNING_DISTRIBUTION_MAP` routes each learning type to
    the agents that should receive it.
 4. **Consume** — **not wired.** `processPendingNotices()` has no callers, and
