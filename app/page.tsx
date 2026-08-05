@@ -20,6 +20,7 @@ import {
   Clock,
   Play,
   ArrowRight,
+  Briefcase,
   History,
   FileText,
   GitCompare,
@@ -108,6 +109,12 @@ export default function DashboardPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Link href="/admin/portfolio">
+              <Button variant="ghost" size="sm">
+                <Briefcase className="h-4 w-4 mr-1" />
+                Portfolio
+              </Button>
+            </Link>
             <Link href="/history">
               <Button variant="ghost" size="sm">
                 <History className="h-4 w-4 mr-1" />

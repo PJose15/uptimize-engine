@@ -87,6 +87,32 @@ it also lists tools that have no implementation yet (`send_email`,
 `create_crm_contact`, …) — those entries are policy waiting for code, and
 gating them is a no-op until the tool exists.
 
+## Portfolio dashboard
+
+`/admin/portfolio` shows retainer-weighted portfolio health, weekly capacity
+against the 33.5h cap, cross-client patterns, and the client roster. Backed by
+`GET /api/admin/portfolio` and `/api/admin/portfolio/patterns`, both requiring
+an admin session — unlike the `/api/portal` routes, these span every client.
+
+Pattern detection runs on read: it is a pure function over current portfolio
+state, so there is nothing to accumulate between runs and a stale weekly
+snapshot would be worse than recomputing. Rows are persisted only so that
+"acted on" and operator notes survive, and re-detection in the same week does
+not duplicate them.
+
+Populate the portfolio from existing client configs:
+
+```bash
+npx tsx scripts/migrate-to-portfolio.ts --dry-run   # preview
+npx tsx scripts/migrate-to-portfolio.ts
+```
+
+The script is idempotent and never overwrites existing rows, which carry
+operator-maintained fields. It cannot infer `retainerUsd` — that is a
+commercial fact `ClientConfig` does not hold — so new rows start at 0 and need
+filling in. Portfolio health is retainer-weighted, so a client left at 0 does
+not contribute to the weighted score.
+
 ## Scheduled jobs
 
 Agents 8–13 run on a schedule rather than on request. `GET /api/cron/[job]`

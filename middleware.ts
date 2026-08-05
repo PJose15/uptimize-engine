@@ -17,6 +17,7 @@ import type { NextRequest } from 'next/server';
 
 // Page routes that require an admin session
 const protectedRoutes = [
+    '/admin',
     '/pipeline',
     '/history',
     '/templates',
