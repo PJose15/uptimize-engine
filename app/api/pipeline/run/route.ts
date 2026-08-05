@@ -9,13 +9,10 @@ import { startRun, updateRunAgent, completeRun, isRunCancelled } from '@/lib/pip
 import { checkRateLimit, getClientId, RATE_LIMITS, rateLimitResponse } from '@/lib/rate-limit';
 import { logActivityEvent, logAuditEntry, refreshPortalStats } from '@/lib/portal-events';
 import { validateCSRFToken } from '@/lib/csrf';
+import { getClientIdFromRequest } from '@/lib/portal';
 
-// Import agent functions
-import { runAgent1MarketIntelligence } from '../../agents/run/uptimize/agent-1-market-intelligence/agent';
-import { runAgent2OutboundAppointment } from '../../agents/run/uptimize/agent-2-outbound-appointment/agent';
-import { runAgent3SalesEngineer } from '../../agents/run/uptimize/agent-3-sales-engineer/agent';
-import { runAgent4SystemsDelivery } from '../../agents/run/uptimize/agent-4-systems-delivery/agent';
-import { runAgent5 } from '../../agents/run/uptimize/agent-5-client-success/agent';
+// Agent runners — legacy single-call path or v2 sub-agent path, per USE_SUBAGENTS
+import { resolvePipelineAgents, actualCostOf } from '../../agents/run/uptimize/subagent-adapters';
 
 export const maxDuration = 300; // 5 minutes max
 
@@ -104,6 +101,19 @@ export async function POST(request: NextRequest) {
                 const results: Record<string, AgentRunResult> = {};
                 let totalCost = 0;
 
+                // Resolve the agent implementations once for this run.
+                // Note: `clientId` above is the IP-derived rate-limit key, not
+                // the portal client — resolve that separately for attribution.
+                const agents = resolvePipelineAgents();
+                let portalClientId = 'unknown';
+                try {
+                    portalClientId = await getClientIdFromRequest(request);
+                } catch {
+                    // Server-to-server callers (webhooks) have no session; leave 'unknown'.
+                }
+                const runOptions = { clientId: portalClientId, pipelineRunId: runId };
+                send({ type: 'run_mode', useSubAgents: agents.useSubAgents });
+
                 // Helper to check cancellation
                 const checkCancelled = () => {
                     if (isRunCancelled(runId)) {
@@ -119,7 +129,7 @@ export async function POST(request: NextRequest) {
                 const agent1Start = Date.now();
                 const agent1Result = await withRetry(
                     () => withTimeoutAndAbort(
-                        (sig) => runAgent1MarketIntelligence(leads, {}, 'fast') as Promise<AgentResult>,
+                        (sig) => agents.runAgent1(leads, {}, 'fast', runOptions) as Promise<AgentResult>,
                         getAgentTimeout(1),
                         signal,
                         'Agent 1 timed out'
@@ -128,7 +138,8 @@ export async function POST(request: NextRequest) {
                 ) as AgentResult;
 
                 const agent1Duration = Date.now() - agent1Start;
-                const agent1Cost = estimateCost('gemini', 'gemini-2.0-flash-exp', agent1Result.metadata?.tokensUsed || 2000, 500);
+                const agent1Cost = actualCostOf(agent1Result)
+                    ?? estimateCost('gemini', 'gemini-2.0-flash-exp', agent1Result.metadata?.tokensUsed || 2000, 500);
                 const agent1Validation = validateAgentOutput(1, agent1Result.data);
 
                 totalCost += agent1Cost;
@@ -168,7 +179,7 @@ export async function POST(request: NextRequest) {
                 const agent2Start = Date.now();
                 const agent2Result = await withRetry(
                     () => withTimeoutAndAbort(
-                        (sig) => runAgent2OutboundAppointment(
+                        (sig) => agents.runAgent2(
                             'Create outreach campaigns for leads',
                             {
                                 targetPack: agent1Result.data,
@@ -176,7 +187,8 @@ export async function POST(request: NextRequest) {
                                 offerPositioning: 'AI-powered operations automation',
                                 channels: ['linkedin', 'email']
                             },
-                            'fast'
+                            'fast',
+                            runOptions
                         ) as Promise<AgentResult>,
                         getAgentTimeout(2),
                         signal,
@@ -186,7 +198,8 @@ export async function POST(request: NextRequest) {
                 ) as AgentResult;
 
                 const agent2Duration = Date.now() - agent2Start;
-                const agent2Cost = estimateCost('anthropic', 'claude-sonnet-4-20250514', agent2Result.metadata?.tokensUsed || 3000, 800);
+                const agent2Cost = actualCostOf(agent2Result)
+                    ?? estimateCost('anthropic', 'claude-sonnet-4-20250514', agent2Result.metadata?.tokensUsed || 3000, 800);
                 const agent2Validation = validateAgentOutput(2, agent2Result.data);
 
                 totalCost += agent2Cost;
@@ -231,14 +244,15 @@ export async function POST(request: NextRequest) {
 
                 const agent3Result = await withRetry(
                     () => withTimeoutAndAbort(
-                        (sig) => runAgent3SalesEngineer(
+                        (sig) => agents.runAgent3(
                             'Run discovery and create proposal',
                             {
                                 qualified_lead_brief: qualifiedLead,
                                 call_context: { call_notes: 'Discovery call', call_duration_minutes: 45 },
                                 mode: 'proposal_generation'
                             },
-                            'fast'
+                            'fast',
+                            runOptions
                         ) as Promise<AgentResult>,
                         getAgentTimeout(3),
                         signal,
@@ -248,7 +262,8 @@ export async function POST(request: NextRequest) {
                 ) as AgentResult;
 
                 const agent3Duration = Date.now() - agent3Start;
-                const agent3Cost = estimateCost('openai', 'gpt-4o', agent3Result.metadata?.tokensUsed || 4000, 1200);
+                const agent3Cost = actualCostOf(agent3Result)
+                    ?? estimateCost('openai', 'gpt-4o', agent3Result.metadata?.tokensUsed || 4000, 1200);
                 const agent3Validation = validateAgentOutput(3, agent3Result.data);
 
                 totalCost += agent3Cost;
@@ -303,14 +318,15 @@ export async function POST(request: NextRequest) {
 
                 const agent4Result = await withRetry(
                     () => withTimeoutAndAbort(
-                        (sig) => runAgent4SystemsDelivery(
+                        (sig) => agents.runAgent4(
                             'Create delivery package',
                             {
                                 handoffSpec,
                                 clientTools: { available: ['Slack', 'Zapier'], restricted: [] },
                                 targetTimelineDays: 14
                             },
-                            'fast'
+                            'fast',
+                            runOptions
                         ) as Promise<AgentResult>,
                         getAgentTimeout(4),
                         signal,
@@ -320,7 +336,8 @@ export async function POST(request: NextRequest) {
                 ) as AgentResult;
 
                 const agent4Duration = Date.now() - agent4Start;
-                const agent4Cost = estimateCost('gemini', 'gemini-2.0-flash-exp', agent4Result.metadata?.tokensUsed || 3500, 900);
+                const agent4Cost = actualCostOf(agent4Result)
+                    ?? estimateCost('gemini', 'gemini-2.0-flash-exp', agent4Result.metadata?.tokensUsed || 3500, 900);
                 const agent4Validation = validateAgentOutput(4, agent4Result.data);
 
                 totalCost += agent4Cost;
@@ -386,12 +403,13 @@ export async function POST(request: NextRequest) {
 
                         const agent5Data = await withRetry(
                             () => withTimeoutAndAbort(
-                                (sig) => runAgent5(
+                                (sig) => agents.runAgent5(
                                     { apiKey: anthropicKey },
                                     {
                                         handoff_kit: agent4Handoff,
                                         current_week_of: new Date().toISOString().split('T')[0]
-                                    }
+                                    },
+                                    runOptions
                                 ),
                                 getAgentTimeout(5),
                                 signal,

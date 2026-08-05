@@ -50,6 +50,25 @@ Note that most of `__tests__/agents/` are **integration** tests that make live
 provider calls — they fail without API keys in `.env`, and they cost money when
 they pass. `__tests__/reports/` is pure unit-test coverage and runs offline.
 
+## Agent execution paths
+
+Agents 1–5 have two implementations, selected by `USE_SUBAGENTS`:
+
+- **Legacy (default)** — one model call per agent, prompt-assembled from
+  `(task, context)`.
+- **Sub-agent (`USE_SUBAGENTS=true`)** — each agent runs two specialist
+  sub-agents (e.g. `1A-research-specialist` → `1B-scoring-analyst`) composed
+  sequentially, in parallel, or conditionally, with per-task model tiers from
+  `lib/config/models.ts`. Every sub-agent run is recorded in `SubAgentRun`.
+
+`app/api/agents/run/uptimize/subagent-adapters.ts` is the seam between them:
+it presents the legacy `(task, context, mode)` signature either way, so call
+sites do not branch. When a sub-agent path needs structured input the caller
+did not supply, it logs and degrades to the legacy path rather than failing.
+
+Reported cost follows the same split — the sub-agent path reports measured
+cost, the legacy path a token-based estimate against a fixed model name.
+
 ## Architecture
 
 - `app/api/agents/run/uptimize/` — pipeline agents 1–8
