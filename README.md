@@ -87,6 +87,30 @@ it also lists tools that have no implementation yet (`send_email`,
 `create_crm_contact`, …) — those entries are policy waiting for code, and
 gating them is a no-op until the tool exists.
 
+## Learning pipeline
+
+Observations flow through four stages. Only the first two run today:
+
+1. **Collect** — the pipeline route dispatches `onAgentNComplete()` for Agents
+   2–5 as each finishes, writing `LearningEvent` rows. Collection is idempotent
+   per `(sourceAgentId, sourceRunId)`: agent retries and Agent 3's own inline
+   collector would otherwise double-count, and confidence scoring treats
+   duplicates as independent corroboration.
+2. **Promote** — Agent 8's worker rolls `LearningEvent` rows into
+   `AgentLearning` with confidence labels and creates `LearningDistribution`
+   notices. Runs on a cron that is **not yet wired** (see `AGENT_SCHEDULES`).
+3. **Distribute** — `LEARNING_DISTRIBUTION_MAP` routes each learning type to
+   the agents that should receive it.
+4. **Consume** — **not wired.** `processPendingNotices()` has no callers, and
+   every orchestrator is passed `memoryEntries: {}`.
+
+Before wiring stage 4, note that `processPendingNotices()` marks notices
+delivered as it reads them, while `buildSubAgentContext` filters memory against
+`SUBAGENT_MEMORY_KEYS` — namespaced keys like `shared:money_leak_map`. Learning
+keys are unnamespaced (`pillar_finding`, `effective`), so a naive wiring would
+consume every notice and then discard it in the filter. Stage 4 needs a
+learning-type → memory-key mapping first.
+
 ## Architecture
 
 - `app/api/agents/run/uptimize/` — pipeline agents 1–8

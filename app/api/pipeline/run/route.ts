@@ -10,6 +10,13 @@ import { checkRateLimit, getClientId, RATE_LIMITS, rateLimitResponse } from '@/l
 import { logActivityEvent, logAuditEntry, refreshPortalStats } from '@/lib/portal-events';
 import { validateCSRFToken } from '@/lib/csrf';
 import { getClientIdFromRequest } from '@/lib/portal';
+import {
+    onAgent2NurtureQueue,
+    onAgent3Complete,
+    onAgent4Complete,
+    onAgent5Complete,
+} from '@/lib/scheduler/event-dispatcher';
+import { buildNurtureEntries } from '@/lib/learning/nurture-entries';
 
 // Agent runners — legacy single-call path or v2 sub-agent path, per USE_SUBAGENTS
 import { resolvePipelineAgents, actualCostOf } from '../../agents/run/uptimize/subagent-adapters';
@@ -113,6 +120,31 @@ export async function POST(request: NextRequest) {
                 }
                 const runOptions = { clientId: portalClientId, pipelineRunId: runId };
                 send({ type: 'run_mode', useSubAgents: agents.useSubAgents });
+
+                // Learning dispatch context. `vertical` is discovered partway
+                // through the run — Agents 3 and 4 report it, Agents 1 and 2 do
+                // not — so anything dispatched before then records 'unknown'
+                // rather than a guess.
+                let pipelineVertical: string | undefined;
+
+                const dispatchContext = {
+                    clientId: portalClientId,
+                    pipelineRunId: runId,
+                    get vertical() { return pipelineVertical; },
+                };
+
+                /**
+                 * Collectors key learnings by vertical and require the field.
+                 * Records it from the output when present, so later dispatches
+                 * in the same run inherit it.
+                 */
+                const withVertical = (data: unknown): { vertical: string; [key: string]: unknown } => {
+                    const output = (data ?? {}) as Record<string, unknown>;
+                    const found = typeof output.vertical === 'string' ? output.vertical : undefined;
+                    if (found) pipelineVertical = found;
+
+                    return { ...output, vertical: found ?? pipelineVertical ?? 'unknown' };
+                };
 
                 // Helper to check cancellation
                 const checkCancelled = () => {
@@ -224,6 +256,27 @@ export async function POST(request: NextRequest) {
                 logActivityEvent({ action: 'Agent 2: Outbound campaigns created', description: 'Generated outreach campaigns for qualified leads', status: agent2Result.success ? 'completed' : 'failed', pillar: 'Handoffs', toolUsed: 'Email', costUsd: agent2Cost, durationMs: agent2Duration, pipelineRunId: runId }).catch(() => {});
                 logAuditEntry({ action: 'Outbound campaign generation', tool: 'Email', status: agent2Result.success ? 'success' : 'failed', costUsd: agent2Cost, details: `Duration: ${agent2Duration}ms, Run: ${runId}` }).catch(() => {});
 
+                // Route prospects Agent 2 parked into the nurture queue. The join
+                // against Agent 1's target pack happens here because this is the
+                // only layer holding both — see lib/learning/nurture-entries.ts.
+                if (agent2Result.success) {
+                    const agent2Data = agent2Result.data as {
+                        nurture_queue?: Parameters<typeof buildNurtureEntries>[0]['nurtureQueue'];
+                        message_library?: Parameters<typeof buildNurtureEntries>[0]['messageLibrary'];
+                    } | undefined;
+
+                    const nurtureEntries = buildNurtureEntries({
+                        targetPack: agent1Result.data,
+                        nurtureQueue: agent2Data?.nurture_queue ?? [],
+                        messageLibrary: agent2Data?.message_library,
+                        vertical: pipelineVertical,
+                    });
+
+                    if (nurtureEntries.length > 0) {
+                        onAgent2NurtureQueue(nurtureEntries, dispatchContext);
+                    }
+                }
+
                 if (!agent2Result.success) {
                     send({ type: 'error', message: 'Agent 2 failed', details: agent2Result.error });
                     completeRun(runId, 'failed');
@@ -287,6 +340,13 @@ export async function POST(request: NextRequest) {
                 // Portal logging for Agent 3
                 logActivityEvent({ action: 'Agent 3: Proposal generated', description: 'Ran discovery and created proposal/SOW', status: agent3Result.success ? 'completed' : 'failed', pillar: 'Audit Trail', toolUsed: 'Analytics', costUsd: agent3Cost, durationMs: agent3Duration, pipelineRunId: runId }).catch(() => {});
                 logAuditEntry({ action: 'Sales engineering proposal', tool: 'Analytics', status: agent3Result.success ? 'success' : 'failed', costUsd: agent3Cost, details: `Duration: ${agent3Duration}ms, Run: ${runId}` }).catch(() => {});
+
+                if (agent3Result.success && agent3Result.data) {
+                    onAgent3Complete(
+                        withVertical(agent3Result.data),
+                        dispatchContext,
+                    );
+                }
 
                 if (!agent3Result.success) {
                     send({ type: 'error', message: 'Agent 3 failed', details: agent3Result.error });
@@ -361,6 +421,13 @@ export async function POST(request: NextRequest) {
                 // Portal logging for Agent 4
                 logActivityEvent({ action: 'Agent 4: Delivery package created', description: 'Built workflows, integrations, and handoff kit', status: agent4Result.success ? 'completed' : 'failed', pillar: 'Knowledge', toolUsed: 'Internal', costUsd: agent4Cost, durationMs: agent4Duration, pipelineRunId: runId }).catch(() => {});
                 logAuditEntry({ action: 'Systems delivery build', tool: 'Internal', status: agent4Result.success ? 'success' : 'failed', costUsd: agent4Cost, details: `Duration: ${agent4Duration}ms, Run: ${runId}` }).catch(() => {});
+
+                if (agent4Result.success && agent4Result.data) {
+                    onAgent4Complete(
+                        withVertical(agent4Result.data),
+                        dispatchContext,
+                    );
+                }
 
                 if (!agent4Result.success) {
                     send({ type: 'error', message: 'Agent 4 failed', details: agent4Result.error });
@@ -463,6 +530,10 @@ export async function POST(request: NextRequest) {
                 // Portal logging for Agent 5
                 logActivityEvent({ action: 'Agent 5: Client success review', description: 'Generated health score, KPI tracking, and proof assets', status: agent5Result.success ? 'completed' : 'failed', pillar: 'Channels', toolUsed: 'Analytics', costUsd: agent5Cost, durationMs: agent5Duration, pipelineRunId: runId }).catch(() => {});
                 logAuditEntry({ action: 'Client success analysis', tool: 'Analytics', status: agent5Result.success ? 'success' : 'failed', costUsd: agent5Cost, details: `Duration: ${agent5Duration}ms, Run: ${runId}` }).catch(() => {});
+
+                if (agent5Result.success && agent5Result.data) {
+                    onAgent5Complete(withVertical(agent5Result.data), dispatchContext);
+                }
 
                 // Complete
                 const totalDuration = Date.now() - pipelineStartTime;

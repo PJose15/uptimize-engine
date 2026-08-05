@@ -3,6 +3,7 @@
  */
 
 import { prisma } from '@/lib/prisma';
+import { hasCollectedFor } from '../idempotency';
 import { anonymizeLearningValue, validateNoClientPII } from '../anonymizer';
 
 interface Agent3Output {
@@ -13,6 +14,10 @@ interface Agent3Output {
 }
 
 export async function collectFromAgent3(output: Agent3Output, sourceRunId: string): Promise<string[]> {
+  // Retries and multiple dispatch points can reach this for the same run;
+  // duplicate events would inflate confidence scoring's data-point counts.
+  if (await hasCollectedFor('agent-3-sales-engineer', sourceRunId)) return [];
+
   const eventIds: string[] = [];
 
   // Money leak findings
