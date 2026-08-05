@@ -1,8 +1,8 @@
 # Uptimize Engine - Complete Project Overview
 
 > **Master Brief for AI Assistants**  
-> Last Updated: February 25, 2026  
-> Version: 2.0 — Agentic Pivot Edition
+> Last Updated: August 2026  
+> Version: 3.0 — reflects the system as built
 
 ---
 
@@ -41,21 +41,27 @@ We deliver **agentic outcomes** — autonomous AI agents that run parts of your 
 | Layer | What It Is | Who Sees It |
 |-------|-----------|-------------|
 | **Internal Pipeline** (Factory) | 5-agent system that discovers, diagnoses, designs, builds, and proves | Uptimize operators |
-| **Deployed Agents** (Product) | Custom autonomous agents assembled from our skills framework | Clients |
+| **Deployed Agents** (Product) | Custom autonomous agents assembled from the sub-agent framework | Clients |
 
-### The 5-Agent Internal Pipeline
+### The Core Pipeline
 
 | Agent | Name | Purpose |
 |-------|------|---------|
 | **Agent 1** | Market Intelligence | Analyze leads, score by fit, identify Shadow Ops signals |
-| **Agent 2** | Discovery & Diagnosis | Run audit, map current state, quantify pain |
-| **Agent 3** | Sales Engineering | Design solution, create SOW/proposal, close deal |
-| **Agent 4** | Systems Delivery | Build workflows, configure systems, deploy solution |
+| **Agent 2** | Outbound & Appointment | Build the message library, run outreach, book calls |
+| **Agent 3** | Sales Engineer | Run the discovery audit, quantify pain, produce proposal and SOW |
+| **Agent 4** | Systems Delivery | Build workflows, configure systems, QA the deployment |
 | **Agent 5** | Client Success | Track adoption, prove ROI, drive expansion |
 
-Each agent is an AI-powered specialist that produces **structured deliverables** (JSON outputs) that feed into the next agent via handoff envelopes.
+Each agent is an AI-powered specialist that produces **structured deliverables**
+(JSON outputs) that feed into the next agent via handoff envelopes. Three more
+pipeline agents (6 Closer, 7 Nurture, 8 Intelligence Keeper) extend the spine
+past the close, and five operational agents run the business itself on a
+schedule. See [Technical Architecture](#technical-architecture) for the full
+fleet.
 
-Custom deployed agents are assembled from our **skills framework** — reusable capability modules (shadow ops discovery, exception mapping, ROI calculation, etc.) that compose into client-specific agents without rebuilding from scratch.
+Every numbered agent decomposes into two specialist sub-agents, which is how a
+client-specific agent gets assembled without rebuilding from scratch.
 
 ---
 
@@ -153,287 +159,147 @@ We prove ROI by measuring improvement across **6 operational pillars:**
 
 ### Tech Stack
 
-**Frontend:**
-- Next.js 15.1.6 (App Router)
-- React 19
-- TypeScript
-- TailwindCSS
-- Shadcn UI components
+**Frontend:** Next.js 16 (App Router), React 19, TypeScript, TailwindCSS 4,
+local UI primitives in `components/ui/`.
 
-**Backend:**
-- Next.js API routes
-- Server-sent events (SSE) for live updates
-- SQLite database (via Prisma)
+**Backend:** Next.js API routes, server-sent events for live pipeline updates,
+Prisma ORM.
 
-**Database:**
-- Prisma ORM v5.22.0
-- SQLite (single file: `prisma/dev.db`)
-- Models: User, Session, PipelineRun, Template, Setting
+**Database:** Prisma v5.22 over SQLite (`prisma/dev.db`) in development.
+**30 models** covering core execution, the client portal, v2 sub-agent runs,
+the learning system, portfolio management, and the operational agents.
+Postgres is required before any serverless deploy — see
+`docs/POSTGRES_MIGRATION.md`.
 
-**AI Integration:**
-- Anthropic Claude (primary)
-- Each agent uses Claude with custom system prompts
-- Structured JSON outputs with validation
+**AI integration:** six providers (Anthropic, OpenAI, Gemini, Groq, Mistral,
+Perplexity) behind a common adapter. Work is routed by *task profile* to one of
+five model tiers (FAST / BALANCED / QUALITY / MINI / RESEARCH), each with its
+own fallback waterfall. `lib/config/models.ts` is the single source of truth
+for model aliases, task-to-tier mapping, and pricing.
 
-**Key Features:**
-- ✅ Retry logic (2 attempts per agent)
-- ✅ Timeout handling (2-3 min per agent)
-- ✅ Input/output validation (Zod schemas)
-- ✅ Cost tracking (live display)
-- ✅ Run IDs (unique identifiers)
-- ✅ Cancellation support
-- ✅ History saving (auto-persist to DB)
-- ✅ Rate limiting
+### The Agent Fleet
 
-### Architecture Diagram
+The "5-agent pipeline" framing describes the sales-and-delivery spine. The
+system as built is larger:
 
-```
-User → Login → Dashboard → Pipeline Page
-                              ↓
-                    POST /api/pipeline/run
-                              ↓
-                    ┌─────────────────┐
-                    │ Pipeline Router │
-                    │  (with SSE)     │
-                    └─────────────────┘
-                              ↓
-            ┌─────────────────────────────┐
-            │  5 Agents Run Sequentially  │
-            ├─────────────────────────────┤
-            │ 1. Market Intelligence      │
-            │ 2. Discovery & Diagnosis    │
-            │ 3. Sales Engineering        │
-            │ 4. Systems Delivery         │
-            │ 5. Client Success (v3)      │
-            └─────────────────────────────┘
-                              ↓
-                      Save to Database
-                              ↓
-                    History Page (view runs)
-```
+**Pipeline agents (`app/api/agents/run/uptimize/`)**
 
-### File Structure
+| Agent | Name | Purpose |
+|-------|------|---------|
+| 1 | Market Intelligence | Research and score leads into a target pack |
+| 2 | Outbound & Appointment | Message architecture and booking pipeline |
+| 3 | Sales Engineer | Discovery audit, proposal and SOW |
+| 4 | Systems Delivery | Build spec and QA |
+| 5 | Client Success | Health analysis and win reports |
+| 6 | Closer & Onboarding | Presentation coaching, contract orchestration |
+| 7 | Nurture | Signal monitoring and re-engagement sequences |
+| 8 | Intelligence Keeper | Pattern collection and playbook updates |
 
-```
-uptimize-engine/
-├── app/
-│   ├── api/
-│   │   ├── agents/run/uptimize/
-│   │   │   ├── agent-1-market-intelligence/
-│   │   │   ├── agent-2-discovery-diagnosis/
-│   │   │   ├── agent-3-sales-engineer/
-│   │   │   ├── agent-4-systems-delivery/
-│   │   │   └── agent-5-client-success/ (v3 - 6 Pillars)
-│   │   ├── pipeline/
-│   │   │   ├── run/route.ts (main execution)
-│   │   │   └── cancel/route.ts
-│   │   └── auth/
-│   ├── pipeline/page.tsx (UI)
-│   ├── history/page.tsx
-│   └── login/page.tsx
-├── lib/
-│   ├── prisma.ts (DB client)
-│   ├── history.ts (Prisma-backed)
-│   ├── auth.ts (Prisma-backed)
-│   ├── retry.ts
-│   ├── timeout.ts
-│   ├── validation.ts
-│   ├── costs.ts
-│   └── rate-limit.ts
-├── prisma/
-│   ├── schema.prisma (5 models)
-│   ├── seed.ts
-│   └── dev.db (SQLite database)
-└── components/
-    └── ui/ (Shadcn components)
-```
+**Operational agents (`app/api/agents/run/operational/`)** — 9 Revenue
+Intelligence, 10 Content, 11 Business Development, 12 Compliance, 13 Internal
+Ops. These run on a schedule rather than on request.
+
+**Internal venture agents (`app/api/agents/run/internal/`)** — SmartGym (lead
+capture, member retention, operations) and PVision (field ops, lead routing,
+billing).
+
+Each of the 13 numbered agents declares two specialist **sub-agents** (26 in
+total, typed in `lib/subagent/types.ts`) composed sequentially, in parallel, or
+conditionally.
+
+### Cross-Cutting Systems
+
+- **Sub-agent framework** (`lib/subagent/`) — composition patterns with
+  time-budget splitting and P1-failure recovery. Every sub-agent returns a
+  uniform envelope carrying cost, tokens, confidence and escalation severity.
+- **Governance** (`lib/governance/`) — a five-level permission matrix covering
+  all 13 agents, and an approval gate that decides *before* an external call
+  runs. Approval state lives in the database so a portal decision reaches the
+  next attempt.
+- **Learning** (`lib/learning/`) — collectors pull observations off agent
+  completions, anonymize them, score confidence, and route validated learnings
+  to the agents that should receive them.
+- **Portfolio** (`lib/portfolio/`) — retainer-weighted health, weekly capacity
+  against a 33.5h cap, and cross-client pattern detection.
+- **Scheduler** (`lib/scheduler/`) — cron registry plus the event dispatcher
+  that fires background work after agent completions.
+
+### Execution Paths
+
+- `POST /api/pipeline/run` — SSE-streamed run of Agents 1→5 with retry,
+  timeout, cancellation, output validation and cost tracking.
+- `POST /api/agents/run/[agentId]` — a single agent (1–5).
+- `POST /api/agents/run` — orchestrator dispatch, including the internal
+  venture agents.
+- `GET /api/cron/[job]` — scheduled agents, bearer-token guarded.
+- `POST /api/webhooks/trigger` — external kick-off, API-key guarded.
+
+Agents 1–5 have two implementations selected by `USE_SUBAGENTS`: the legacy
+single-call path, and the v2 sub-agent path. Both accept the same inputs and
+return the same shape.
 
 ---
 
 ## What's Built (Current Status)
 
-### ✅ Core Infrastructure (100% Complete)
+**Scale:** ~44,300 lines of TypeScript across `app/`, `lib/` and `components/`,
+plus ~4,900 lines of tests. 26 API routes, 19 pages, 30 database models.
 
-**Authentication & Security:**
-- Login system with persistent sessions
-- Database-backed user/session management
-- Protected route middleware
-- Admin user seeded (username: admin)
+### Working
 
-**Database Layer:**
-- SQLite database with Prisma
-- 5 models: User, Session, PipelineRun, Template, Setting
-- Migration scripts
-- Seed data
+- All 19 agent implementations, with the 26-sub-agent framework behind a flag
+- Multi-provider routing with per-tier fallback chains and cost tracking
+- SSE pipeline execution with retry, timeout, cancellation and validation
+- Stage-gated pipeline sessions with human review between stages
+- Client portal: overview, activity, approvals, analytics, permissions, audit
+- Admin portfolio dashboard: health, capacity, cross-client patterns
+- Governance enforcement on agent calls that leave the process
+- Learning collection from agent completions, idempotent per run
+- Scheduled job dispatch for the operational agents
+- Auth with session-cookie middleware, per-route DB validation, CSRF, rate
+  limiting, and boot-time environment validation
 
-**Pipeline Execution:**
-- 5-agent sequential pipeline
-- Server-sent events (SSE) for live updates
-- Retry logic (2 attempts per agent)
-- Timeout handling (AbortController)
-- Cost estimation and tracking
-- Run ID generation
-- Cancellation support
-- Input/output validation
-- Auto-save to database
+### Known Gaps
 
-**UI Components:**
-- Login page
-- Dashboard (overview)
-- Pipeline page (run & monitor)
-- History page (past runs)
-- Live cost display
-- Cancel button
-- Progress indicators
+These are real and worth stating plainly:
 
-### ✅ Agent Implementation (100% Complete)
-
-**All 5 Agents Fully Built:**
-
-1. **Agent 1: Market Intelligence** ✅
-   - Lead analysis and scoring
-   - Shadow Ops signal detection
-   - Multi-lead batch processing
-
-2. **Agent 2: Discovery & Diagnosis** ✅
-   - Current state audit
-   - Pain quantification
-   - Gap analysis
-
-3. **Agent 3: Sales Engineering** ✅
-   - Solution design
-   - SOW/proposal generation
-   - 6-Pillar baseline metrics
-
-4. **Agent 4: Systems Delivery** ✅
-   - Workflow configuration
-   - System integration
-   - Handoff kit creation
-
-5. **Agent 5: Client Success (v3)** ✅
-   - **Latest Version: 6-Pillar Tracking Edition**
-   - Onboarding (FVi7 protocol: First Value in 7 Days)
-   - Weekly win reports (pillar-by-pillar)
-   - Adoption tracking (all 6 pillars)
-   - Expansion opportunities
-   - Health scoring (per-pillar + overall)
-
-### ✅ Production-Ready Features (100% Complete)
-
-| Feature | Status | Implementation |
-|---------|--------|----------------|
-| Retry Logic | ✅ | `withRetry()` in `lib/retry.ts` |
-| Timeout Handling | ✅ | `withTimeout()` in `lib/timeout.ts` |
-| Input Validation | ✅ | Zod schemas in `lib/validation.ts` |
-| Output Validation | ✅ | Agent-specific schemas |
-| Cost Tracking | ✅ | `estimateCost()` in `lib/costs.ts` |
-| Run IDs | ✅ | `generateRunId()` in `lib/history.ts` |
-| Cancellation | ✅ | `/api/pipeline/cancel` |
-| History Saving | ✅ | Auto-persist to SQLite |
-| Rate Limiting | ✅ | Sliding window in `lib/rate-limit.ts` |
-| Live UI Updates | ✅ | SSE streaming |
-
-### 📊 Current Metrics
-
-- **Lines of Code:** ~15,000+ (TypeScript)
-- **Database:** SQLite (single file)
-- **API Endpoints:** 12+
-- **UI Pages:** 5 (login, dashboard, pipeline, history, settings)
-- **Agents:** 5 (fully implemented)
-- **Pillars Tracked:** 6 (comprehensive metrics)
-
----
-
-## What's Left to Build
-
-### 🚧 High Priority (Production Blockers)
-
-1. **Environment Variables**
-   - [ ] Add `.env.example` template
-   - [ ] Document required API keys
-   - [ ] Add validation for missing keys
-
-2. **Error Handling**
-   - [ ] Centralized error boundary
-   - [ ] Better error messages to users
-   - [ ] Sentry/logging integration
-
-3. **Testing**
-   - [ ] Manual testing checklist completed
-   - [ ] Basic E2E test suite
-   - [ ] Agent output validation tests
-
-4. **Deployment**
-   - [ ] Production deployment guide
-   - [ ] Environment setup (Vercel/Railway/etc)
-   - [ ] Database backup strategy
-
-### 🔨 Medium Priority (Polish & UX)
-
-5. **UI Enhancements**
-   - [ ] Settings page (API key management)
-   - [ ] History filtering/search
-   - [ ] Export pipeline results (CSV/PDF)
-   - [ ] Dark mode support
-
-6. **Agent Improvements**
-   - [ ] Agent configuration UI
-   - [ ] Custom prompts per client
-   - [ ] Template library management
-
-7. **Analytics**
-   - [ ] Pipeline success metrics
-   - [ ] Cost analytics dashboard
-   - [ ] Agent performance tracking
-
-### 🎯 Low Priority (Future Enhancements)
-
-8. **Multi-tenancy**
-   - [ ] Organization/team support
-   - [ ] Role-based access control
-   - [ ] Per-team agent configs
-
-9. **Integrations**
-   - [ ] CRM webhooks (HubSpot, Salesforce)
-   - [ ] Slack notifications
-   - [ ] Calendar integrations
-
-10. **Advanced Features**
-    - [ ] Agent A/B testing
-    - [ ] Custom workflow builder
-    - [ ] White-label version
+1. **Postgres migration not done.** SQLite will not survive a serverless
+   deploy. This blocks production.
+2. **Learning loop is open at the last step.** Collection and promotion run;
+   consumption does not. `processPendingNotices()` has no callers and every
+   orchestrator receives `memoryEntries: {}`. Wiring it needs a learning-type →
+   memory-key mapping first (see README).
+3. **WRITE_EXTERNAL / EXECUTE governance has no live caller.** The permission
+   matrix lists tools — `send_email`, `create_crm_contact`, `send_invoice` —
+   that have no implementation. Enforcement is installed and tested; the tools
+   are not built.
+4. **Operational agents 9–13 are cron-only.** They have workers and schedules
+   but no interactive entry point.
+5. **Little end-to-end verification.** Most of `__tests__/agents/` are live-API
+   integration tests that cost money and fail without keys. Offline coverage is
+   good for the seams added recently, thin for the agents themselves.
+6. **Cron scale needs a paid plan.** Nine jobs, one hourly, against Vercel
+   Hobby's limit of two daily jobs.
 
 ---
 
 ## Development Roadmap
 
-### Phase 1: MVP Launch (Current - Q1 2026)
-**Goal:** Get first 3 paying clients
+### Now — Production Readiness
+- [ ] Postgres migration and a real deploy
+- [ ] One end-to-end pipeline run against live providers, both execution paths
+- [ ] Compare sub-agent vs legacy on cost and output quality
+- [ ] Fill in `retainerUsd` for portfolio clients (health is retainer-weighted)
 
-- [x] Core pipeline (5 agents)
-- [x] Database integration
-- [x] Production features (retry, timeout, etc)
-- [ ] Manual testing complete
-- [ ] Deploy to production
-- [ ] Onboard first clients
+### Next — Close the Loops
+- [ ] Learning consumption (stage 4) with the memory-key mapping
+- [ ] Implement the external tools the permission matrix already governs
+- [ ] Split the test suite into offline unit tests and an opt-in integration tier
 
-### Phase 2: Scale & Refine (Q2 2026)
-**Goal:** 10 paying clients, proven ROI
-
-- [ ] Settings/config UI
-- [ ] Advanced error handling
-- [ ] Analytics dashboard
-- [ ] Export capabilities
-- [ ] Template library
-
-### Phase 3: Platform (Q3-Q4 2026)
-**Goal:** 50+ clients, multi-tenant SaaS
-
-- [ ] Multi-tenant architecture
-- [ ] White-label option
-- [ ] Custom workflow builder
-- [ ] Marketplace (agent templates)
-- [ ] Partner program
+### Later — Scale
+- [ ] Interactive entry points for the operational agents
+- [ ] Portfolio groups (PE / multi-location) beyond the data model
+- [ ] White-label and agent template marketplace
 
 ---
 
@@ -519,27 +385,19 @@ npm run dev
 
 ## Current Status Summary
 
-✅ **What Works:**
-- All 5 agents fully implemented
-- Database integration complete
-- Production features deployed
-- UI functional (login, pipeline, history)
-- Agent 5 upgraded to v3 (6-Pillar tracking)
+**Works:** 19 agents across three fleets, multi-provider tier routing,
+stage-gated pipeline sessions, client portal, admin portfolio dashboard,
+governance enforcement, learning collection, scheduled jobs.
 
-⚠️ **What's Needed:**
-- Manual testing complete
-- Production deployment
-- First client onboarded
+**Blocks production:** Postgres migration, an end-to-end run against live
+providers, and a deploy target that supports the cron schedule.
 
-🎯 **Next Steps:**
-1. Complete manual testing checklist
-2. Deploy to production (Vercel/Railway)
-3. Document API keys and setup
-4. Onboard first pilot client
-5. Iterate based on feedback
+**Open by design, not oversight:** learning consumption and the external tools
+the permission matrix governs. Both are documented in the README with the
+specific traps involved.
 
 ---
 
-**Last Updated:** February 25, 2026  
-**Version:** 2.0 — Agentic Pivot  
-**Status:** Building for the future — governance, unified pipeline, multi-model routing
+**Last Updated:** August 2026
+**Status:** Wiring complete through the sub-agent, governance, learning,
+scheduler and portfolio layers; production deployment outstanding.

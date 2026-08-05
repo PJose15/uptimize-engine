@@ -17,9 +17,21 @@
  */
 
 import { logger } from "../logger";
-import { MCPClientInterface } from "../automation/workflow-engine";
 import { enforceGovernance } from "@/lib/governance/enforce";
 import { PermissionLevel } from "@/lib/governance/tool-permissions";
+
+/**
+ * Structural contract for an MCP client.
+ *
+ * Previously declared in automation/workflow-engine.ts, which was removed as
+ * unreferenced scaffold; it lives here now because this is the only
+ * implementation.
+ */
+export interface MCPClientInterface {
+  callTool(server: string, toolName: string, params: Record<string, unknown>): Promise<Record<string, unknown>>;
+  listTools(server: string): Promise<Array<{ name: string; description: string; inputSchema: unknown }>>;
+  getResource(server: string, uri: string): Promise<unknown>;
+}
 
 /**
  * Who an MCPClient acts as, for permission checks.
