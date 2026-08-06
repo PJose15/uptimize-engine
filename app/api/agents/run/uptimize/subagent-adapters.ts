@@ -19,6 +19,8 @@
 import type { AgentMode } from '../types';
 import type { AgentSynthesisResult } from '@/lib/subagent';
 import { persistSubAgentRuns } from '@/lib/subagent/persistence';
+import { loadAgentMemory, commitAgentMemory, type LoadedMemory } from '@/lib/learning/memory';
+import type { AgentId } from '@/lib/subagent';
 import { getProviderForModel } from '@/lib/config/models';
 
 // Agent 1
@@ -197,6 +199,53 @@ async function record(
     });
 }
 
+/**
+ * Learned context waiting for this agent.
+ *
+ * An explicit `memoryEntries` from the caller wins — a caller supplying its own
+ * memory is being deliberate, and silently merging distributed learnings into
+ * it would make the result unpredictable. Never throws: an agent must still run
+ * when the learning store is unavailable.
+ */
+async function loadMemory(
+    agentId: AgentId,
+    options: SubAgentRunOptions,
+): Promise<{ entries: Record<string, string>; loaded: LoadedMemory | null }> {
+    if (options.memoryEntries) {
+        return { entries: options.memoryEntries, loaded: null };
+    }
+
+    try {
+        const loaded = await loadAgentMemory(agentId);
+        return { entries: loaded.entries, loaded };
+    } catch (err) {
+        console.error(`[subagent-adapter] could not load memory for ${agentId}:`, err);
+        return { entries: {}, loaded: null };
+    }
+}
+
+/**
+ * Acknowledge memory only when the run actually produced something.
+ *
+ * Marking notices delivered on a failed run would destroy that learning — it is
+ * never redelivered — so a failure leaves them pending for the next attempt.
+ */
+async function commitMemory(
+    loaded: LoadedMemory | null,
+    agentId: AgentId,
+    options: SubAgentRunOptions,
+    synthesis: AgentSynthesisResult<unknown>,
+): Promise<void> {
+    if (!loaded) return;
+    if (!synthesis.sub_agent_results.some(r => r.task_completed)) return;
+
+    await commitAgentMemory(loaded, {
+        clientId: options.clientId ?? 'unknown',
+        agentId,
+        pipelineRunId: options.pipelineRunId,
+    });
+}
+
 // ============================================================================
 // AGENT 1 — Market Intelligence
 // ============================================================================
@@ -219,14 +268,17 @@ export async function runAgent1ViaSubAgents(
         mode,
     };
 
+    const memory = await loadMemory('agent-1-market-intelligence', options);
+
     const synthesis = await runAgent1SubAgent(input, {
         mode,
         clientId: options.clientId,
         pipelineRunId: options.pipelineRunId,
-        memoryEntries: options.memoryEntries,
+        memoryEntries: memory.entries,
     });
 
     await record(synthesis, options);
+    await commitMemory(memory.loaded, 'agent-1-market-intelligence', options, synthesis);
 
     return toLegacyResult<TargetPackOutput, Agent1Result>(
         synthesis,
@@ -259,15 +311,18 @@ export async function runAgent2ViaSubAgents(
         offer_positioning: context.offerPositioning,
     };
 
+    const memory = await loadMemory('agent-2-outbound-appointment', options);
+
     const synthesis = await runAgent2SubAgent(input, {
         mode,
         clientId: options.clientId,
         pipelineRunId: options.pipelineRunId,
-        memoryEntries: options.memoryEntries,
+        memoryEntries: memory.entries,
         vertical: context.vertical,
     });
 
     await record(synthesis, options);
+    await commitMemory(memory.loaded, 'agent-2-outbound-appointment', options, synthesis);
 
     return toLegacyResult<OutboundAndBookingOutput, Agent2Result>(
         synthesis,
@@ -309,14 +364,17 @@ export async function runAgent3ViaSubAgents(
         mode: toDiscoveryMode(context.mode),
     };
 
+    const memory = await loadMemory('agent-3-sales-engineer', options);
+
     const synthesis = await runAgent3SubAgent(input, {
         mode,
         clientId: options.clientId,
         pipelineRunId: options.pipelineRunId,
-        memoryEntries: options.memoryEntries,
+        memoryEntries: memory.entries,
     });
 
     await record(synthesis, options);
+    await commitMemory(memory.loaded, 'agent-3-sales-engineer', options, synthesis);
 
     return toLegacyResult<Agent3Output, Agent3Result>(
         synthesis,
@@ -350,14 +408,17 @@ export async function runAgent4ViaSubAgents(
         target_timeline_days: context.targetTimelineDays,
     };
 
+    const memory = await loadMemory('agent-4-systems-builder', options);
+
     const synthesis = await runAgent4SubAgent(input, {
         mode,
         clientId: options.clientId,
         pipelineRunId: options.pipelineRunId,
-        memoryEntries: options.memoryEntries,
+        memoryEntries: memory.entries,
     });
 
     await record(synthesis, options);
+    await commitMemory(memory.loaded, 'agent-4-systems-builder', options, synthesis);
 
     return toLegacyResult<DeliveryPackageOutput, Agent4Result>(
         synthesis,
@@ -381,13 +442,16 @@ export async function runAgent5ViaSubAgents(
     input: Agent5Input,
     options: SubAgentRunOptions = {},
 ): Promise<Agent5ClientSuccessPackage> {
+    const memory = await loadMemory('agent-5-client-success', options);
+
     const synthesis = await runAgent5SubAgent(input, {
         clientId: options.clientId ?? input.handoff_kit?.account_id,
         pipelineRunId: options.pipelineRunId,
-        memoryEntries: options.memoryEntries,
+        memoryEntries: memory.entries,
     });
 
     await record(synthesis, options);
+    await commitMemory(memory.loaded, 'agent-5-client-success', options, synthesis);
 
     if (!synthesis.sub_agent_results.some(r => r.task_completed)) {
         throw new Error(

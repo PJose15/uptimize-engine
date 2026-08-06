@@ -49,7 +49,7 @@ at least 12 characters; there are no default credentials.
 
 ### Two test tiers
 
-**Offline (default)** — 22 suites, 165 tests, no network, no database, no API
+**Offline (default)** — 23 suites, 180 tests, no network, no database, no API
 keys, ~4s. `__tests__/setup.ts` stubs the Prisma client for every suite, since
 `lib/prisma` constructs a client at module load and would otherwise take down
 suites that never meant to touch a database. A suite needing real database
@@ -154,7 +154,7 @@ an external scheduler pointed at the same endpoints.
 
 ## Learning pipeline
 
-Observations flow through four stages. Only the first two run today:
+Observations flow through four stages. All four are wired:
 
 1. **Collect** — the pipeline route dispatches `onAgentNComplete()` for Agents
    2–5 as each finishes, writing `LearningEvent` rows. Collection is idempotent
@@ -168,15 +168,32 @@ Observations flow through four stages. Only the first two run today:
    only reports on events and promotes nothing.)
 3. **Distribute** — `LEARNING_DISTRIBUTION_MAP` routes each learning type to
    the agents that should receive it.
-4. **Consume** — **not wired.** `processPendingNotices()` has no callers, and
-   every orchestrator is passed `memoryEntries: {}`.
+4. **Consume** — the sub-agent adapters load pending notices before a run,
+   pass them as `memoryEntries`, and acknowledge them only after it succeeds.
+   `withMemoryContext()` prepends the filtered memory to each sub-agent's
+   prompt.
 
-Before wiring stage 4, note that `processPendingNotices()` marks notices
-delivered as it reads them, while `buildSubAgentContext` filters memory against
-`SUBAGENT_MEMORY_KEYS` — namespaced keys like `shared:money_leak_map`. Learning
-keys are unnamespaced (`pillar_finding`, `effective`), so a naive wiring would
-consume every notice and then discard it in the filter. Stage 4 needs a
-learning-type → memory-key mapping first.
+Three things had to line up for stage 4 to deliver anything, and each failed
+silently on its own:
+
+- **Notices were consumed on read.** `processPendingNotices()` marked them
+  delivered as it fetched them, so a failed run destroyed learning it never
+  used. Reading and acknowledging are now separate — `peekPendingNotices()` /
+  `markNoticesDelivered()` — and a failed run leaves notices pending.
+- **The key vocabularies did not match.** Learnings are keyed
+  `learningType:key`; sub-agent memory is filtered against `SUBAGENT_MEMORY_KEYS`
+  (`shared:money_leak_map` and friends). `LEARNING_MEMORY_KEYS` in
+  `lib/learning/memory.ts` maps between them, and a test asserts every target is
+  a key some sub-agent can actually read. An unmapped learning is withheld
+  rather than consumed and dropped.
+- **No sub-agent read `memory_context`.** The field existed on the context
+  object and nothing used it, so filtered memory was assembled and discarded.
+  All ten sub-agents for Agents 1–5 now splice it in via `withMemoryContext()`.
+  Sub-agents for Agents 6–13 follow the same one-line pattern when needed.
+
+Delivered memory carries each learning's confidence and label, so an agent can
+weigh a single observation differently from a validated pattern. What was read
+is recorded in `AgentMemoryLog`.
 
 ## Architecture
 
