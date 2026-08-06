@@ -192,3 +192,22 @@ export function estimateModelCost(
   const cost = (inputTokens / 1_000_000) * pricing.input + (outputTokens / 1_000_000) * pricing.output;
   return Number(cost.toFixed(6));
 }
+
+/**
+ * Valid model ids per mode for callers pinned to a single provider.
+ *
+ * The tier aliases in MODELS span providers — FAST is a Gemini model — so a
+ * component that constructs an Anthropic client cannot use them directly. This
+ * gives those callers ids that exist in MODEL_TO_PROVIDER and MODEL_PRICING,
+ * rather than each hardcoding its own guess.
+ */
+export const ANTHROPIC_MODE_MODELS: Record<'fast' | 'balanced' | 'quality', string> = {
+  fast:     'claude-3-5-haiku-20241022',
+  balanced: 'claude-sonnet-4-20250514',
+  quality:  'claude-opus-4-20250514',
+};
+
+/** Whether a model id is known to the registry (provider + pricing). */
+export function isKnownModel(model: string): boolean {
+  return model in MODEL_TO_PROVIDER && model in MODEL_PRICING;
+}

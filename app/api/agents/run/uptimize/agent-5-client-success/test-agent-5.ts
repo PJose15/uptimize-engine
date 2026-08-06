@@ -4,6 +4,7 @@
  */
 
 import { Agent5ClientSuccess, type Agent5Input, type Agent4HandoffKit } from './index';
+import { ANTHROPIC_MODE_MODELS } from '@/lib/config/models';
 
 /**
  * Mock Agent 4 Handoff Kit for testing
@@ -213,7 +214,7 @@ async function testAgent5() {
 
   const agent = new Agent5ClientSuccess({
     apiKey,
-    model: 'claude-opus-4-5-20251101',
+    model: ANTHROPIC_MODE_MODELS.quality,
     maxTokens: 16000,
     temperature: 0.7,
   });

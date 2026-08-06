@@ -49,7 +49,7 @@ at least 12 characters; there are no default credentials.
 
 ### Two test tiers
 
-**Offline (default)** — 24 suites, 218 tests, no network, no database, no API
+**Offline (default)** — 25 suites, 243 tests, no network, no database, no API
 keys, ~4s. `__tests__/setup.ts` stubs the Prisma client for every suite, since
 `lib/prisma` constructs a client at module load and would otherwise take down
 suites that never meant to touch a database. A suite needing real database
