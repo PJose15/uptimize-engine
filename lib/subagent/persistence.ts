@@ -82,8 +82,9 @@ export async function persistSubAgentRuns(
         const rows = synthesis.sub_agent_results.map(result => toRow(result, context));
         if (rows.length === 0) return;
 
-        // createMany is not supported on SQLite in Prisma 5 for all cases;
-        // sequential creates keep this portable across the SQLite → Postgres move.
+        // Sequential creates rather than createMany: there are at most two rows
+        // per agent run, so the round-trip cost is negligible, and one failing
+        // row does not take the other down with it.
         for (const row of rows) {
             await prisma.subAgentRun.create({ data: row });
         }

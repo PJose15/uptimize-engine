@@ -4,6 +4,7 @@
  */
 
 import { prisma } from '@/lib/prisma';
+import { isPostgres } from './db-compat';
 
 interface RateLimitMemEntry {
     count: number;
@@ -29,11 +30,6 @@ export interface RateLimitResult {
     allowed: boolean;
     remaining: number;
     resetIn: number;  // ms until reset
-}
-
-/** Returns true if DATABASE_URL points to PostgreSQL */
-function isPostgres(): boolean {
-    return (process.env.DATABASE_URL || '').startsWith('postgresql://');
 }
 
 /**
