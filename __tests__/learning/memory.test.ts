@@ -62,7 +62,7 @@ vi.mock('@/lib/prisma', () => ({
 
 import { loadAgentMemory, commitAgentMemory, memoryKeyFor } from '@/lib/learning/memory';
 import { peekPendingNotices, markNoticesDelivered } from '@/lib/learning/distribution';
-import { withMemoryContext, filterMemoryForSubAgent, SUBAGENT_MEMORY_KEYS } from '@/lib/subagent/context-builder';
+import { withMemoryContext, filterMemoryForSubAgent, SUBAGENT_MEMORY_KEYS, memoryKeysForParentAgent } from '@/lib/subagent/context-builder';
 
 function notice(overrides: Partial<DistRow> & { learning?: Partial<DistRow['agentLearning']> } = {}): DistRow {
     const { learning, ...rest } = overrides;
@@ -131,13 +131,35 @@ describe('learning key → memory key', () => {
         expect(memoryKeyFor('unknown_type', 'whatever')).toBeNull();
     });
 
-    it('every mapped target is a key some sub-agent can read', async () => {
-        const { LEARNING_MEMORY_KEYS } = await import('@/lib/learning/memory');
-        const readable = new Set(Object.values(SUBAGENT_MEMORY_KEYS).flat());
+    // The check that matters is per receiving agent, not global. An earlier
+    // version asserted only that a target was readable by SOME sub-agent, which
+    // passed while five of the ten real distribution routes resolved to keys the
+    // targeted agent could not read — consuming those notices and dropping them.
+    it('every real distribution route resolves to a key its target agent can read', async () => {
+        const { LEARNING_DISTRIBUTION_MAP } = await import('@/lib/learning/distribution');
 
-        for (const target of Object.values(LEARNING_MEMORY_KEYS)) {
-            expect(readable, `${target} is not readable by any sub-agent`).toContain(target);
+        for (const [route, targets] of Object.entries(LEARNING_DISTRIBUTION_MAP)) {
+            const [learningType, key] = route.split(':');
+
+            for (const agentId of targets) {
+                const resolved = memoryKeyFor(learningType, key, agentId);
+                expect(resolved, `${route} → ${agentId} resolves to nothing deliverable`).not.toBeNull();
+                expect(
+                    memoryKeysForParentAgent(agentId),
+                    `${route} → ${agentId} maps to ${resolved}, which it cannot read`,
+                ).toContain(resolved);
+            }
         }
+    });
+
+    it('withholds rather than consumes when a key is unreadable by the target', () => {
+        // Agent 6 has no money-leak key; without the per-agent override this
+        // would resolve to shared:money_leak_map and be silently dropped.
+        expect(memoryKeyFor('money_leak:value_estimate'.split(':')[0], 'value_estimate', 'agent-6-closer'))
+            .toBe('agent6:proposal');
+
+        // A route with no override and no readable default is withheld.
+        expect(memoryKeyFor('integration_quirk', 'issue', 'agent-6-closer')).toBeNull();
     });
 });
 

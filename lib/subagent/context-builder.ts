@@ -156,3 +156,24 @@ export function withMemoryContext(userPrompt: string, memoryContext: string): st
     userPrompt,
   ].join('\n');
 }
+
+/**
+ * Every memory key any of a parent agent's sub-agents may read.
+ *
+ * Delivery is decided per parent agent but filtering happens per sub-agent, so
+ * a learning routed to a key none of that agent's sub-agents can read is
+ * dropped after being consumed. This is how a caller checks first.
+ */
+export function memoryKeysForParentAgent(agentId: string): string[] {
+  const num = /^agent-(\d+)-/.exec(agentId)?.[1];
+  if (!num) return [];
+
+  const keys = new Set<string>();
+  for (const [subAgentId, allowed] of Object.entries(SUBAGENT_MEMORY_KEYS)) {
+    if (subAgentId.startsWith(`${num}A-`) || subAgentId.startsWith(`${num}B-`)) {
+      allowed.forEach(k => keys.add(k));
+    }
+  }
+
+  return [...keys];
+}

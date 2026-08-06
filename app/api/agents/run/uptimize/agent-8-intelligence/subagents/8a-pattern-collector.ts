@@ -8,6 +8,7 @@
  */
 
 import { executeWithFallback } from '@/lib/providers/fallback';
+import { withMemoryContext } from '@/lib/subagent/context-builder';
 import type { SubAgentContext, SubAgentResult } from '@/lib/subagent';
 import { buildP1Failure } from '@/lib/subagent';
 import type { Agent8Input, PatternCollectorResult } from '../types';
@@ -137,7 +138,9 @@ export async function runPatternCollector(
   }
 
   try {
-    const userPrompt = buildUserPrompt(agent8Input);
+    // Learned context from previous runs, filtered to this sub-agent's
+    // permitted memory keys by buildSubAgentContext.
+    const userPrompt = withMemoryContext(buildUserPrompt(agent8Input), ctx.memory_context);
     const fallback = await executeWithFallback(
       'pattern_collection',
       {

@@ -19,6 +19,7 @@
 
 import { peekPendingNotices, markNoticesDelivered, type PendingNotice } from './distribution';
 import type { AgentId } from '@/lib/subagent/types';
+import { memoryKeysForParentAgent } from '@/lib/subagent/context-builder';
 import { prisma } from '@/lib/prisma';
 
 /**
@@ -41,8 +42,60 @@ export const LEARNING_MEMORY_KEYS: Record<string, string> = {
     'outreach_hook:ineffective':       'agent2:successful_hooks',
 };
 
-export function memoryKeyFor(learningType: string, key: string): string | null {
-    return LEARNING_MEMORY_KEYS[`${learningType}:${key}`] ?? null;
+/**
+ * Per-agent overrides, for routes where the default key is not one the
+ * receiving agent's sub-agents can read.
+ *
+ * SUBAGENT_MEMORY_KEYS is deliberately narrow — Agent 6 does not read the money
+ * leak map, Agent 7 does not read Agent 2's hook library. Without an override
+ * those learnings resolve to a key the agent cannot see, and the filter drops
+ * them. Each target below is the nearest key the receiving agent actually reads.
+ */
+export const LEARNING_MEMORY_KEYS_BY_AGENT: Record<string, Record<string, string>> = {
+    'agent-3-sales-engineer': {
+        // Exceptions inform what the audit looks for.
+        'exception:new_pattern': 'shared:audit_framework',
+    },
+    'agent-4-systems-builder': {
+        // Resolutions are vertical-specific build knowledge.
+        'exception:resolution': 'agent4:vertical',
+    },
+    'agent-6-closer': {
+        // Value estimates are what the close defends on price.
+        'money_leak:value_estimate': 'agent6:proposal',
+    },
+    'agent-7-nurture': {
+        'outreach_hook:effective': 'shared:touch_templates',
+        'outreach_hook:ineffective': 'shared:touch_templates',
+    },
+    'agent-9-revenue-intelligence': {
+        'health_score_driver:risk_factor': 'shared:health_thresholds',
+    },
+};
+
+/**
+ * Resolve the memory key a learning should be delivered under for a given
+ * agent, or null if it cannot be delivered.
+ *
+ * Returns null when the resolved key is not readable by that agent's
+ * sub-agents. That check is the safety net: without it a mapping mistake
+ * consumes the notice and then discards it, losing the learning permanently
+ * with nothing logged. Withholding is always recoverable.
+ */
+export function memoryKeyFor(
+    learningType: string,
+    key: string,
+    agentId?: string,
+): string | null {
+    const route = `${learningType}:${key}`;
+    const target = (agentId && LEARNING_MEMORY_KEYS_BY_AGENT[agentId]?.[route])
+        ?? LEARNING_MEMORY_KEYS[route]
+        ?? null;
+
+    if (!target) return null;
+    if (!agentId) return target;
+
+    return memoryKeysForParentAgent(agentId).includes(target) ? target : null;
 }
 
 export interface LoadedMemory {
@@ -83,7 +136,7 @@ export async function loadAgentMemory(agentId: AgentId | string): Promise<Loaded
     const usedNoticeIds: string[] = [];
 
     for (const notice of notices) {
-        const memoryKey = memoryKeyFor(notice.learningType, notice.key);
+        const memoryKey = memoryKeyFor(notice.learningType, notice.key, agentId);
         if (!memoryKey) continue;
 
         const lines = grouped.get(memoryKey) ?? [];

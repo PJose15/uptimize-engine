@@ -9,6 +9,7 @@
  */
 
 import { runParallel, buildSubAgentContext } from '@/lib/subagent';
+import { loadAgentMemory, commitAgentMemory } from '@/lib/learning/memory';
 import type { AgentSynthesisResult, SubAgentResult } from '@/lib/subagent';
 import { runSignalMonitor } from './subagents/7a-signal-monitor';
 import { runSequenceManager } from './subagents/7b-sequence-manager';
@@ -57,6 +58,9 @@ export async function runAgent7Nurture(
 ): Promise<AgentSynthesisResult<NurtureIntelligenceOutput>> {
   const mode = config.mode ?? 'balanced';
 
+  // Learnings distributed to this agent, delivered into sub-agent memory.
+  const memory = await loadAgentMemory('agent-7-nurture');
+
   const baseCtx = buildSubAgentContext({
     parentAgentId: 'agent-7-nurture',
     subAgentId: '7A-signal-monitor',
@@ -67,7 +71,7 @@ export async function runAgent7Nurture(
     mode,
     timeBudgetMs: TOTAL_TIMEOUT_MS,
     inputs: { agent7_input: input },
-    memoryEntries: config.memoryEntries ?? {},
+    memoryEntries: config.memoryEntries ?? memory.entries,
     maxResponseTokens: 4000,
     confidenceRequired: 'medium',
   });
@@ -86,6 +90,11 @@ export async function runAgent7Nurture(
   });
 
   const subAgentResults: SubAgentResult<unknown>[] = [resultA, resultB];
+
+  // A failed run leaves its notices pending rather than burning them.
+  if (subAgentResults.some(r => r.task_completed)) {
+    await commitAgentMemory(memory, { clientId: input.client_id, agentId: 'agent-7-nurture' });
+  }
   const totalCost = subAgentResults.reduce((s, r) => s + r.cost_usd, 0);
   const totalDuration = Math.max(...subAgentResults.map(r => r.duration_ms));
   const requiresHumanAttention = output.escalations.length > 0 || subAgentResults.some(r => r.escalation_needed);

@@ -4,6 +4,7 @@
  */
 
 import { executeWithFallback } from '@/lib/providers/fallback';
+import { withMemoryContext } from '@/lib/subagent/context-builder';
 import type { SubAgentContext, SubAgentResult } from '@/lib/subagent';
 import { buildP1Failure } from '@/lib/subagent';
 import type { Agent12Input, ComplianceTrackerResult } from '../types';
@@ -86,7 +87,9 @@ export async function runComplianceTracker(
   }
 
   try {
-    const userPrompt = buildUserPrompt(input);
+    // Learned context from previous runs, filtered to this sub-agent's
+    // permitted memory keys by buildSubAgentContext.
+    const userPrompt = withMemoryContext(buildUserPrompt(input), ctx.memory_context);
     const fallback = await executeWithFallback(
       'compliance_check',
       {

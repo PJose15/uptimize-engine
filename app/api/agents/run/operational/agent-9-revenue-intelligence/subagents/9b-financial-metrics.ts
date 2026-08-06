@@ -4,6 +4,7 @@
  */
 
 import { executeWithFallback } from '@/lib/providers/fallback';
+import { withMemoryContext } from '@/lib/subagent/context-builder';
 import type { SubAgentContext, SubAgentResult } from '@/lib/subagent';
 import { buildP1Failure } from '@/lib/subagent';
 import type { Agent9Input, FinancialMetricsResult, PortfolioMonitorResult } from '../types';
@@ -87,7 +88,9 @@ export async function runFinancialMetrics(
   const start = Date.now();
 
   try {
-    const userPrompt = buildUserPrompt(input, portfolio);
+    // Learned context from previous runs, filtered to this sub-agent's
+    // permitted memory keys by buildSubAgentContext.
+    const userPrompt = withMemoryContext(buildUserPrompt(input, portfolio), ctx.memory_context);
     const fallback = await executeWithFallback(
       'financial_metrics',
       {

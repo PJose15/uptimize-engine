@@ -49,7 +49,7 @@ at least 12 characters; there are no default credentials.
 
 ### Two test tiers
 
-**Offline (default)** — 23 suites, 180 tests, no network, no database, no API
+**Offline (default)** — 24 suites, 218 tests, no network, no database, no API
 keys, ~4s. `__tests__/setup.ts` stubs the Prisma client for every suite, since
 `lib/prisma` constructs a client at module load and would otherwise take down
 suites that never meant to touch a database. A suite needing real database
@@ -188,8 +188,17 @@ silently on its own:
   rather than consumed and dropped.
 - **No sub-agent read `memory_context`.** The field existed on the context
   object and nothing used it, so filtered memory was assembled and discarded.
-  All ten sub-agents for Agents 1–5 now splice it in via `withMemoryContext()`.
-  Sub-agents for Agents 6–13 follow the same one-line pattern when needed.
+  All 26 sub-agents now splice it in via `withMemoryContext()`, and every
+  orchestrator loads memory before its run. A structural test asserts that
+  coverage so a sub-agent added later cannot silently skip it.
+
+Routing is resolved **per receiving agent**, not globally. `SUBAGENT_MEMORY_KEYS`
+is deliberately narrow — Agent 6 does not read the money-leak map, Agent 7 does
+not read Agent 2's hook library — so `LEARNING_MEMORY_KEYS_BY_AGENT` overrides
+the default target where it would land on a key that agent cannot see. On top of
+that, `memoryKeyFor()` verifies the resolved key is readable by the receiving
+agent and withholds the notice if not: a mapping mistake then costs a delayed
+learning rather than a destroyed one.
 
 Delivered memory carries each learning's confidence and label, so an agent can
 weigh a single observation differently from a validated pattern. What was read

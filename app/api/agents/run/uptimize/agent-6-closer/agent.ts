@@ -9,6 +9,7 @@
  */
 
 import { runSequential, buildSubAgentContext } from '@/lib/subagent';
+import { loadAgentMemory, commitAgentMemory } from '@/lib/learning/memory';
 import type { AgentSynthesisResult, SubAgentResult } from '@/lib/subagent';
 import { runPresentationCoach } from './subagents/6a-presentation-coach';
 import { runContractOrchestrator } from './subagents/6b-contract-orchestrator';
@@ -71,6 +72,9 @@ export async function runAgent6Closer(
 ): Promise<AgentSynthesisResult<CloseAndOnboardingOutput>> {
   const mode = config.mode ?? 'quality';
 
+  // Learnings distributed to this agent, delivered into sub-agent memory.
+  const memory = await loadAgentMemory('agent-6-closer');
+
   const baseCtx = buildSubAgentContext({
     parentAgentId: 'agent-6-closer',
     subAgentId: '6A-presentation-coach',
@@ -84,7 +88,7 @@ export async function runAgent6Closer(
     mode,
     timeBudgetMs: TOTAL_TIMEOUT_MS,
     inputs: { agent6_input: input },
-    memoryEntries: config.memoryEntries ?? {},
+    memoryEntries: config.memoryEntries ?? memory.entries,
     maxResponseTokens: 4000,
     confidenceRequired: 'high',
   });
@@ -108,6 +112,11 @@ export async function runAgent6Closer(
   });
 
   const subAgentResults = [resultA, resultB];
+
+  // A failed run leaves its notices pending rather than burning them.
+  if (subAgentResults.some(r => r.task_completed)) {
+    await commitAgentMemory(memory, { clientId: input.client_id, agentId: 'agent-6-closer' });
+  }
   const totalCost = subAgentResults.reduce((sum, r) => sum + r.cost_usd, 0);
   const totalDuration = subAgentResults.reduce((sum, r) => sum + r.duration_ms, 0);
   const escalations = output.escalations;

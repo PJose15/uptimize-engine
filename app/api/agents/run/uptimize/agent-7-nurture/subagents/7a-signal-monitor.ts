@@ -8,6 +8,7 @@
  */
 
 import { executeWithFallback } from '@/lib/providers/fallback';
+import { withMemoryContext } from '@/lib/subagent/context-builder';
 import type { SubAgentContext, SubAgentResult } from '@/lib/subagent';
 import { buildP1Failure } from '@/lib/subagent';
 import type { Agent7Input, SignalMonitorResult } from '../types';
@@ -139,7 +140,9 @@ export async function runSignalMonitor(
   }
 
   try {
-    const userPrompt = buildUserPrompt(agent7Input);
+    // Learned context from previous runs, filtered to this sub-agent's
+    // permitted memory keys by buildSubAgentContext.
+    const userPrompt = withMemoryContext(buildUserPrompt(agent7Input), ctx.memory_context);
     const fallback = await executeWithFallback(
       'signal_monitoring',
       {

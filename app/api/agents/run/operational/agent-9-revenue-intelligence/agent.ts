@@ -4,6 +4,7 @@
  */
 
 import { runSequential, buildSubAgentContext } from '@/lib/subagent';
+import { loadAgentMemory, commitAgentMemory } from '@/lib/learning/memory';
 import type { AgentSynthesisResult, SubAgentResult } from '@/lib/subagent';
 import { runPortfolioMonitor } from './subagents/9a-portfolio-monitor';
 import { runFinancialMetrics } from './subagents/9b-financial-metrics';
@@ -28,6 +29,9 @@ export async function runAgent9Revenue(
   input: Agent9Input,
   config: { mode?: 'fast' | 'balanced' | 'quality' } = {},
 ): Promise<AgentSynthesisResult<RevenueIntelligenceOutput>> {
+  // Learnings distributed to this agent, delivered into sub-agent memory.
+  const memory = await loadAgentMemory('agent-9-revenue-intelligence');
+
   const baseCtx = buildSubAgentContext({
     parentAgentId: 'agent-9-revenue-intelligence',
     subAgentId: '9A-portfolio-monitor',
@@ -37,7 +41,7 @@ export async function runAgent9Revenue(
     mode: config.mode ?? 'balanced',
     timeBudgetMs: TOTAL_TIMEOUT_MS,
     inputs: { agent9_input: input },
-    memoryEntries: {},
+    memoryEntries: memory.entries,
     maxResponseTokens: 5000,
     confidenceRequired: 'high',
   });
@@ -57,6 +61,11 @@ export async function runAgent9Revenue(
   });
 
   const subAgentResults: SubAgentResult<unknown>[] = [resultA, resultB];
+
+  // A failed run leaves its notices pending rather than burning them.
+  if (subAgentResults.some(r => r.task_completed)) {
+    await commitAgentMemory(memory, { clientId: 'system', agentId: 'agent-9-revenue-intelligence' });
+  }
   const totalCost = subAgentResults.reduce((s, r) => s + r.cost_usd, 0);
   const totalDuration = subAgentResults.reduce((s, r) => s + r.duration_ms, 0);
   const requiresHumanAttention = output.pedro_alerts.length > 0;

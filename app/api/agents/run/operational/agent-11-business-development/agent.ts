@@ -4,6 +4,7 @@
  */
 
 import { runParallel, buildSubAgentContext } from '@/lib/subagent';
+import { loadAgentMemory, commitAgentMemory } from '@/lib/learning/memory';
 import type { AgentSynthesisResult, SubAgentResult } from '@/lib/subagent';
 import { runProspectResearch } from './subagents/11a-prospect-research';
 import { runBdPipelineManager } from './subagents/11b-pipeline-manager';
@@ -28,6 +29,9 @@ export async function runAgent11BusinessDevelopment(
   input: Agent11Input,
   config: { mode?: 'fast' | 'balanced' | 'quality' } = {},
 ): Promise<AgentSynthesisResult<BusinessDevelopmentOutput>> {
+  // Learnings distributed to this agent, delivered into sub-agent memory.
+  const memory = await loadAgentMemory('agent-11-business-development');
+
   const baseCtx = buildSubAgentContext({
     parentAgentId: 'agent-11-business-development',
     subAgentId: '11A-prospect-research',
@@ -37,7 +41,7 @@ export async function runAgent11BusinessDevelopment(
     mode: config.mode ?? 'balanced',
     timeBudgetMs: TOTAL_TIMEOUT_MS,
     inputs: { agent11_input: input },
-    memoryEntries: {},
+    memoryEntries: memory.entries,
     maxResponseTokens: 5000,
     confidenceRequired: 'medium',
   });
@@ -56,6 +60,11 @@ export async function runAgent11BusinessDevelopment(
   });
 
   const subAgentResults: SubAgentResult<unknown>[] = [resultA, resultB];
+
+  // A failed run leaves its notices pending rather than burning them.
+  if (subAgentResults.some(r => r.task_completed)) {
+    await commitAgentMemory(memory, { clientId: 'system', agentId: 'agent-11-business-development' });
+  }
   const totalCost = subAgentResults.reduce((s, r) => s + r.cost_usd, 0);
   const totalDuration = Math.max(...subAgentResults.map(r => r.duration_ms));
   const requiresHumanAttention = subAgentResults.some(r => r.escalation_needed);
