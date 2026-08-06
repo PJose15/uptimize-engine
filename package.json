@@ -9,11 +9,12 @@
     "lint": "eslint",
     "test": "vitest",
     "test:run": "vitest run",
-    "test:agent1": "vitest run __tests__/agents/agent-1.test.ts",
-    "test:agent2": "vitest run __tests__/agents/agent-2.test.ts",
-    "test:agent3": "vitest run __tests__/agents/agent-3.test.ts",
-    "test:agent4": "vitest run __tests__/agents/agent-4.test.ts",
-    "test:agent5": "vitest run __tests__/agents/agent-5.test.ts"
+    "test:agent1": "vitest run --config vitest.integration.config.ts __tests__/agents/agent-1.integration.test.ts",
+    "test:agent2": "vitest run --config vitest.integration.config.ts __tests__/agents/agent-2.integration.test.ts",
+    "test:agent3": "vitest run --config vitest.integration.config.ts __tests__/agents/agent-3.integration.test.ts",
+    "test:agent4": "vitest run --config vitest.integration.config.ts __tests__/agents/agent-4.integration.test.ts",
+    "test:agent5": "vitest run --config vitest.integration.config.ts __tests__/agents/agent-5.integration.test.ts",
+    "test:integration": "vitest run --config vitest.integration.config.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",

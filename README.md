@@ -41,14 +41,26 @@ at least 12 characters; there are no default credentials.
 | `npm run dev` | Dev server on :3000 |
 | `npm run build` | Production build |
 | `npm run lint` | ESLint |
-| `npm run test` | Vitest, watch mode |
-| `npm run test:run` | Vitest, single pass |
-| `npm run test:agent1` … `test:agent5` | One agent's suite |
+| `npm run test` | Vitest, watch mode (offline tier) |
+| `npm run test:run` | Offline tier, single pass — this is the CI signal |
+| `npm run test:integration` | Live-API tier. Needs keys. Costs money. |
+| `npm run test:agent1` … `test:agent5` | One agent's live suite |
 | `npx prisma studio` | Browse the database on :5555 |
 
-Note that most of `__tests__/agents/` are **integration** tests that make live
-provider calls — they fail without API keys in `.env`, and they cost money when
-they pass. `__tests__/reports/` is pure unit-test coverage and runs offline.
+### Two test tiers
+
+**Offline (default)** — 22 suites, 165 tests, no network, no database, no API
+keys, ~4s. `__tests__/setup.ts` stubs the Prisma client for every suite, since
+`lib/prisma` constructs a client at module load and would otherwise take down
+suites that never meant to touch a database. A suite needing real database
+behaviour declares its own `vi.mock('@/lib/prisma', …)`, which takes precedence.
+
+**Integration (`*.integration.test.ts`)** — the five agent suites that make live
+provider calls. Opt-in, because they need keys and cost money per run.
+
+The split exists so a red `npm run test:run` means a genuine regression rather
+than an unconfigured environment. Before it, 18 of 26 suites failed by default
+and the suite could not be used as a signal at all.
 
 ## Agent execution paths
 
