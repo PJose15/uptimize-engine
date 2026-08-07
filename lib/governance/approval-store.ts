@@ -41,6 +41,17 @@ function riskLevelFor(estimatedCostUsd: number): string {
 }
 
 /**
+ * Stable identity for the action an approval authorizes.
+ *
+ * Without this, an approval is just a status: a human approving one external
+ * write would authorize any other approval-gated call the agent made within the
+ * TTL, because the gate only ever asked "is this id approved?".
+ */
+export function approvalFingerprint(agentId: string, toolName: string): string {
+    return `${agentId}::${toolName}`;
+}
+
+/**
  * Record a request for human approval. The returned id is the ApprovalItem
  * row id — pass it back into the gate on a later attempt to resume.
  */
@@ -52,10 +63,14 @@ export async function createApproval(params: CreateApprovalParams): Promise<Crea
                 `${params.agentId} wants to use ${params.toolName} ` +
                 `(cost: $${params.estimatedCostUsd.toFixed(2)}, batch: ${params.batchSize})`,
             riskLevel: riskLevelFor(params.estimatedCostUsd),
-            affectedSystem: params.toolName,
+            affectedSystem: approvalFingerprint(params.agentId, params.toolName),
             reason: params.reason,
             status: 'pending',
-            clientId: params.clientId ?? 'client_001',
+            // Never default to a real tenant: the portal scopes approvals by
+            // clientId and 403s on mismatch, so filing someone else's pending
+            // external write under client_001 both hides it from its owner and
+            // offers it to an unrelated operator.
+            clientId: params.clientId ?? 'unknown',
         },
     });
 
@@ -72,9 +87,23 @@ export async function createApproval(params: CreateApprovalParams): Promise<Crea
  * has not run yet — an approval must not become actionable again just because
  * a scheduled job was late.
  */
-export async function getApprovalDecision(approvalId: string): Promise<ApprovalDecision> {
+export async function getApprovalDecision(
+    approvalId: string,
+    expectedFingerprint?: string,
+): Promise<ApprovalDecision> {
     const item = await prisma.approvalItem.findUnique({ where: { id: approvalId } });
     if (!item) return 'not_found';
+
+    // An approval authorizes the action it was raised for, nothing else.
+    // Presenting a valid id for a different agent or tool is a mismatch, not a
+    // grant — treated as not_found so the caller queues its own request.
+    if (expectedFingerprint && item.affectedSystem !== expectedFingerprint) {
+        console.warn(
+            `[approval-store] approval ${approvalId} was granted for ${item.affectedSystem}, ` +
+            `presented for ${expectedFingerprint}`,
+        );
+        return 'not_found';
+    }
 
     if (item.status === 'pending' && Date.now() - item.timestamp.getTime() > APPROVAL_TTL_MS) {
         return 'expired';

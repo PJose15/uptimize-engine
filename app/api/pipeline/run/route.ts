@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
                     return;
                 }
 
-                const { leads } = validation.data;
+                const { leads, vertical: requestedVertical } = validation.data;
 
                 // Start run tracking (for cancellation)
                 const abortController = startRun(runId);
@@ -127,11 +127,11 @@ export async function POST(request: NextRequest) {
                 const runOptions = { clientId: portalClientId, pipelineRunId: runId };
                 send({ type: 'run_mode', useSubAgents: agents.useSubAgents });
 
-                // Learning dispatch context. `vertical` is discovered partway
-                // through the run — Agents 3 and 4 report it, Agents 1 and 2 do
-                // not — so anything dispatched before then records 'unknown'
-                // rather than a guess.
-                let pipelineVertical: string | undefined;
+                // Learning dispatch context. No agent output carries a top-level
+                // vertical, so it comes from the request — see LeadInputSchema
+                // for why filing everything under 'unknown' corrupts confidence
+                // scoring. Still refreshed from output if one ever reports it.
+                let pipelineVertical: string | undefined = requestedVertical;
 
                 const dispatchContext = {
                     clientId: portalClientId,
@@ -145,6 +145,10 @@ export async function POST(request: NextRequest) {
                  * in the same run inherit it.
                  */
                 const withVertical = (data: unknown): { vertical: string; [key: string]: unknown } => {
+                    // NOTE: no current agent output has a top-level `vertical`
+                    // (verified against Agent3Output, DeliveryPackageOutput and
+                    // Agent5ClientSuccessPackage), so in practice this resolves
+                    // to the request's value or 'unknown'.
                     const output = (data ?? {}) as Record<string, unknown>;
                     const found = typeof output.vertical === 'string' ? output.vertical : undefined;
                     if (found) pipelineVertical = found;

@@ -13,6 +13,7 @@
 
 import { PermissionLevel } from './tool-permissions';
 import { checkToolGate } from './approval-gates';
+import { logAuditEntry } from '../portal-events';
 
 export interface GovernedAction {
     /** Permission-matrix agent id, e.g. "agent1" */
@@ -73,7 +74,23 @@ export async function withGovernance<T>(
         };
     }
 
-    return { status: 'executed', value: await execute() };
+    // checkGate has already audited the *gate decision*. The call itself has
+    // not happened yet, so its outcome is recorded here — otherwise an external
+    // write that throws is permanently audited as having succeeded.
+    try {
+        const value = await execute();
+        return { status: 'executed', value };
+    } catch (err) {
+        await logAuditEntry({
+            action: `tool_call_failed: ${action.agentId} → ${action.toolName}`,
+            tool: action.toolName,
+            status: 'failed',
+            costUsd: action.estimatedCostUsd ?? 0,
+            details: `${action.targetSystem ?? 'external'}: ${err instanceof Error ? err.message : String(err)}`,
+        }).catch(() => {});
+
+        throw err;
+    }
 }
 
 /**

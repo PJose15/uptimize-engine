@@ -75,22 +75,29 @@ export async function persistPatterns(
 ): Promise<number> {
     if (patterns.length === 0) return 0;
 
+    // Identity is (week, type, description). Two patterns of the same type can
+    // legitimately occur in one week — same_dimension_drop fires once per
+    // pillar, vertical_concentration once per vertical — so deduping on type
+    // alone would discard the second and, because the first row then exists,
+    // block it on every later run too.
+    const keyOf = (p: { week_of: string; pattern_type: string; description: string }) =>
+        `${p.week_of}:${p.pattern_type}:${p.description}`;
+
     const weeks = [...new Set(patterns.map(p => p.week_of))];
     const existing = await prisma.portfolioPattern.findMany({
         where: { weekOf: { in: weeks } },
-        select: { weekOf: true, patternType: true },
+        select: { weekOf: true, patternType: true, description: true },
     });
 
-    const seen = new Set(existing.map(e => `${e.weekOf}:${e.patternType}`));
-    const fresh = patterns.filter(p => !seen.has(`${p.week_of}:${p.pattern_type}`));
+    const seen = new Set(
+        existing.map(e => `${e.weekOf}:${e.patternType}:${e.description}`),
+    );
 
-    for (const pattern of fresh) {
-        // Two patterns of the same type can appear in one detection pass (a 2/2
-        // vertical split trips vertical_concentration twice at exactly 50%), so
-        // the set has to grow as rows are written, not only from what preceded.
-        const dedupeKey = `${pattern.week_of}:${pattern.pattern_type}`;
-        if (seen.has(dedupeKey)) continue;
-        seen.add(dedupeKey);
+    let written = 0;
+    for (const pattern of patterns) {
+        const key = keyOf(pattern);
+        if (seen.has(key)) continue;
+        seen.add(key);
 
         await prisma.portfolioPattern.create({
             data: {
@@ -102,8 +109,9 @@ export async function persistPatterns(
                 verticalsAffected: JSON.stringify(pattern.verticals_affected),
             },
         });
+        written++;
     }
 
-    // Count rows actually written, not candidates.
-    return fresh.filter(p => seen.has(`${p.week_of}:${p.pattern_type}`)).length;
+    // Rows actually written, not candidates considered.
+    return written;
 }

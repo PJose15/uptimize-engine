@@ -78,17 +78,20 @@ export async function persistSubAgentRuns(
     synthesis: AgentSynthesisResult<unknown>,
     context: PersistSubAgentRunsContext,
 ): Promise<void> {
-    try {
-        const rows = synthesis.sub_agent_results.map(result => toRow(result, context));
-        if (rows.length === 0) return;
+    const rows = synthesis.sub_agent_results.map(result => toRow(result, context));
 
-        // Sequential creates rather than createMany: there are at most two rows
-        // per agent run, so the round-trip cost is negligible, and one failing
-        // row does not take the other down with it.
-        for (const row of rows) {
+    // Sequential creates rather than createMany, and the try is *inside* the
+    // loop: at most two rows per run, so the round trips are negligible, and a
+    // row that violates a constraint must not take its sibling down with it.
+    // Previously the try wrapped the whole loop, so a failure on the first row
+    // silently dropped the second — half the run's model-performance data.
+    for (const row of rows) {
+        try {
             await prisma.subAgentRun.create({ data: row });
+        } catch (err) {
+            console.error(
+                `[subagent-persistence] failed to record ${row.subAgentId}:`, err,
+            );
         }
-    } catch (err) {
-        console.error('[subagent-persistence] failed to record sub-agent runs:', err);
     }
 }

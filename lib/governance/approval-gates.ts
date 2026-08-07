@@ -17,6 +17,7 @@ import {
     createApproval,
     getApprovalDecision,
     expireStaleApprovals,
+    approvalFingerprint,
 } from "./approval-store";
 
 // ============================================================================
@@ -142,8 +143,14 @@ export class ApprovalGateEngine {
 
         // Step 3: If approval required, honour any decision already made
         if (permResult.requires_approval) {
+            let priorDecision: Awaited<ReturnType<typeof getApprovalDecision>> | null = null;
+
             if (approvalId) {
-                const decision = await getApprovalDecision(approvalId);
+                const decision = await getApprovalDecision(
+                    approvalId,
+                    approvalFingerprint(agentId, toolName),
+                );
+                priorDecision = decision;
 
                 if (decision === "approved") {
                     const auditRecord = this.createAuditRecord({
@@ -205,10 +212,11 @@ export class ApprovalGateEngine {
                 estimatedCostUsd,
                 batchSize,
                 inputSummary,
-                // Only reuse an id that names a row we actually found pending.
-                existingApprovalId: approvalId && (await getApprovalDecision(approvalId)) === "pending"
-                    ? approvalId
-                    : undefined,
+                // Reuse only an id this call already observed as pending. Re-reading
+                // here would both double the round trip and open a window where a
+                // decision landing in between orphans the just-approved row and
+                // queues a duplicate.
+                existingApprovalId: priorDecision === "pending" ? approvalId : undefined,
                 clientId,
             });
 
@@ -457,7 +465,10 @@ export class ApprovalGateEngine {
         logAuditEntry({
             action: `${params.actionType}: ${params.agentId} → ${params.toolName}`,
             tool: params.toolName,
-            status: params.result === 'queued' ? 'approved' : params.result,
+            // Never relabel 'queued' as 'approved'. An action waiting on a human
+            // was not approved by one, and this table is the compliance artifact
+            // governance exists to produce.
+            status: params.result,
             approvedBy: params.approvedBy || null,
             costUsd: params.costUsd,
             details: `Target: ${params.targetSystem}, Approval: ${params.approvalRequired}`,

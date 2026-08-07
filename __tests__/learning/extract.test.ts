@@ -39,6 +39,9 @@ describe('extractAgent3Learning', () => {
 
         expect(result.vertical).toBe('fitness');
         expect(result.pillar_findings).toHaveLength(2);
+        // Bucketed to a pillar name, with the model's prose kept alongside.
+        expect(result.pillar_findings[0].pillar).toBe('channels');
+        expect(result.pillar_findings[0].task).toBe('WhatsApp booking triage');
         expect(result.new_exceptions).toEqual([
             { type: 'Double booking', severity: 'high', resolution: 'auto-detect' },
         ]);
@@ -123,7 +126,13 @@ describe('extractAgent5Learning', () => {
         const result = extractAgent5Learning(output, 'fitness');
 
         expect(result.quick_win_used).toBe('Automate the Monday recap');
-        expect(result.dimension_improved).toBe('Adoption rising');
+        expect(result.driver).toBe('Adoption rising');
+    });
+
+    it('keeps dimension_improved numeric, as the collector declares it', () => {
+        // Putting the driver text here type-checked only because the dispatcher
+        // cast the whole object; the collector declares a number.
+        expect(typeof extractAgent5Learning(output, 'fitness').dimension_improved).toBe('number');
     });
 
     it('does not claim an unproven quick win worked', () => {

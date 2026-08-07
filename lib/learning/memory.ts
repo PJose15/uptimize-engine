@@ -135,14 +135,33 @@ export async function loadAgentMemory(agentId: AgentId | string): Promise<Loaded
     const grouped = new Map<string, string[]>();
     const usedNoticeIds: string[] = [];
 
+    // Notices that cannot be routed to a key this agent reads are acknowledged
+    // rather than left pending. peekPendingNotices takes the 50 oldest, so
+    // leaving them would let undeliverable rows collect at the head of the
+    // window until they crowd out everything deliverable and the agent silently
+    // stops receiving learning. Nothing is lost by dropping the notice: the
+    // learning itself lives in AgentLearning; only the delivery record goes.
+    const undeliverable: string[] = [];
+
     for (const notice of notices) {
         const memoryKey = memoryKeyFor(notice.learningType, notice.key, agentId);
-        if (!memoryKey) continue;
+        if (!memoryKey) {
+            undeliverable.push(notice.id);
+            continue;
+        }
 
         const lines = grouped.get(memoryKey) ?? [];
         lines.push(formatNotice(notice));
         grouped.set(memoryKey, lines);
         usedNoticeIds.push(notice.id);
+    }
+
+    if (undeliverable.length > 0) {
+        console.warn(
+            `[learning-memory] ${undeliverable.length} notice(s) for ${agentId} have no ` +
+            `readable memory key; acknowledging so they do not block the queue`,
+        );
+        await markNoticesDelivered(undeliverable);
     }
 
     const entries: Record<string, string> = {};

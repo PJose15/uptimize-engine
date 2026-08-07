@@ -17,6 +17,28 @@ import type { Agent3Output } from '@/app/api/agents/run/uptimize/agent-3-sales-e
 import type { DeliveryPackageOutput } from '@/app/api/agents/run/uptimize/agent-4-systems-delivery/types';
 import type { Agent5ClientSuccessPackage } from '@/app/api/agents/run/uptimize/agent-5-client-success/types';
 
+/**
+ * The six pillars, matched against a shadow-ops task description.
+ *
+ * Agent 3 ranks tasks in prose rather than tagging them, so this is keyword
+ * matching. Anything unmatched is 'shadow_ops' — the default pillar for
+ * off-system work — rather than the raw sentence.
+ */
+const PILLAR_KEYWORDS: Array<[string, RegExp]> = [
+    ['exceptions', /exception|edge case|escalat|fire.?fight/i],
+    ['audit_trail', /audit|proof|evidence|dispute|record of/i],
+    ['knowledge', /sop|documented|tribal|approval|decision/i],
+    ['handoffs', /handoff|hand-off|sla|stuck|context loss/i],
+    ['channels', /whatsapp|email|dm|channel|inbox|spreadsheet/i],
+];
+
+export function pillarForTask(task: string): string {
+    for (const [pillar, pattern] of PILLAR_KEYWORDS) {
+        if (pattern.test(task)) return pillar;
+    }
+    return 'shadow_ops';
+}
+
 const IMPACT_TO_SEVERITY: Record<string, string> = {
     high: 'high',
     medium: 'medium',
@@ -37,8 +59,13 @@ export function extractAgent3Learning(output: Agent3Output, vertical: string) {
     const monthlyValue = output.value_calc?.monthly_value_estimate ?? 0;
     const totalHours = tasks.reduce((sum, t) => sum + (t.estimated_weekly_hours ?? 0), 0);
 
+    // `pillar` is a bucketing key downstream (learnings group by it), so it must
+    // be a pillar name, not the model's free-text task description — one bucket
+    // per unique sentence would make grouping meaningless. The task text is kept
+    // in the value instead.
     const pillar_findings = tasks.map(task => ({
-        pillar: task.task,
+        pillar: pillarForTask(task.task),
+        task: task.task,
         estimated_usd: totalHours > 0
             ? Math.round(monthlyValue * ((task.estimated_weekly_hours ?? 0) / totalHours))
             : 0,
@@ -106,7 +133,11 @@ export function extractAgent5Learning(output: Agent5ClientSuccessPackage, vertic
         vertical,
         quick_win_used: health?.quick_win_this_week ?? '',
         quick_win_worked: false,
-        dimension_improved: health?.drivers?.[0] ?? '',
+        // collectFromAgent5 declares dimension_improved as a number; the driver
+        // text belongs in the value, not this field. The dispatcher's cast hid
+        // the mismatch.
+        dimension_improved: 0,
+        driver: health?.drivers?.[0] ?? '',
         score_improvement: 0,
     };
 }
