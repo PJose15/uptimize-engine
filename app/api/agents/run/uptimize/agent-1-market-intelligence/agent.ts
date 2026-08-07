@@ -14,6 +14,8 @@ import { executeWithFallback } from "../../fallback";
 import { AgentMode } from "../../types";
 import { Agent1Context, Agent1Result, Agent1Input, TargetPackOutput, LeadRecord } from "./types";
 import { MCPClient } from "../../mcp/mcp-client";
+import { enforceGovernance } from "@/lib/governance/enforce";
+import { PermissionLevel } from "@/lib/governance/tool-permissions";
 import {
   ALL_RESEARCH_SERVERS,
   ResearchQuery,
@@ -181,6 +183,20 @@ what_to_say must scaffold for 3 channels: one LinkedIn DM line, one email line, 
 // ============================================================================
 
 /**
+ * Research MCP server → permission-matrix tool name. MCP tool names are
+ * per-server verbs ("search_web", "get_person_profile") while the matrix names
+ * capabilities, so the mapping is by server. A server absent from this table
+ * falls through to its own id, which the matrix denies by default.
+ */
+const AGENT_1_MCP_TOOL_PERMISSIONS: Record<string, string> = {
+  research_web_search: "web_search",
+  research_linkedin: "linkedin_search",
+  research_reviews: "review_aggregator",
+  research_social: "web_search",
+  research_industry: "web_search",
+};
+
+/**
  * Research MCP Client for Agent 1
  * Enables gathering real data about prospects
  */
@@ -188,8 +204,12 @@ class Agent1ResearchClient {
   private mcpClient: MCPClient;
   private initialized: boolean = false;
 
-  constructor() {
-    this.mcpClient = new MCPClient();
+  constructor(clientId?: string) {
+    this.mcpClient = new MCPClient({
+      agentId: "agent1",
+      clientId,
+      toolNameFor: (serverId) => AGENT_1_MCP_TOOL_PERMISSIONS[serverId] ?? serverId,
+    });
   }
 
   /**
@@ -1165,7 +1185,27 @@ export async function runAgent1FromQuery(
 
     if (hasBrave) {
       console.log(`[Agent 1] Searching for ${count} ${intent.industry} businesses in ${intent.location}...`);
-      const businesses = await findBusinessesInArea(intent.industry, intent.location, count);
+
+      // Live web search leaves this process, so it runs under the permission
+      // matrix. `count` is the batch size the matrix caps for this agent.
+      const businesses = await enforceGovernance(
+        {
+          agentId: "agent1",
+          toolName: "web_search",
+          level: PermissionLevel.READ,
+          targetSystem: "brave_search",
+          actionDescription: `Agent 1 searching for ${count} ${intent.industry} businesses in ${intent.location}`,
+          inputSummary: `${intent.industry} / ${intent.location}`,
+          // One search call, whatever `count` results it asks for. Passing the
+          // requested result count here made "find 100 gyms" exceed agent1's
+          // max_batch_size of 50 and fail the whole agent — batch size is meant
+          // to bound how many external actions are taken, not how many rows
+          // come back from one of them.
+          batchSize: 1,
+          reversible: true,
+        },
+        () => findBusinessesInArea(intent.industry, intent.location, count),
+      );
       console.log(`[Agent 1] Found ${businesses.length} businesses. Researching...`);
 
       // Step 2: Research each business
@@ -1175,8 +1215,20 @@ export async function runAgent1FromQuery(
       // Research in batches of 3 to avoid rate limits
       for (let i = 0; i < businesses.length; i += 3) {
         const batch = businesses.slice(i, i + 3);
-        const batchResults = await Promise.all(
-          batch.map(b => researchBusinessViaBrave(b.name, intent.location, depth))
+        const batchResults = await enforceGovernance(
+          {
+            agentId: "agent1",
+            toolName: "web_search",
+            level: PermissionLevel.READ,
+            targetSystem: "brave_search",
+            actionDescription: `Agent 1 researching ${batch.length} businesses (${depth} depth)`,
+            inputSummary: batch.map(b => b.name).join(", ").slice(0, 200),
+            batchSize: batch.length,
+            reversible: true,
+          },
+          () => Promise.all(
+            batch.map(b => researchBusinessViaBrave(b.name, intent.location, depth))
+          ),
         );
         batch.forEach((b, idx) => {
           researchResults.push(formatBraveResearchForPrompt(b.name, batchResults[idx]));

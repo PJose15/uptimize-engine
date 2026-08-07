@@ -8,6 +8,7 @@
  */
 
 import { executeWithFallback } from '@/lib/providers/fallback';
+import { withMemoryContext } from '@/lib/subagent/context-builder';
 import type { SubAgentContext, SubAgentResult } from '@/lib/subagent';
 import { buildP1Failure } from '@/lib/subagent';
 import type {
@@ -175,7 +176,9 @@ export async function runContractOrchestrator(
   const start = Date.now();
 
   try {
-    const userPrompt = buildUserPrompt(agent6Input, presentationResult);
+    // Learned context from previous runs, filtered to this sub-agent's
+    // permitted memory keys by buildSubAgentContext.
+    const userPrompt = withMemoryContext(buildUserPrompt(agent6Input, presentationResult), ctx.memory_context);
     const fallback = await executeWithFallback(
       'sow_generation',
       {

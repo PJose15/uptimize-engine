@@ -60,14 +60,16 @@ export async function runAgent2SubAgent(
     synthesize: (a, b) => synthesize(a, b),
   });
 
-  // Per Sprint 12.6 spec: "After 2B completes, trigger onAgent2NurtureQueue() for any
-  // nurture queue entries." Deferred — the existing NurtureEntry shape (lead_id, reason,
-  // next_touch_day_offset, nurture_message, shadow_ops_guess, likely_exceptions_guess)
-  // does NOT carry company / contactName / vertical / category / originalPain / whatWasTried
-  // that onAgent2NurtureQueue requires for NurtureRecord creation. Wiring this requires
-  // either extending NurtureEntry (V2 schema work) or carrying lead context through from
-  // the parent run. Tracked for follow-up; for now downstream callers can dispatch
-  // directly with full lead context.
+  // Per Sprint 12.6 spec: "After 2B completes, trigger onAgent2NurtureQueue()
+  // for any nurture queue entries."
+  //
+  // Dispatched by the caller rather than here. NurtureEntry carries only
+  // (lead_id, reason, next_touch_day_offset, nurture_message, shadow_ops_guess,
+  // likely_exceptions_guess) — the company / contactName / vertical that
+  // NurtureRecord needs live in Agent 1's target pack, which this orchestrator
+  // sees only as an opaque `target_pack` input. lib/learning/nurture-entries.ts
+  // performs the join at the layer holding both, and the pipeline route calls
+  // it once per run. Dispatching here as well would double-write the records.
 
   const subAgentResults: SubAgentResult<unknown>[] = [resultA, resultB];
   const totalCost = subAgentResults.reduce((s, r) => s + r.cost_usd, 0);

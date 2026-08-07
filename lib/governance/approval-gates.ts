@@ -12,7 +12,13 @@ import {
     PermissionCheckResult,
     getPermissionChecker,
 } from "./tool-permissions";
-import { logAuditEntry, createApprovalIfNeeded } from "../portal-events";
+import { logAuditEntry } from "../portal-events";
+import {
+    createApproval,
+    getApprovalDecision,
+    expireStaleApprovals,
+    approvalFingerprint,
+} from "./approval-store";
 
 // ============================================================================
 // TYPES
@@ -70,6 +76,9 @@ export class ApprovalGateEngine {
     private auditLog: AuditRecord[] = [];
     private approvalTimeoutMs: number;
 
+    /** getAuditLog only ever slices the tail; keep enough for that and no more. */
+    private static readonly MAX_IN_MEMORY_AUDIT = 500;
+
     constructor(approvalTimeoutMs: number = 24 * 60 * 60 * 1000) {
         this.permissionChecker = getPermissionChecker();
         this.approvalTimeoutMs = approvalTimeoutMs;
@@ -89,6 +98,10 @@ export class ApprovalGateEngine {
             inputSummary?: string;
             actionDescription?: string;
             reversible?: boolean;
+            /** Id of an approval already granted for this action — lets a
+             *  previously queued action resume on a later attempt. */
+            approvalId?: string;
+            clientId?: string;
         } = {}
     ): Promise<GateCheckResult> {
         const {
@@ -98,6 +111,8 @@ export class ApprovalGateEngine {
             inputSummary = "",
             actionDescription = `${agentId} calling ${toolName}`,
             reversible = false,
+            approvalId,
+            clientId,
         } = options;
 
         // Step 1: Permission check
@@ -129,9 +144,70 @@ export class ApprovalGateEngine {
             };
         }
 
-        // Step 3: If approval required, queue it
+        // Step 3: If approval required, honour any decision already made
         if (permResult.requires_approval) {
-            const approvalRequest = this.createApprovalRequest({
+            let priorDecision: Awaited<ReturnType<typeof getApprovalDecision>> | null = null;
+
+            if (approvalId) {
+                const decision = await getApprovalDecision(
+                    approvalId,
+                    approvalFingerprint(agentId, toolName),
+                );
+                priorDecision = decision;
+
+                if (decision === "approved") {
+                    const auditRecord = this.createAuditRecord({
+                        agentId,
+                        toolName,
+                        targetSystem,
+                        actionType: "tool_call",
+                        result: "success",
+                        costUsd: estimatedCostUsd,
+                        approvalRequired: true,
+                        approvedBy: "portal",
+                        reversible,
+                    });
+
+                    return { action: "proceed", permission_check: permResult, audit_record: auditRecord };
+                }
+
+                if (decision === "denied" || decision === "expired") {
+                    const auditRecord = this.createAuditRecord({
+                        agentId,
+                        toolName,
+                        targetSystem,
+                        actionType: "tool_call",
+                        result: decision === "denied" ? "denied" : "expired",
+                        costUsd: 0,
+                        approvalRequired: true,
+                        reversible,
+                    });
+
+                    return {
+                        action: "blocked",
+                        permission_check: { ...permResult, allowed: false, reason: `Approval ${decision}` },
+                        audit_record: auditRecord,
+                    };
+                }
+
+                // 'not_found' means the id does not name a real row — reusing
+                // it as existingApprovalId would skip creating one, leaving the
+                // action queued forever against an id nothing can approve. Fall
+                // through and create a fresh request instead.
+                if (decision === "not_found") {
+                    logAuditEntry({
+                        action: `approval_request: ${agentId} → ${toolName}`,
+                        tool: toolName,
+                        status: 'failed',
+                        costUsd: 0,
+                        details: `Unknown approval id ${approvalId}; queuing a new request`,
+                    }).catch(() => {});
+                }
+
+                // Still pending — fall through and report the same request back.
+            }
+
+            const approvalRequest = await this.createApprovalRequest({
                 agentId,
                 toolName,
                 level,
@@ -139,6 +215,12 @@ export class ApprovalGateEngine {
                 estimatedCostUsd,
                 batchSize,
                 inputSummary,
+                // Reuse only an id this call already observed as pending. Re-reading
+                // here would both double the round trip and open a window where a
+                // decision landing in between orphans the just-approved row and
+                // queues a duplicate.
+                existingApprovalId: priorDecision === "pending" ? approvalId : undefined,
+                clientId,
             });
 
             const auditRecord = this.createAuditRecord({
@@ -236,11 +318,22 @@ export class ApprovalGateEngine {
     /**
      * Expire old pending requests
      */
-    expireStaleRequests(): ApprovalRequest[] {
+    async expireStaleRequests(): Promise<ApprovalRequest[]> {
+        // Authoritative sweep over the rows; the in-process map is then
+        // reconciled below so long-lived processes stay consistent.
+        await expireStaleApprovals(this.approvalTimeoutMs);
+
         const now = Date.now();
         const expired: ApprovalRequest[] = [];
 
+        // Decided and expired entries are dropped rather than kept with a
+        // status flag: the ApprovalItem row is authoritative, and this map only
+        // exists for in-process introspection.
         for (const [id, request] of this.pendingApprovals) {
+            if (request.status !== "pending") this.pendingApprovals.delete(id);
+        }
+
+        for (const [, request] of this.pendingApprovals) {
             if (request.status === "pending" && new Date(request.expires_at).getTime() < now) {
                 request.status = "expired";
                 expired.push(request);
@@ -290,7 +383,15 @@ export class ApprovalGateEngine {
     // PRIVATE HELPERS
     // ============================================================================
 
-    private createApprovalRequest(params: {
+    /**
+     * Record a request for human approval.
+     *
+     * request_id is the ApprovalItem row id, so the caller can hand it back on
+     * a later attempt and the gate will see whatever the portal decided. When
+     * the caller already holds a still-pending id, that row is reused instead
+     * of queueing a duplicate on every retry.
+     */
+    private async createApprovalRequest(params: {
         agentId: string;
         toolName: string;
         level: PermissionLevel;
@@ -298,10 +399,28 @@ export class ApprovalGateEngine {
         estimatedCostUsd: number;
         batchSize: number;
         inputSummary: string;
-    }): ApprovalRequest {
+        existingApprovalId?: string;
+        clientId?: string;
+    }): Promise<ApprovalRequest> {
         const now = new Date();
+
+        const { approvalId, expiresAt } = params.existingApprovalId
+            ? {
+                approvalId: params.existingApprovalId,
+                expiresAt: new Date(now.getTime() + this.approvalTimeoutMs),
+            }
+            : await createApproval({
+                agentId: params.agentId,
+                toolName: params.toolName,
+                actionDescription: params.actionDescription,
+                reason: `${params.level} permission requires approval`,
+                estimatedCostUsd: params.estimatedCostUsd,
+                batchSize: params.batchSize,
+                clientId: params.clientId,
+            });
+
         const request: ApprovalRequest = {
-            request_id: `apr_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
+            request_id: approvalId,
             agent_id: params.agentId,
             tool_name: params.toolName,
             permission_level: params.level,
@@ -310,23 +429,15 @@ export class ApprovalGateEngine {
             batch_size: params.batchSize,
             input_summary: params.inputSummary,
             created_at: now.toISOString(),
-            expires_at: new Date(now.getTime() + this.approvalTimeoutMs).toISOString(),
+            expires_at: expiresAt.toISOString(),
             status: "pending",
             decided_by: null,
             decided_at: null,
             decision_reason: null,
         };
 
+        // Retained for in-process introspection only; the row is authoritative.
         this.pendingApprovals.set(request.request_id, request);
-
-        // Also write to portal DB
-        createApprovalIfNeeded({
-            action: params.actionDescription,
-            description: `${params.agentId} wants to use ${params.toolName} (cost: $${params.estimatedCostUsd.toFixed(2)}, batch: ${params.batchSize})`,
-            riskLevel: params.estimatedCostUsd > 5 ? 'high' : params.estimatedCostUsd > 1 ? 'medium' : 'low',
-            affectedSystem: params.toolName,
-            reason: `${params.level} permission requires approval`,
-        }).catch(() => {});
 
         return request;
     }
@@ -358,13 +469,24 @@ export class ApprovalGateEngine {
             rollback_id: null,
         };
 
+        // Bounded ring buffer. This array is in-process debugging state — the
+        // durable trail is the AuditEntry table written just below — and
+        // checkGate now runs on every MCP call and every Agent 1 search batch,
+        // so an unbounded array would grow for the life of the process with
+        // nothing ever reading past the tail.
         this.auditLog.push(record);
+        if (this.auditLog.length > ApprovalGateEngine.MAX_IN_MEMORY_AUDIT) {
+            this.auditLog.splice(0, this.auditLog.length - ApprovalGateEngine.MAX_IN_MEMORY_AUDIT);
+        }
 
         // Also write to portal DB
         logAuditEntry({
             action: `${params.actionType}: ${params.agentId} → ${params.toolName}`,
             tool: params.toolName,
-            status: params.result === 'queued' ? 'approved' : params.result,
+            // Never relabel 'queued' as 'approved'. An action waiting on a human
+            // was not approved by one, and this table is the compliance artifact
+            // governance exists to produce.
+            status: params.result,
             approvedBy: params.approvedBy || null,
             costUsd: params.costUsd,
             details: `Target: ${params.targetSystem}, Approval: ${params.approvalRequired}`,

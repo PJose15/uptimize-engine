@@ -17,7 +17,35 @@
  */
 
 import { logger } from "../logger";
-import { MCPClientInterface } from "../automation/workflow-engine";
+import { enforceGovernance } from "@/lib/governance/enforce";
+import { PermissionLevel } from "@/lib/governance/tool-permissions";
+
+/**
+ * Structural contract for an MCP client.
+ *
+ * Previously declared in automation/workflow-engine.ts, which was removed as
+ * unreferenced scaffold; it lives here now because this is the only
+ * implementation.
+ */
+export interface MCPClientInterface {
+  callTool(server: string, toolName: string, params: Record<string, unknown>): Promise<Record<string, unknown>>;
+  listTools(server: string): Promise<Array<{ name: string; description: string; inputSchema: unknown }>>;
+  getResource(server: string, uri: string): Promise<unknown>;
+}
+
+/**
+ * Who an MCPClient acts as, for permission checks.
+ *
+ * MCP server tool names are the server's vocabulary, not the permission
+ * matrix's. `toolNameFor` maps one onto the other so a client can talk to a
+ * server whose tool is called `search` while the matrix knows it as
+ * `web_search`.
+ */
+export interface GovernedActor {
+  agentId: string;
+  clientId?: string;
+  toolNameFor?: (serverId: string, mcpToolName: string) => string;
+}
 
 // ============================================================================
 // TYPES
@@ -111,6 +139,17 @@ export class MCPClient implements MCPClientInterface {
   private resourceCache: Map<string, MCPResource[]> = new Map();
 
   /**
+   * Permission-matrix identity this client acts as. Every tool call is checked
+   * against it, so the owning agent must declare who it is — an unset actor is
+   * denied by the matrix rather than waved through.
+   */
+  private readonly actor: GovernedActor;
+
+  constructor(actor: GovernedActor) {
+    this.actor = actor;
+  }
+
+  /**
    * Register an MCP server configuration
    */
   registerServer(config: MCPServerConfig): void {
@@ -193,7 +232,21 @@ export class MCPClient implements MCPClientInterface {
     const startTime = Date.now();
 
     try {
-      const result = await connection.callTool(toolName, params);
+      // Every MCP tool call reaches a system outside this process, so it is
+      // gated before it runs rather than logged after.
+      const result = await enforceGovernance(
+        {
+          agentId: this.actor.agentId,
+          toolName: this.actor.toolNameFor?.(serverId, toolName) ?? toolName,
+          level: PermissionLevel.READ,
+          targetSystem: serverId,
+          actionDescription: `${this.actor.agentId} calling ${toolName} on ${serverId}`,
+          inputSummary: JSON.stringify(params).slice(0, 200),
+          clientId: this.actor.clientId,
+          reversible: true,
+        },
+        () => connection.callTool(toolName, params),
+      );
 
       logger.info("MCP tool called", {}, {
         server_id: serverId,
@@ -711,8 +764,6 @@ export const MCP_SERVER_PRESETS: Record<string, Partial<MCPServerConfig>> = {
   },
 };
 
-// ============================================================================
-// SINGLETON INSTANCE
-// ============================================================================
-
-export const mcpClient = new MCPClient();
+// NOTE: there is deliberately no module-level MCPClient singleton. A client
+// with no declared actor could not be permission-checked, which would make
+// governance opt-in — callers must construct one with their own identity.

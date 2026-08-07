@@ -3,6 +3,7 @@
  */
 
 import { prisma } from '@/lib/prisma';
+import { hasCollectedFor } from '../idempotency';
 import { anonymizeLearningValue } from '../anonymizer';
 
 interface Agent6Output {
@@ -14,6 +15,10 @@ interface Agent6Output {
 }
 
 export async function collectFromAgent6(output: Agent6Output, sourceRunId: string): Promise<string[]> {
+  // Retries and multiple dispatch points can reach this for the same run;
+  // duplicate events would inflate confidence scoring's data-point counts.
+  if (await hasCollectedFor('agent-6-closer', sourceRunId)) return [];
+
   const eventIds: string[] = [];
   const vertical = output.vertical ?? 'unknown';
 

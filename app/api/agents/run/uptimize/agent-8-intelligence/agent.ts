@@ -9,6 +9,7 @@
  */
 
 import { runSequential, buildSubAgentContext } from '@/lib/subagent';
+import { loadAgentMemory, commitAgentMemory } from '@/lib/learning/memory';
 import type { AgentSynthesisResult, SubAgentResult } from '@/lib/subagent';
 import { runPatternCollector } from './subagents/8a-pattern-collector';
 import { runPlaybookUpdater } from './subagents/8b-playbook-updater';
@@ -50,6 +51,14 @@ export async function runAgent8IntelligenceKeeper(
 ): Promise<AgentSynthesisResult<IntelligenceKeeperOutput>> {
   const mode = config.mode ?? 'balanced';
 
+  // Learnings distributed to this agent, delivered into sub-agent memory.
+  // Never fatal: a learning-store failure must degrade to no memory
+  // rather than fail a run the agent could otherwise complete.
+  const memory = await loadAgentMemory('agent-8-intelligence').catch(err => {
+    console.error('[agent-8-intelligence] could not load memory:', err);
+    return { entries: {}, noticeIds: [], keysRead: [] };
+  });
+
   const baseCtx = buildSubAgentContext({
     parentAgentId: 'agent-8-intelligence',
     subAgentId: '8A-pattern-collector',
@@ -62,7 +71,7 @@ export async function runAgent8IntelligenceKeeper(
     mode,
     timeBudgetMs: TOTAL_TIMEOUT_MS,
     inputs: { agent8_input: input },
-    memoryEntries: config.memoryEntries ?? {},
+    memoryEntries: config.memoryEntries ?? memory.entries,
     maxResponseTokens: 6000,
     confidenceRequired: 'high',
   });
@@ -86,6 +95,11 @@ export async function runAgent8IntelligenceKeeper(
   });
 
   const subAgentResults: SubAgentResult<unknown>[] = [resultA, resultB];
+
+  // A failed run leaves its notices pending rather than burning them.
+  if (subAgentResults.some(r => r.task_completed)) {
+    await commitAgentMemory(memory, { clientId: 'system', agentId: 'agent-8-intelligence' });
+  }
   const totalCost = subAgentResults.reduce((s, r) => s + r.cost_usd, 0);
   const totalDuration = subAgentResults.reduce((s, r) => s + r.duration_ms, 0);
   const requiresHumanAttention = output.pedro_review_required.length > 0

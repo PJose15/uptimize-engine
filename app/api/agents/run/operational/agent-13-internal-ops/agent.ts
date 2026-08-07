@@ -7,6 +7,7 @@
  */
 
 import { runParallel, buildSubAgentContext } from '@/lib/subagent';
+import { loadAgentMemory, commitAgentMemory } from '@/lib/learning/memory';
 import type { AgentSynthesisResult, SubAgentResult } from '@/lib/subagent';
 import { runCalendarIntelligence } from './subagents/13a-calendar-intelligence';
 import { runDeliverableTracker } from './subagents/13b-deliverable-tracker';
@@ -52,6 +53,14 @@ export async function runAgent13InternalOperations(
 ): Promise<AgentSynthesisResult<InternalOpsOutput>> {
   const mode = config.mode ?? 'balanced';
 
+  // Learnings distributed to this agent, delivered into sub-agent memory.
+  // Never fatal: a learning-store failure must degrade to no memory
+  // rather than fail a run the agent could otherwise complete.
+  const memory = await loadAgentMemory('agent-13-internal-ops').catch(err => {
+    console.error('[agent-13-internal-ops] could not load memory:', err);
+    return { entries: {}, noticeIds: [], keysRead: [] };
+  });
+
   const baseCtx = buildSubAgentContext({
     parentAgentId: 'agent-13-internal-ops',
     subAgentId: '13A-calendar-intelligence',
@@ -62,7 +71,7 @@ export async function runAgent13InternalOperations(
     mode,
     timeBudgetMs: TOTAL_TIMEOUT_MS,
     inputs: { agent13_input: input },
-    memoryEntries: {},
+    memoryEntries: memory.entries,
     maxResponseTokens: 5000,
     confidenceRequired: 'high',
   });
@@ -81,6 +90,11 @@ export async function runAgent13InternalOperations(
   });
 
   const subAgentResults: SubAgentResult<unknown>[] = [resultA, resultB];
+
+  // A failed run leaves its notices pending rather than burning them.
+  if (subAgentResults.some(r => r.task_completed)) {
+    await commitAgentMemory(memory, { clientId: 'system', agentId: 'agent-13-internal-ops' });
+  }
   const totalCost = subAgentResults.reduce((s, r) => s + r.cost_usd, 0);
   const totalDuration = Math.max(...subAgentResults.map(r => r.duration_ms));
   const requiresHumanAttention = subAgentResults.some(r => r.escalation_needed);

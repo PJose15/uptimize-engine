@@ -4,6 +4,7 @@
  */
 
 import Anthropic from '@anthropic-ai/sdk';
+import { ANTHROPIC_MODE_MODELS } from '@/lib/config/models';
 import type {
   Agent5ClientSuccessPackage,
   Agent4HandoffKit,
@@ -476,11 +477,11 @@ export async function runAgent5Orchestrated(
       };
     }
 
-    const modelMap: Record<string, string> = {
-      fast: 'claude-haiku-4-5-20251001',
-      balanced: 'claude-sonnet-4-6',
-      quality: 'claude-opus-4-6',
-    };
+    // Previously a hardcoded map containing 'claude-sonnet-4-6' and
+    // 'claude-opus-4-6', which are not real Anthropic model ids — this path
+    // would have failed at the API. Sourced from the registry instead, so the
+    // ids are the same ones the pricing table knows about.
+    const modelMap = ANTHROPIC_MODE_MODELS;
 
     const agent = new Agent5ClientSuccess({
       apiKey,

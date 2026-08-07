@@ -35,6 +35,18 @@ export function onAgent2NurtureQueue(
   fireAndForget('agent2-nurture', async () => {
     const delayDays: Record<string, number> = { hot: 7, warm: 14, cold: 30, lost_deal: 60 };
     for (const entry of entries) {
+      // NurtureRecord has no unique constraint on leadId, and this route is
+      // re-invokable (/api/pipeline/batch, /api/webhooks/trigger). Without this
+      // check a second run over the same leads parks each one twice, and Agent 7
+      // then sends the same dormant lead two nurture messages. The learning
+      // collectors got a duplication guard in the same change; this queue writes
+      // to real people and needs one more.
+      const alreadyQueued = await prisma.nurtureRecord.findFirst({
+        where: { leadId: entry.leadId, clientId: context.clientId, archived: false },
+        select: { id: true },
+      });
+      if (alreadyQueued) continue;
+
       const nextTouch = new Date();
       nextTouch.setDate(nextTouch.getDate() + (delayDays[entry.category] ?? 14));
       await prisma.nurtureRecord.create({
@@ -61,28 +73,50 @@ export function onAgent4Complete(output: { vertical: string; [key: string]: unkn
   });
 }
 
-export function onAgent5Complete(output: Record<string, unknown>, context: DispatchContext): void {
+/**
+ * Portfolio fields, extracted by the caller from Agent 5's package.
+ *
+ * Previously this read `output.client_health_score` and cast it to a number —
+ * but that field is an object, so Prisma rejected the Int write and
+ * fireAndForget swallowed the error, leaving portfolio health silently never
+ * updated. `expansion_ready` was read too and does not exist on the package at
+ * all, so it was always false. Both are now the caller's job to derive, with
+ * types that make a mistake visible.
+ */
+export interface Agent5PortfolioUpdate {
+  healthScore: number;
+  expansionReady: boolean;
+}
+
+export function onAgent5Complete(
+  output: Record<string, unknown>,
+  context: DispatchContext,
+  portfolio?: Agent5PortfolioUpdate,
+): void {
   fireAndForget('agent5-learning', async () => {
     await collectFromAgent5(output as Parameters<typeof collectFromAgent5>[0], context.pipelineRunId ?? '');
   });
 
-  // Update portfolio health
-  if (output.client_health_score !== undefined) {
-    fireAndForget('agent5-portfolio', async () => {
-      await prisma.clientPortfolio.upsert({
-        where: { clientId: context.clientId },
-        update: {
-          currentHealthScore: output.client_health_score as number,
-          expansionReady: (output.expansion_ready as boolean) ?? false,
-        },
-        create: {
-          clientId: context.clientId,
-          currentHealthScore: output.client_health_score as number,
-          vertical: context.vertical ?? '',
-        },
-      });
+  // A run with no resolvable client would collide on ClientPortfolio.clientId,
+  // which is unique — every anonymous run overwriting one bogus row that then
+  // skews retainer-weighted portfolio health on the admin dashboard.
+  if (!portfolio || !context.clientId || context.clientId === 'unknown') return;
+
+  fireAndForget('agent5-portfolio', async () => {
+    await prisma.clientPortfolio.upsert({
+      where: { clientId: context.clientId },
+      update: {
+        currentHealthScore: portfolio.healthScore,
+        expansionReady: portfolio.expansionReady,
+      },
+      create: {
+        clientId: context.clientId,
+        currentHealthScore: portfolio.healthScore,
+        expansionReady: portfolio.expansionReady,
+        vertical: context.vertical ?? '',
+      },
     });
-  }
+  });
 }
 
 export function onAgent6Complete(output: Record<string, unknown>, context: DispatchContext): void {

@@ -131,7 +131,7 @@ model AuditEntry {
   timestamp  DateTime @default(now())
   action     String
   tool       String
-  status     String   // success, denied, failed, approved
+  status     String   // success, denied, failed, approved, queued, expired
   approvedBy String?
   costUsd    Float    @default(0)
   details    String

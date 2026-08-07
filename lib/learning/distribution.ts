@@ -38,23 +38,73 @@ export async function createDistributionNotices(
   });
 }
 
-export async function processPendingNotices(agentId: string): Promise<Array<{ key: string; value: string }>> {
-  const pending = await prisma.learningDistribution.findMany({
-    where: { targetAgentId: agentId, delivered: false },
-    include: { agentLearning: true },
-    take: 50,
-  });
-  if (pending.length === 0) return [];
+export interface PendingNotice {
+  /** LearningDistribution row id — pass to markNoticesDelivered once used */
+  id: string;
+  learningType: string;
+  key: string;
+  value: string;
+  vertical: string;
+  confidence: number;
+  label: string;
+}
 
-  const results = pending.map(n => ({
+/**
+ * Read the notices waiting for an agent WITHOUT consuming them.
+ *
+ * Reading and consuming are separated on purpose: if an agent run fails after
+ * its notices were marked delivered, that learning is gone and will never
+ * reach the agent. Callers read here, run, and only mark delivered on success.
+ *
+ * `effectiveFrom` is honoured so a learning can be scheduled ahead of time.
+ */
+export async function peekPendingNotices(agentId: string, take = 50): Promise<PendingNotice[]> {
+  const pending = await prisma.learningDistribution.findMany({
+    where: {
+      targetAgentId: agentId,
+      delivered: false,
+      effectiveFrom: { lte: new Date() },
+    },
+    include: { agentLearning: true },
+    orderBy: { effectiveFrom: 'asc' },
+    take,
+  });
+
+  return pending.map(n => ({
+    id: n.id,
+    learningType: n.agentLearning.learningType,
     key: n.agentLearning.key,
     value: n.agentLearning.value,
+    vertical: n.agentLearning.vertical,
+    confidence: n.agentLearning.confidence,
+    label: n.agentLearning.label,
   }));
+}
 
-  await prisma.learningDistribution.updateMany({
-    where: { id: { in: pending.map(n => n.id) } },
+/** Mark notices delivered after the run that used them succeeded. */
+export async function markNoticesDelivered(noticeIds: string[]): Promise<number> {
+  if (noticeIds.length === 0) return 0;
+
+  const result = await prisma.learningDistribution.updateMany({
+    where: { id: { in: noticeIds } },
     data: { delivered: true, deliveredAt: new Date() },
   });
 
-  return results;
+  return result.count;
+}
+
+/**
+ * Read-and-consume in one step.
+ *
+ * Retained for callers that cannot defer the acknowledgement; prefer
+ * peekPendingNotices + markNoticesDelivered, which does not lose learning when
+ * the consuming run fails.
+ */
+export async function processPendingNotices(agentId: string): Promise<Array<{ key: string; value: string }>> {
+  const pending = await peekPendingNotices(agentId);
+  if (pending.length === 0) return [];
+
+  await markNoticesDelivered(pending.map(n => n.id));
+
+  return pending.map(n => ({ key: n.key, value: n.value }));
 }

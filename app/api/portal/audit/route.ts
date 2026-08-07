@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getClientIdFromRequest } from '@/lib/portal';
+import { insensitiveContains } from '@/lib/db-compat';
 
 export async function GET(request: NextRequest) {
     try {
@@ -17,9 +18,9 @@ export async function GET(request: NextRequest) {
         }
         if (search) {
             where.OR = [
-                { action: { contains: search } },
-                { tool: { contains: search } },
-                { details: { contains: search } },
+                { action: insensitiveContains(search) },
+                { tool: insensitiveContains(search) },
+                { details: insensitiveContains(search) },
             ];
         }
 

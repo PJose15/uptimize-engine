@@ -10,6 +10,7 @@
  */
 
 import { executeWithFallback } from '@/lib/providers/fallback';
+import { withMemoryContext } from '@/lib/subagent/context-builder';
 import type { SubAgentContext, SubAgentResult } from '@/lib/subagent';
 import { buildP1Failure } from '@/lib/subagent';
 import type { MessageLibraryEntry, ConversationUpdate } from '../types';
@@ -56,6 +57,20 @@ export interface MessageArchitectInput {
   in_flight_leads?: unknown[]; // Existing conversations needing updates
   channels: string[];
   offer_positioning?: string;
+
+  /**
+   * Scheduling context, used by 2B to book against real windows.
+   *
+   * The legacy path put these in the prompt; the sub-agent path dropped them,
+   * so with USE_SUBAGENTS=true the booking sub-agent invented slots outside the
+   * operator's availability — and Agent 3's qualified lead is derived from
+   * those bookings, so the error cascaded downstream.
+   */
+  calendar_availability?: string[];
+  timezone?: string;
+  proof_points?: string[];
+  volume_targets?: { newOutreach?: number; followups?: number; goalBookedCalls?: number };
+  notes?: string;
 }
 
 interface SubAgentAInputs extends Record<string, unknown> {
@@ -66,6 +81,13 @@ function buildUserPrompt(input: MessageArchitectInput): string {
   const lines: string[] = [];
   lines.push(`Channels in use: ${input.channels.join(', ')}`);
   if (input.offer_positioning) lines.push(`Offer positioning: ${input.offer_positioning}`);
+  if (input.calendar_availability?.length) {
+    lines.push(`Availability windows (${input.timezone ?? 'America/Puerto_Rico'}): ${input.calendar_availability.join('; ')}`);
+    lines.push('Book only inside these windows.');
+  }
+  if (input.proof_points?.length) lines.push(`Proof points: ${input.proof_points.join('; ')}`);
+  if (input.volume_targets) lines.push(`Volume targets: ${JSON.stringify(input.volume_targets)}`);
+  if (input.notes) lines.push(`Notes: ${input.notes}`);
   lines.push('');
   lines.push('## TARGET PACK FROM AGENT 1');
   lines.push(JSON.stringify(input.target_pack, null, 2).slice(0, 6000));
@@ -97,7 +119,9 @@ export async function runMessageArchitect(
   const start = Date.now();
 
   try {
-    const userPrompt = buildUserPrompt(input);
+    // Learned context from previous runs, filtered to this sub-agent's
+    // permitted memory keys by buildSubAgentContext.
+    const userPrompt = withMemoryContext(buildUserPrompt(input), ctx.memory_context);
     const fallback = await executeWithFallback(
       'content_drafting',
       {

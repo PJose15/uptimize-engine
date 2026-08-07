@@ -7,7 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { validateSession } from '@/lib/auth';
+import { getSessionFromRequest } from '@/lib/api-auth';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 import { validateAgentOutput } from '@/lib/agent-schemas';
 import { logActivityEvent, logAuditEntry } from '@/lib/portal-events';
@@ -15,12 +15,8 @@ import { withRetry } from '@/lib/retry';
 import { withTimeoutAndAbort } from '@/lib/timeout';
 import { getClientIdFromRequest } from '@/lib/portal';
 
-// Import agent functions
-import { runAgent1MarketIntelligence } from '../uptimize/agent-1-market-intelligence/agent';
-import { runAgent2OutboundAppointment } from '../uptimize/agent-2-outbound-appointment/agent';
-import { runAgent3SalesEngineer } from '../uptimize/agent-3-sales-engineer/agent';
-import { runAgent4SystemsDelivery } from '../uptimize/agent-4-systems-delivery/agent';
-import { runAgent5 } from '../uptimize/agent-5-client-success/agent';
+// Agent runners — legacy single-call path or v2 sub-agent path, per USE_SUBAGENTS
+import { resolvePipelineAgents } from '../uptimize/subagent-adapters';
 
 const AGENT_TIMEOUTS: Record<string, number> = {
     '1': 120000,
@@ -50,20 +46,7 @@ export async function POST(
     }
 
     // Auth check
-    const cookieHeader = request.headers.get('cookie');
-    const sessionToken = cookieHeader
-        ?.split(';')
-        .map(c => c.trim())
-        .find(c => c.startsWith('session='))
-        ?.split('=')
-        .slice(1)
-        .join('=');
-
-    if (!sessionToken) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const session = await validateSession(sessionToken);
+    const session = await getSessionFromRequest(request);
     if (!session) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -103,6 +86,10 @@ export async function POST(
     const timeout = AGENT_TIMEOUTS[agentId];
     const controller = new AbortController();
 
+    // Resolve the agent implementations once for this request
+    const agents = resolvePipelineAgents();
+    const runOptions = { clientId };
+
     try {
         const startTime = Date.now();
         let result: unknown;
@@ -133,7 +120,7 @@ export async function POST(
                 } else {
                     result = await withRetry(
                         () => withTimeoutAndAbort(
-                            () => runAgent1MarketIntelligence(task, context ?? {}, mode),
+                            () => agents.runAgent1(task, context ?? {}, mode, runOptions),
                             timeout,
                             controller.signal,
                             'Agent 1 timed out'
@@ -146,7 +133,7 @@ export async function POST(
             case '2':
                 result = await withRetry(
                     () => withTimeoutAndAbort(
-                        () => runAgent2OutboundAppointment(task, context ?? {}, mode),
+                        () => agents.runAgent2(task, context ?? {}, mode, runOptions),
                         timeout,
                         controller.signal,
                         'Agent 2 timed out'
@@ -157,7 +144,7 @@ export async function POST(
             case '3':
                 result = await withRetry(
                     () => withTimeoutAndAbort(
-                        () => runAgent3SalesEngineer(task, context ?? {}, mode),
+                        () => agents.runAgent3(task, context ?? {}, mode, runOptions),
                         timeout,
                         controller.signal,
                         'Agent 3 timed out'
@@ -168,7 +155,7 @@ export async function POST(
             case '4':
                 result = await withRetry(
                     () => withTimeoutAndAbort(
-                        () => runAgent4SystemsDelivery(task, context ?? {}, mode),
+                        () => agents.runAgent4(task, context ?? {}, mode, runOptions),
                         timeout,
                         controller.signal,
                         'Agent 4 timed out'
@@ -179,13 +166,14 @@ export async function POST(
             case '5':
                 result = await withRetry(
                     () => withTimeoutAndAbort(
-                        () => runAgent5(
+                        () => agents.runAgent5(
                             {
                                 apiKey: process.env.ANTHROPIC_API_KEY!,
                                 model: 'claude-sonnet-4-20250514',
                                 maxTokens: 8000,
                             },
-                            context as unknown as Parameters<typeof runAgent5>[1]
+                            context as unknown as Parameters<typeof agents.runAgent5>[1],
+                            runOptions
                         ),
                         timeout,
                         controller.signal,

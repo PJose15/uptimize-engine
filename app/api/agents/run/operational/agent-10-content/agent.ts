@@ -4,6 +4,7 @@
  */
 
 import { runSequential, buildSubAgentContext } from '@/lib/subagent';
+import { loadAgentMemory, commitAgentMemory } from '@/lib/learning/memory';
 import type { AgentSynthesisResult, SubAgentResult } from '@/lib/subagent';
 import { runResearchFinder } from './subagents/10a-research-finder';
 import { runDrafterPublisher } from './subagents/10b-drafter-publisher';
@@ -30,6 +31,14 @@ export async function runAgent10Content(
   input: Agent10Input,
   config: { mode?: 'fast' | 'balanced' | 'quality' } = {},
 ): Promise<AgentSynthesisResult<ContentIntelligenceOutput>> {
+  // Learnings distributed to this agent, delivered into sub-agent memory.
+  // Never fatal: a learning-store failure must degrade to no memory
+  // rather than fail a run the agent could otherwise complete.
+  const memory = await loadAgentMemory('agent-10-content').catch(err => {
+    console.error('[agent-10-content] could not load memory:', err);
+    return { entries: {}, noticeIds: [], keysRead: [] };
+  });
+
   const baseCtx = buildSubAgentContext({
     parentAgentId: 'agent-10-content',
     subAgentId: '10A-research-finder',
@@ -39,7 +48,7 @@ export async function runAgent10Content(
     mode: config.mode ?? 'quality',
     timeBudgetMs: TOTAL_TIMEOUT_MS,
     inputs: { agent10_input: input },
-    memoryEntries: {},
+    memoryEntries: memory.entries,
     maxResponseTokens: 6000,
     confidenceRequired: 'high',
   });
@@ -59,6 +68,11 @@ export async function runAgent10Content(
   });
 
   const subAgentResults: SubAgentResult<unknown>[] = [resultA, resultB];
+
+  // A failed run leaves its notices pending rather than burning them.
+  if (subAgentResults.some(r => r.task_completed)) {
+    await commitAgentMemory(memory, { clientId: 'system', agentId: 'agent-10-content' });
+  }
   const totalCost = subAgentResults.reduce((s, r) => s + r.cost_usd, 0);
   const totalDuration = subAgentResults.reduce((s, r) => s + r.duration_ms, 0);
   const requiresHumanAttention = output.pedro_review_queue.length > 0

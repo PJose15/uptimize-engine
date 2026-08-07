@@ -9,13 +9,23 @@ import { startRun, updateRunAgent, completeRun, isRunCancelled } from '@/lib/pip
 import { checkRateLimit, getClientId, RATE_LIMITS, rateLimitResponse } from '@/lib/rate-limit';
 import { logActivityEvent, logAuditEntry, refreshPortalStats } from '@/lib/portal-events';
 import { validateCSRFToken } from '@/lib/csrf';
+import { getClientIdFromRequest } from '@/lib/portal';
+import {
+    onAgent2NurtureQueue,
+    onAgent3Complete,
+    onAgent4Complete,
+    onAgent5Complete,
+} from '@/lib/scheduler/event-dispatcher';
+import { buildNurtureEntries } from '@/lib/learning/nurture-entries';
+import {
+    extractAgent3Learning,
+    extractAgent4Learning,
+    extractAgent5Learning,
+    extractAgent5Portfolio,
+} from '@/lib/learning/extract';
 
-// Import agent functions
-import { runAgent1MarketIntelligence } from '../../agents/run/uptimize/agent-1-market-intelligence/agent';
-import { runAgent2OutboundAppointment } from '../../agents/run/uptimize/agent-2-outbound-appointment/agent';
-import { runAgent3SalesEngineer } from '../../agents/run/uptimize/agent-3-sales-engineer/agent';
-import { runAgent4SystemsDelivery } from '../../agents/run/uptimize/agent-4-systems-delivery/agent';
-import { runAgent5 } from '../../agents/run/uptimize/agent-5-client-success/agent';
+// Agent runners — legacy single-call path or v2 sub-agent path, per USE_SUBAGENTS
+import { resolvePipelineAgents, actualCostOf } from '../../agents/run/uptimize/subagent-adapters';
 
 export const maxDuration = 300; // 5 minutes max
 
@@ -92,7 +102,7 @@ export async function POST(request: NextRequest) {
                     return;
                 }
 
-                const { leads } = validation.data;
+                const { leads, vertical: requestedVertical } = validation.data;
 
                 // Start run tracking (for cancellation)
                 const abortController = startRun(runId);
@@ -103,6 +113,48 @@ export async function POST(request: NextRequest) {
                 const pipelineStartTime = Date.now();
                 const results: Record<string, AgentRunResult> = {};
                 let totalCost = 0;
+
+                // Resolve the agent implementations once for this run.
+                // Note: `clientId` above is the IP-derived rate-limit key, not
+                // the portal client — resolve that separately for attribution.
+                const agents = resolvePipelineAgents();
+                let portalClientId = 'unknown';
+                try {
+                    portalClientId = await getClientIdFromRequest(request);
+                } catch {
+                    // Server-to-server callers (webhooks) have no session; leave 'unknown'.
+                }
+                const runOptions = { clientId: portalClientId, pipelineRunId: runId };
+                send({ type: 'run_mode', useSubAgents: agents.useSubAgents });
+
+                // Learning dispatch context. No agent output carries a top-level
+                // vertical, so it comes from the request — see LeadInputSchema
+                // for why filing everything under 'unknown' corrupts confidence
+                // scoring. Still refreshed from output if one ever reports it.
+                let pipelineVertical: string | undefined = requestedVertical;
+
+                const dispatchContext = {
+                    clientId: portalClientId,
+                    pipelineRunId: runId,
+                    get vertical() { return pipelineVertical; },
+                };
+
+                /**
+                 * Collectors key learnings by vertical and require the field.
+                 * Records it from the output when present, so later dispatches
+                 * in the same run inherit it.
+                 */
+                const withVertical = (data: unknown): { vertical: string; [key: string]: unknown } => {
+                    // NOTE: no current agent output has a top-level `vertical`
+                    // (verified against Agent3Output, DeliveryPackageOutput and
+                    // Agent5ClientSuccessPackage), so in practice this resolves
+                    // to the request's value or 'unknown'.
+                    const output = (data ?? {}) as Record<string, unknown>;
+                    const found = typeof output.vertical === 'string' ? output.vertical : undefined;
+                    if (found) pipelineVertical = found;
+
+                    return { ...output, vertical: found ?? pipelineVertical ?? 'unknown' };
+                };
 
                 // Helper to check cancellation
                 const checkCancelled = () => {
@@ -119,7 +171,7 @@ export async function POST(request: NextRequest) {
                 const agent1Start = Date.now();
                 const agent1Result = await withRetry(
                     () => withTimeoutAndAbort(
-                        (sig) => runAgent1MarketIntelligence(leads, {}, 'fast') as Promise<AgentResult>,
+                        (sig) => agents.runAgent1(leads, {}, 'fast', runOptions) as Promise<AgentResult>,
                         getAgentTimeout(1),
                         signal,
                         'Agent 1 timed out'
@@ -128,7 +180,8 @@ export async function POST(request: NextRequest) {
                 ) as AgentResult;
 
                 const agent1Duration = Date.now() - agent1Start;
-                const agent1Cost = estimateCost('gemini', 'gemini-2.0-flash-exp', agent1Result.metadata?.tokensUsed || 2000, 500);
+                const agent1Cost = actualCostOf(agent1Result)
+                    ?? estimateCost('gemini', 'gemini-2.0-flash-exp', agent1Result.metadata?.tokensUsed || 2000, 500);
                 const agent1Validation = validateAgentOutput(1, agent1Result.data);
 
                 totalCost += agent1Cost;
@@ -168,7 +221,7 @@ export async function POST(request: NextRequest) {
                 const agent2Start = Date.now();
                 const agent2Result = await withRetry(
                     () => withTimeoutAndAbort(
-                        (sig) => runAgent2OutboundAppointment(
+                        (sig) => agents.runAgent2(
                             'Create outreach campaigns for leads',
                             {
                                 targetPack: agent1Result.data,
@@ -176,7 +229,8 @@ export async function POST(request: NextRequest) {
                                 offerPositioning: 'AI-powered operations automation',
                                 channels: ['linkedin', 'email']
                             },
-                            'fast'
+                            'fast',
+                            runOptions
                         ) as Promise<AgentResult>,
                         getAgentTimeout(2),
                         signal,
@@ -186,7 +240,8 @@ export async function POST(request: NextRequest) {
                 ) as AgentResult;
 
                 const agent2Duration = Date.now() - agent2Start;
-                const agent2Cost = estimateCost('anthropic', 'claude-sonnet-4-20250514', agent2Result.metadata?.tokensUsed || 3000, 800);
+                const agent2Cost = actualCostOf(agent2Result)
+                    ?? estimateCost('anthropic', 'claude-sonnet-4-20250514', agent2Result.metadata?.tokensUsed || 3000, 800);
                 const agent2Validation = validateAgentOutput(2, agent2Result.data);
 
                 totalCost += agent2Cost;
@@ -211,6 +266,27 @@ export async function POST(request: NextRequest) {
                 logActivityEvent({ action: 'Agent 2: Outbound campaigns created', description: 'Generated outreach campaigns for qualified leads', status: agent2Result.success ? 'completed' : 'failed', pillar: 'Handoffs', toolUsed: 'Email', costUsd: agent2Cost, durationMs: agent2Duration, pipelineRunId: runId }).catch(() => {});
                 logAuditEntry({ action: 'Outbound campaign generation', tool: 'Email', status: agent2Result.success ? 'success' : 'failed', costUsd: agent2Cost, details: `Duration: ${agent2Duration}ms, Run: ${runId}` }).catch(() => {});
 
+                // Route prospects Agent 2 parked into the nurture queue. The join
+                // against Agent 1's target pack happens here because this is the
+                // only layer holding both — see lib/learning/nurture-entries.ts.
+                if (agent2Result.success) {
+                    const agent2Data = agent2Result.data as {
+                        nurture_queue?: Parameters<typeof buildNurtureEntries>[0]['nurtureQueue'];
+                        message_library?: Parameters<typeof buildNurtureEntries>[0]['messageLibrary'];
+                    } | undefined;
+
+                    const nurtureEntries = buildNurtureEntries({
+                        targetPack: agent1Result.data,
+                        nurtureQueue: agent2Data?.nurture_queue ?? [],
+                        messageLibrary: agent2Data?.message_library,
+                        vertical: pipelineVertical,
+                    });
+
+                    if (nurtureEntries.length > 0) {
+                        onAgent2NurtureQueue(nurtureEntries, dispatchContext);
+                    }
+                }
+
                 if (!agent2Result.success) {
                     send({ type: 'error', message: 'Agent 2 failed', details: agent2Result.error });
                     completeRun(runId, 'failed');
@@ -231,14 +307,15 @@ export async function POST(request: NextRequest) {
 
                 const agent3Result = await withRetry(
                     () => withTimeoutAndAbort(
-                        (sig) => runAgent3SalesEngineer(
+                        (sig) => agents.runAgent3(
                             'Run discovery and create proposal',
                             {
                                 qualified_lead_brief: qualifiedLead,
                                 call_context: { call_notes: 'Discovery call', call_duration_minutes: 45 },
                                 mode: 'proposal_generation'
                             },
-                            'fast'
+                            'fast',
+                            runOptions
                         ) as Promise<AgentResult>,
                         getAgentTimeout(3),
                         signal,
@@ -248,7 +325,8 @@ export async function POST(request: NextRequest) {
                 ) as AgentResult;
 
                 const agent3Duration = Date.now() - agent3Start;
-                const agent3Cost = estimateCost('openai', 'gpt-4o', agent3Result.metadata?.tokensUsed || 4000, 1200);
+                const agent3Cost = actualCostOf(agent3Result)
+                    ?? estimateCost('openai', 'gpt-4o', agent3Result.metadata?.tokensUsed || 4000, 1200);
                 const agent3Validation = validateAgentOutput(3, agent3Result.data);
 
                 totalCost += agent3Cost;
@@ -272,6 +350,16 @@ export async function POST(request: NextRequest) {
                 // Portal logging for Agent 3
                 logActivityEvent({ action: 'Agent 3: Proposal generated', description: 'Ran discovery and created proposal/SOW', status: agent3Result.success ? 'completed' : 'failed', pillar: 'Audit Trail', toolUsed: 'Analytics', costUsd: agent3Cost, durationMs: agent3Duration, pipelineRunId: runId }).catch(() => {});
                 logAuditEntry({ action: 'Sales engineering proposal', tool: 'Analytics', status: agent3Result.success ? 'success' : 'failed', costUsd: agent3Cost, details: `Duration: ${agent3Duration}ms, Run: ${runId}` }).catch(() => {});
+
+                if (agent3Result.success && agent3Result.data) {
+                    // Collectors read the sub-agent result shape, not the final
+                    // output — extract rather than casting and collecting nothing.
+                    const { vertical } = withVertical(agent3Result.data);
+                    onAgent3Complete(
+                        extractAgent3Learning(agent3Result.data as Parameters<typeof extractAgent3Learning>[0], vertical),
+                        dispatchContext,
+                    );
+                }
 
                 if (!agent3Result.success) {
                     send({ type: 'error', message: 'Agent 3 failed', details: agent3Result.error });
@@ -303,14 +391,15 @@ export async function POST(request: NextRequest) {
 
                 const agent4Result = await withRetry(
                     () => withTimeoutAndAbort(
-                        (sig) => runAgent4SystemsDelivery(
+                        (sig) => agents.runAgent4(
                             'Create delivery package',
                             {
                                 handoffSpec,
                                 clientTools: { available: ['Slack', 'Zapier'], restricted: [] },
                                 targetTimelineDays: 14
                             },
-                            'fast'
+                            'fast',
+                            runOptions
                         ) as Promise<AgentResult>,
                         getAgentTimeout(4),
                         signal,
@@ -320,7 +409,8 @@ export async function POST(request: NextRequest) {
                 ) as AgentResult;
 
                 const agent4Duration = Date.now() - agent4Start;
-                const agent4Cost = estimateCost('gemini', 'gemini-2.0-flash-exp', agent4Result.metadata?.tokensUsed || 3500, 900);
+                const agent4Cost = actualCostOf(agent4Result)
+                    ?? estimateCost('gemini', 'gemini-2.0-flash-exp', agent4Result.metadata?.tokensUsed || 3500, 900);
                 const agent4Validation = validateAgentOutput(4, agent4Result.data);
 
                 totalCost += agent4Cost;
@@ -344,6 +434,14 @@ export async function POST(request: NextRequest) {
                 // Portal logging for Agent 4
                 logActivityEvent({ action: 'Agent 4: Delivery package created', description: 'Built workflows, integrations, and handoff kit', status: agent4Result.success ? 'completed' : 'failed', pillar: 'Knowledge', toolUsed: 'Internal', costUsd: agent4Cost, durationMs: agent4Duration, pipelineRunId: runId }).catch(() => {});
                 logAuditEntry({ action: 'Systems delivery build', tool: 'Internal', status: agent4Result.success ? 'success' : 'failed', costUsd: agent4Cost, details: `Duration: ${agent4Duration}ms, Run: ${runId}` }).catch(() => {});
+
+                if (agent4Result.success && agent4Result.data) {
+                    const { vertical } = withVertical(agent4Result.data);
+                    onAgent4Complete(
+                        extractAgent4Learning(agent4Result.data as Parameters<typeof extractAgent4Learning>[0], vertical),
+                        dispatchContext,
+                    );
+                }
 
                 if (!agent4Result.success) {
                     send({ type: 'error', message: 'Agent 4 failed', details: agent4Result.error });
@@ -386,12 +484,13 @@ export async function POST(request: NextRequest) {
 
                         const agent5Data = await withRetry(
                             () => withTimeoutAndAbort(
-                                (sig) => runAgent5(
+                                (sig) => agents.runAgent5(
                                     { apiKey: anthropicKey },
                                     {
                                         handoff_kit: agent4Handoff,
                                         current_week_of: new Date().toISOString().split('T')[0]
-                                    }
+                                    },
+                                    runOptions
                                 ),
                                 getAgentTimeout(5),
                                 signal,
@@ -421,7 +520,12 @@ export async function POST(request: NextRequest) {
                 }
 
                 const agent5Duration = Date.now() - agent5Start;
-                const agent5Cost = estimateCost('anthropic', 'claude-sonnet-4-20250514', agent5Result.metadata?.tokensUsed || 2500, 700);
+                // agent5Result is assembled locally as { success, data } with no
+                // metadata, so the estimate below always used its hardcoded
+                // 2500/700 token guess. Read the measured cost off the package
+                // when the sub-agent path produced one.
+                const agent5Cost = actualCostOf(agent5Result.data)
+                    ?? estimateCost('anthropic', 'claude-sonnet-4-20250514', agent5Result.metadata?.tokensUsed || 2500, 700);
                 const agent5Validation = validateAgentOutput(5, agent5Result.data);
 
                 totalCost += agent5Cost;
@@ -445,6 +549,16 @@ export async function POST(request: NextRequest) {
                 // Portal logging for Agent 5
                 logActivityEvent({ action: 'Agent 5: Client success review', description: 'Generated health score, KPI tracking, and proof assets', status: agent5Result.success ? 'completed' : 'failed', pillar: 'Channels', toolUsed: 'Analytics', costUsd: agent5Cost, durationMs: agent5Duration, pipelineRunId: runId }).catch(() => {});
                 logAuditEntry({ action: 'Client success analysis', tool: 'Analytics', status: agent5Result.success ? 'success' : 'failed', costUsd: agent5Cost, details: `Duration: ${agent5Duration}ms, Run: ${runId}` }).catch(() => {});
+
+                if (agent5Result.success && agent5Result.data) {
+                    const { vertical } = withVertical(agent5Result.data);
+                    const agent5Package = agent5Result.data as Parameters<typeof extractAgent5Learning>[0];
+                    onAgent5Complete(
+                        extractAgent5Learning(agent5Package, vertical),
+                        dispatchContext,
+                        extractAgent5Portfolio(agent5Package),
+                    );
+                }
 
                 // Complete
                 const totalDuration = Date.now() - pipelineStartTime;

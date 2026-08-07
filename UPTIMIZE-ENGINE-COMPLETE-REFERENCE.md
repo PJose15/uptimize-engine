@@ -1,10 +1,17 @@
 # UPTIMIZE ENGINE — Complete System Reference
 
-> **Generated**: 2026-03-20
+> **Generated**: 2026-03-20 · **Revised**: 2026-08
 > **Repository**: `github.com/PJose15/uptimize-engine`
 > **Branch**: `main`
 > **Stack**: Next.js 16 + React 19 + Prisma 5 (SQLite) + Tailwind CSS 4 + TypeScript 5
-> **Purpose**: AI-powered 5-agent sales operations pipeline with governance, portal, and analytics
+> **Purpose**: Agentic operations platform — 8 pipeline agents, 5 operational
+> agents and 6 internal venture agents, with governance, learning, a client
+> portal and an admin portfolio dashboard.
+>
+> **Scope note**: sections 4–14 describe the core 5-agent pipeline in detail and
+> remain accurate for those agents. Agents 6–13, the sub-agent framework, the
+> learning system and the portfolio layer arrived later; see PROJECT_OVERVIEW.md
+> and README.md for the current shape of the whole system.
 
 ---
 
@@ -1106,18 +1113,18 @@ pnpm test:agent5
 
 ### Summary
 
-| Category | Files | Est. Lines |
-|----------|-------|-----------|
-| Agent Implementations | 25 | ~4,250 |
-| API Routes | 42 | ~3,000 |
-| Frontend Pages | 13 | ~1,500 |
-| Portal (UI + API) | 17 | ~2,000 |
-| Components | 9 | ~800 |
-| Libraries | 15 | ~2,500 |
-| Database | 2 | ~435 |
-| Tests | 6 | ~3,000 |
-| Config | 7 | ~200 |
-| **TOTAL** | **~152** | **~15,000+** |
+Counted August 2026 across `app/`, `lib/` and `components/`:
+
+| Category | Count | Lines |
+|----------|-------|-------|
+| Agent implementations | 19 agents / 26 sub-agents | ~17,400 |
+| API routes | 26 | — |
+| Frontend pages | 19 | — |
+| Libraries (`lib/`) | — | ~8,000 |
+| Components | — | ~1,800 |
+| Database models | 30 | — |
+| Tests | 26 files | ~4,900 |
+| **TOTAL (app + lib + components)** | — | **~44,300** |
 
 ### Directory Tree
 
@@ -1128,16 +1135,14 @@ uptimize-engine/
 │   │   ├── agents/run/
 │   │   │   ├── orchestrator.ts, route.ts, types.ts, config.ts
 │   │   │   ├── providers/ (base, adapter, router, gemini, openai, anthropic, telemetry)
-│   │   │   ├── tools/, skills/, mcp/, memory/, integration/, prompts/
+│   │   │   ├── mcp/ (mcp-client, research-servers), prompts/
+│   │   │   ├── subagent-adapters.ts  (legacy ↔ v2 sub-agent seam)
 │   │   │   ├── fallback.ts, logger.ts, cost.ts, retry.ts
-│   │   │   ├── automation/ (workflow-engine)
 │   │   │   ├── shared/ (audit-pillars, schemas)
 │   │   │   ├── uptimize/
-│   │   │   │   ├── agent-1-market-intelligence/ (agent, types, index, schema)
-│   │   │   │   ├── agent-2-outbound-appointment/ (agent, types, index, schema)
-│   │   │   │   ├── agent-3-sales-engineer/ (agent, types, index, schema)
-│   │   │   │   ├── agent-4-systems-delivery/ (agent, types, index, schema)
-│   │   │   │   └── agent-5-client-success/ (agent, types, index, schema)
+│   │   │   │   ├── agent-1-market-intelligence/ … agent-8-intelligence/
+│   │   │   │   │   (agent, types, index, subagent-orchestrator, subagents/)
+│   │   │   ├── operational/ (agents 9-13, each with worker + subagents/)
 │   │   │   └── internal/ (smartgym, pvision venture agents)
 │   │   ├── pipeline/ (run/route, batch/route, cancel/route, pipeline-state)
 │   │   ├── portal/ (client, stats, activity, approvals, analytics, permissions, audit)
@@ -1174,32 +1179,59 @@ uptimize-engine/
 
 ## 16. KNOWN ISSUES & GAPS
 
-### Pre-existing Type Errors (8)
-1. 5 test files: Cannot find agent module imports
-2. `agent-1-market-intelligence/agent.ts`: CompanyProfile type cast
-3. `examples/agent-1-to-agent-2-integration.ts`: Agent1ResearchContext mismatch
-4. `lib/validation.ts`: Missing arguments
+*Reviewed August 2026.*
 
-### Architecture Gaps
+### Resolved since this document was first written
+
+| Was | Now |
+|-----|-----|
+| No CSRF protection | HMAC session-bound tokens (`lib/csrf.ts`), enforced on mutating routes |
+| Default seed credentials (admin/admin123) | Seed requires `ADMIN_USERNAME` / `ADMIN_PASSWORD`, minimum 12 characters |
+| No rate limit persistence | DB-backed limiter available for Postgres (`checkRateLimitDB`) |
+| Route protection disabled | `middleware.ts` restored; API routes validate sessions against the DB |
+| Hardcoded `client_001` | Resolved per request via `getClientIdFromRequest`; 5 fallback defaults remain |
+| MCP integration untested | Used by Agent 1 and gated by the permission matrix |
+
+### Open
+
 | Issue | Impact | Priority |
 |-------|--------|----------|
-| **Hardcoded client ID** (`client_001` everywhere) | No multi-tenant support | High |
-| **Agent 5 uses Anthropic directly** (not fallback) | Inconsistency with Agents 1-4 | Medium |
-| **No pagination** on activity/approvals/audit | Performance with large datasets | Medium |
-| **In-memory rate limiting** | Resets on server restart; no clustering | Medium |
-| **MCP Integration** (Agent 1) | Specified but may not be fully tested | Low |
-| **No real-time updates** | Portal requires manual refresh | Low |
-| **Settings page** is placeholder | Not implemented | Low |
-| **No email/notification delivery** | `notifications.ts` exists but is scaffold | Low |
+| **SQLite in production** | Will not survive a serverless deploy. Blocks launch. | Critical |
+| **Learning loop open at consumption** | `processPendingNotices()` has no callers; orchestrators receive `memoryEntries: {}`. Needs a learning-type → memory-key mapping first. | High |
+| **WRITE_EXTERNAL / EXECUTE tools unimplemented** | The matrix governs `send_email`, `create_crm_contact`, `send_invoice`; none exist, so that enforcement has no live caller. | High |
+| **Little end-to-end verification** | Most agent tests are live-API integration tests requiring keys and costing money. | High |
+| **Cron scale needs a paid plan** | 9 jobs, one hourly, vs Vercel Hobby's 2 daily. | Medium |
+| **Agent 5 legacy path calls Anthropic directly** | Bypasses tier routing; the sub-agent path does not. | Medium |
+| **Operational agents 9–13 are cron-only** | No interactive entry point. | Medium |
+| **No pagination on portal approvals** | Activity and audit take a limit; approvals does not. | Low |
+| **Settings page partly placeholder** | API key management not implemented. | Low |
+| **Notification delivery is a stub** | `lib/notifications.ts` logs email rather than sending. | Low |
 
-### Security Gaps
-| Issue | Impact |
-|-------|--------|
-| Default credentials in seed (admin/admin123) | Must change in production |
-| SQLite for production data | Not suitable for concurrent writes |
-| No CSRF protection | Vulnerable to cross-site request forgery |
-| API keys in .env file | Need secrets manager for production |
-| No rate limit persistence | In-memory; resets on restart |
+### Removed scaffold
+
+`skills/`, `tools/`, `integration/` and `automation/workflow-engine.ts` — about
+2,112 lines — were removed in August 2026. Nothing imported them; `tools/` had
+been superseded by the governance layer in `lib/governance/`, and `integration/`
+was glue for components that were themselves unused. They remain in git history
+if the design intent is needed later:
+
+```bash
+git log --diff-filter=D --  app/api/agents/run/skills
+git show <commit>^:app/api/agents/run/skills/index.ts
+```
+
+Worth knowing before rebuilding: `skills/index.ts` held five populated prompt
+templates (shadow-ops-discovery, exception-mapping, roi-calculation,
+audit-reporting, proposal-generation) encoding the 6-pillar methodology. The
+architecture was never adopted — agents carry their prompts inline — but that
+prompt content is the part with independent value.
+
+### Type checking
+
+`npx tsc --noEmit` reports errors only where the generated Prisma client is
+missing — implicit `any` on Prisma callback parameters plus one missing
+`Prisma.*WhereInput` namespace member. Run `npx prisma generate` first; the
+application code itself is clean.
 
 ---
 
@@ -1207,11 +1239,13 @@ uptimize-engine/
 
 ### Immediate (High Impact)
 
-1. **Multi-tenant support**: Replace hardcoded `client_001` with dynamic client resolution from auth
-2. **Pagination**: Add offset/cursor to activity, approvals, and audit endpoints
-3. **Agent 5 fallback**: Align Agent 5 with Agents 1-4 using `executeWithFallback()`
-4. **Fix type errors**: Resolve 8 pre-existing TypeScript errors
-5. **Settings page**: Implement API key management, notification config, timeouts
+1. **Postgres migration**: required before any serverless deploy — see `docs/POSTGRES_MIGRATION.md`
+2. **End-to-end run**: exercise both execution paths against live providers and compare cost and quality
+3. **Close the learning loop**: wire consumption with a learning-type → memory-key mapping
+4. **Build the governed tools**: implement `send_email` / `create_crm_contact` / `send_invoice` so WRITE_EXTERNAL enforcement has a caller
+5. **Split the test suite**: offline unit tests for CI, live-API tests opt-in
+6. **Pagination**: add offset/cursor to the approvals endpoint
+7. **Settings page**: implement API key management, notification config, timeouts
 
 ### Short-term (Value Adds)
 

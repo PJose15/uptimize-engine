@@ -23,3 +23,23 @@ export {
     type GateCheckResult,
     type AuditRecord,
 } from "./approval-gates";
+
+export {
+    createApproval,
+    getApprovalDecision,
+    expireStaleApprovals,
+    APPROVAL_TTL_MS,
+    type ApprovalDecision,
+} from "./approval-store";
+
+/**
+ * The enforcement chokepoint. Any call an agent makes to a system outside this
+ * process goes through one of these — see lib/governance/enforce.ts.
+ */
+export {
+    withGovernance,
+    enforceGovernance,
+    GovernanceError,
+    type GovernedAction,
+    type GovernedOutcome,
+} from "./enforce";

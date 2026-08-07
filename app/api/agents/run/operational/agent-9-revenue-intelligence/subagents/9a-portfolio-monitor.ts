@@ -4,6 +4,7 @@
  */
 
 import { executeWithFallback } from '@/lib/providers/fallback';
+import { withMemoryContext } from '@/lib/subagent/context-builder';
 import type { SubAgentContext, SubAgentResult } from '@/lib/subagent';
 import { buildP1Failure } from '@/lib/subagent';
 import type { Agent9Input, PortfolioMonitorResult } from '../types';
@@ -94,7 +95,9 @@ export async function runPortfolioMonitor(
   }
 
   try {
-    const userPrompt = buildUserPrompt(input);
+    // Learned context from previous runs, filtered to this sub-agent's
+    // permitted memory keys by buildSubAgentContext.
+    const userPrompt = withMemoryContext(buildUserPrompt(input), ctx.memory_context);
     const fallback = await executeWithFallback(
       'portfolio_monitoring',
       {

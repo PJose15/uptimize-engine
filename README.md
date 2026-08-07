@@ -1,36 +1,230 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Uptimize Engine
 
-## Getting Started
+Agentic operations platform. A fleet of LLM agents runs Uptimize's sales and
+delivery pipeline, and a multi-tenant client portal reports what those agents
+did — measured against the 6-Pillar framework.
 
-First, run the development server:
+See [PROJECT_OVERVIEW.md](./PROJECT_OVERVIEW.md) for the business context and
+[UPTIMIZE-ENGINE-COMPLETE-REFERENCE.md](./UPTIMIZE-ENGINE-COMPLETE-REFERENCE.md)
+for the system reference.
+
+## Setup
 
 ```bash
+npm install
+cp .env.example .env      # then fill in the required values
+npx prisma generate
+npx prisma migrate dev
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The app validates its environment at boot (`lib/env.ts`, wired through
+`instrumentation.ts`) and refuses to start if a required variable is missing.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**Required:** `DATABASE_URL`, at least one AI provider key, and — in production
+— `NEXTAUTH_SECRET`. Every variable is documented in
+[.env.example](./.env.example).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Seeding the admin user
 
-## Learn More
+```bash
+npx prisma db seed
+```
 
-To learn more about Next.js, take a look at the following resources:
+Reads `ADMIN_USERNAME` and `ADMIN_PASSWORD` from `.env`. The password must be
+at least 12 characters; there are no default credentials.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Commands
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Command | What it does |
+|---|---|
+| `npm run dev` | Dev server on :3000 |
+| `npm run build` | Production build |
+| `npm run lint` | ESLint |
+| `npm run test` | Vitest, watch mode (offline tier) |
+| `npm run test:run` | Offline tier, single pass — this is the CI signal |
+| `npm run test:integration` | Live-API tier. Needs keys. Costs money. |
+| `npm run test:agent1` … `test:agent5` | One agent's live suite |
+| `npx prisma studio` | Browse the database on :5555 |
 
-## Deploy on Vercel
+### Two test tiers
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**Offline (default)** — 26 suites, 256 tests, no network, no database, no API
+keys, ~4s. `__tests__/setup.ts` stubs the Prisma client for every suite, since
+`lib/prisma` constructs a client at module load and would otherwise take down
+suites that never meant to touch a database. A suite needing real database
+behaviour declares its own `vi.mock('@/lib/prisma', …)`, which takes precedence.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Integration (`*.integration.test.ts`)** — the five agent suites that make live
+provider calls. Opt-in, because they need keys and cost money per run.
+
+The split exists so a red `npm run test:run` means a genuine regression rather
+than an unconfigured environment. Before it, 18 of 26 suites failed by default
+and the suite could not be used as a signal at all.
+
+## Agent execution paths
+
+Agents 1–5 have two implementations, selected by `USE_SUBAGENTS`:
+
+- **Legacy (default)** — one model call per agent, prompt-assembled from
+  `(task, context)`.
+- **Sub-agent (`USE_SUBAGENTS=true`)** — each agent runs two specialist
+  sub-agents (e.g. `1A-research-specialist` → `1B-scoring-analyst`) composed
+  sequentially, in parallel, or conditionally, with per-task model tiers from
+  `lib/config/models.ts`. Every sub-agent run is recorded in `SubAgentRun`.
+
+`app/api/agents/run/uptimize/subagent-adapters.ts` is the seam between them:
+it presents the legacy `(task, context, mode)` signature either way, so call
+sites do not branch. When a sub-agent path needs structured input the caller
+did not supply, it logs and degrades to the legacy path rather than failing.
+
+Reported cost follows the same split — the sub-agent path reports measured
+cost, the legacy path a token-based estimate against a fixed model name.
+
+## Governance
+
+Any call an agent makes to a system outside this process goes through
+`withGovernance()` / `enforceGovernance()` in `lib/governance/enforce.ts`. The
+check happens *before* the call runs, so an action awaiting approval has not
+already happened.
+
+Three outcomes: **executed**, **denied** (policy refuses it), or
+**awaiting_approval** (queued for a human, not run). Approval state lives in
+the `ApprovalItem` table — the id the gate returns is the row id, so a decision
+made in the portal is visible to the next attempt. Pass that id back to resume.
+
+The permission matrix in `lib/governance/tool-permissions.ts` covers all 13
+agents and denies unknown agents and unregistered tools by default. Note that
+it also lists tools that have no implementation yet (`send_email`,
+`create_crm_contact`, …) — those entries are policy waiting for code, and
+gating them is a no-op until the tool exists.
+
+## Portfolio dashboard
+
+`/admin/portfolio` shows retainer-weighted portfolio health, weekly capacity
+against the 33.5h cap, cross-client patterns, and the client roster. Backed by
+`GET /api/admin/portfolio` and `/api/admin/portfolio/patterns`, both requiring
+an admin session — unlike the `/api/portal` routes, these span every client.
+
+Pattern detection runs on read: it is a pure function over current portfolio
+state, so there is nothing to accumulate between runs and a stale weekly
+snapshot would be worse than recomputing. Rows are persisted only so that
+"acted on" and operator notes survive, and re-detection in the same week does
+not duplicate them.
+
+Populate the portfolio from existing client configs:
+
+```bash
+npx tsx scripts/migrate-to-portfolio.ts --dry-run   # preview
+npx tsx scripts/migrate-to-portfolio.ts
+```
+
+The script is idempotent and never overwrites existing rows, which carry
+operator-maintained fields. It cannot infer `retainerUsd` — that is a
+commercial fact `ClientConfig` does not hold — so new rows start at 0 and need
+filling in. Portfolio health is retainer-weighted, so a client left at 0 does
+not contribute to the weighted score.
+
+## Scheduled jobs
+
+Agents 8–13 run on a schedule rather than on request. `GET /api/cron/[job]`
+dispatches from the `CRON_JOBS` registry in `lib/scheduler/operational-jobs.ts`;
+`vercel.json` maps each schedule to a path. A test asserts the two agree —
+nothing at runtime does, and a mismatch fails silently in both directions.
+
+Requests must carry `Authorization: Bearer $CRON_SECRET`. Without the secret
+set, the endpoint returns 503 and nothing runs: these jobs spend money on model
+calls and write to client systems, so it fails closed rather than open. Vercel
+Cron supplies the header automatically from the project env var. The same
+endpoint accepts POST, so a job can be triggered by hand with the same
+credential:
+
+```bash
+curl -X POST -H "Authorization: Bearer $CRON_SECRET" \
+  https://<host>/api/cron/agent-13-daily-brief
+```
+
+Schedules are UTC — that is what Vercel evaluates them in. Comments in
+`AGENT_SCHEDULES` give the intended America/Puerto_Rico local time; PR does not
+observe DST, so these do not drift seasonally.
+
+**Deployment note:** there are 9 jobs, one of them hourly. Vercel's Hobby plan
+allows 2 cron jobs at daily granularity, so this configuration needs Pro — or
+an external scheduler pointed at the same endpoints.
+
+## Learning pipeline
+
+Observations flow through four stages. All four are wired:
+
+1. **Collect** — the pipeline route dispatches `onAgentNComplete()` for Agents
+   2–5 as each finishes, writing `LearningEvent` rows. `lib/learning/extract.ts`
+   maps each agent's real output onto what its collector reads — the collectors
+   were written against *sub-agent* result shapes, and dispatching the final
+   output past a cast collected nothing. Collection is idempotent
+   per `(sourceAgentId, sourceRunId)`: agent retries and Agent 3's own inline
+   collector would otherwise double-count, and confidence scoring treats
+   duplicates as independent corroboration.
+2. **Promote** — Agent 8's worker rolls `LearningEvent` rows into
+   `AgentLearning` with confidence labels and creates `LearningDistribution`
+   notices. Runs daily as the `agent-8-learning-queue` cron. (Note this is
+   `processLearningQueue()`, not `generateWeeklyBrief()` — the weekly brief
+   only reports on events and promotes nothing.)
+3. **Distribute** — `LEARNING_DISTRIBUTION_MAP` routes each learning type to
+   the agents that should receive it.
+4. **Consume** — the sub-agent adapters load pending notices before a run,
+   pass them as `memoryEntries`, and acknowledge them only after it succeeds.
+   `withMemoryContext()` prepends the filtered memory to each sub-agent's
+   prompt.
+
+Three things had to line up for stage 4 to deliver anything, and each failed
+silently on its own:
+
+- **Notices were consumed on read.** `processPendingNotices()` marked them
+  delivered as it fetched them, so a failed run destroyed learning it never
+  used. Reading and acknowledging are now separate — `peekPendingNotices()` /
+  `markNoticesDelivered()` — and a failed run leaves notices pending.
+- **The key vocabularies did not match.** Learnings are keyed
+  `learningType:key`; sub-agent memory is filtered against `SUBAGENT_MEMORY_KEYS`
+  (`shared:money_leak_map` and friends). `LEARNING_MEMORY_KEYS` in
+  `lib/learning/memory.ts` maps between them, and a test asserts every target is
+  a key some sub-agent can actually read. An unmapped learning is withheld
+  rather than consumed and dropped.
+- **No sub-agent read `memory_context`.** The field existed on the context
+  object and nothing used it, so filtered memory was assembled and discarded.
+  All 26 sub-agents now splice it in via `withMemoryContext()`, and every
+  orchestrator loads memory before its run. A structural test asserts that
+  coverage so a sub-agent added later cannot silently skip it.
+
+Routing is resolved **per receiving agent**, not globally. `SUBAGENT_MEMORY_KEYS`
+is deliberately narrow — Agent 6 does not read the money-leak map, Agent 7 does
+not read Agent 2's hook library — so `LEARNING_MEMORY_KEYS_BY_AGENT` overrides
+the default target where it would land on a key that agent cannot see. On top of
+that, `memoryKeyFor()` verifies the resolved key is readable by the receiving
+agent and withholds the notice if not: a mapping mistake then costs a delayed
+learning rather than a destroyed one.
+
+Delivered memory carries each learning's confidence and label, so an agent can
+weigh a single observation differently from a validated pattern. What was read
+is recorded in `AgentMemoryLog`.
+
+## Architecture
+
+- `app/api/agents/run/uptimize/` — pipeline agents 1–8
+- `app/api/agents/run/operational/` — operational agents 9–13 (cron-driven)
+- `app/api/agents/run/internal/` — internal venture agents (SmartGym, PVision)
+- `app/api/pipeline/` — SSE pipeline execution, sessions, stage gates
+- `app/portal/` + `app/api/portal/` — client-facing portal
+- `lib/subagent/` — sub-agent composition patterns (sequential/parallel/conditional)
+- `lib/governance/` — tool permissions and approval gates
+- `lib/learning/` — cross-run learning collection and distribution
+- `lib/config/models.ts` — model tiers, task profiles, fallback chains, pricing
+
+## Security notes
+
+- Page routes are guarded by `middleware.ts`, which only checks that a session
+  cookie is **present** — the edge runtime cannot reach the database.
+- API routes must therefore authorize themselves, using `requireSession()` or
+  `getSessionFromRequest()` from `lib/api-auth.ts`. Adding a route to the
+  middleware list does not protect it.
+- `POST /api/webhooks/trigger` is closed (503) until `WEBHOOK_API_KEY` is set.
+  There is no default key.

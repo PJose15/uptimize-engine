@@ -129,3 +129,51 @@ export function filterMemoryForSubAgent(
 
   return parts.length > 0 ? parts.join('\n\n') : '';
 }
+
+/**
+ * Prepend a sub-agent's memory to its user prompt.
+ *
+ * Sub-agents were built with `memory_context` on the context object but none of
+ * them read it, so filtered memory was assembled and discarded. This is the
+ * single place that splices it in, so every sub-agent presents learned context
+ * the same way and it cannot be silently forgotten in a new one.
+ *
+ * Returns the prompt unchanged when there is no memory, so a first run looks
+ * exactly as it did before.
+ */
+export function withMemoryContext(userPrompt: string, memoryContext: string): string {
+  if (!memoryContext || memoryContext.trim().length === 0) return userPrompt;
+
+  return [
+    '## LEARNED CONTEXT FROM PREVIOUS RUNS',
+    'Patterns observed across earlier engagements. Weigh these by their stated',
+    'confidence — treat a single observation as a hint, not a fact.',
+    '',
+    memoryContext,
+    '',
+    '---',
+    '',
+    userPrompt,
+  ].join('\n');
+}
+
+/**
+ * Every memory key any of a parent agent's sub-agents may read.
+ *
+ * Delivery is decided per parent agent but filtering happens per sub-agent, so
+ * a learning routed to a key none of that agent's sub-agents can read is
+ * dropped after being consumed. This is how a caller checks first.
+ */
+export function memoryKeysForParentAgent(agentId: string): string[] {
+  const num = /^agent-(\d+)-/.exec(agentId)?.[1];
+  if (!num) return [];
+
+  const keys = new Set<string>();
+  for (const [subAgentId, allowed] of Object.entries(SUBAGENT_MEMORY_KEYS)) {
+    if (subAgentId.startsWith(`${num}A-`) || subAgentId.startsWith(`${num}B-`)) {
+      allowed.forEach(k => keys.add(k));
+    }
+  }
+
+  return [...keys];
+}

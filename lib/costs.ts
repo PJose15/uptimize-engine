@@ -1,7 +1,13 @@
 /**
  * API Cost Tracking Utility
  * Estimates costs based on token usage for different LLM providers
+ *
+ * The table below predates the v2 tier router. Models it does not know are
+ * looked up in lib/config/models.ts, which is the registry routing actually
+ * uses — otherwise anything the router picks outside this list falls through to
+ * a wrong default.
  */
+import { MODEL_PRICING } from '@/lib/config/models';
 
 // Pricing per 1M tokens (as of early 2025)
 export const PRICING = {
@@ -66,10 +72,18 @@ export function calculateCost(
     model: string,
     usage: TokenUsage
 ): CostEstimate {
-    const pricing = (PRICING[provider] as Record<string, { input: number; output: number }>)[model];
+    const pricing =
+        (PRICING[provider] as Record<string, { input: number; output: number }>)[model]
+        // lib/config/models.ts is the registry the tier router draws from, and it
+        // carries models this table does not (Groq, Mistral, Perplexity, the 2.5
+        // Geminis). Consulting it second keeps one source of truth for pricing
+        // without disturbing the entries here.
+        ?? MODEL_PRICING[model];
 
     if (!pricing) {
-        // Default to mid-range pricing if model not found
+        // Mid-range default. This is a real inaccuracy, not a neutral fallback:
+        // an Opus run priced at $1/$5 under-reports by roughly 15x, so the warn
+        // matters.
         console.warn(`Unknown model ${model} for ${provider}, using default pricing`);
         return {
             provider,

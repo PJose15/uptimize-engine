@@ -4,6 +4,7 @@
  */
 
 import { executeWithFallback } from '@/lib/providers/fallback';
+import { withMemoryContext } from '@/lib/subagent/context-builder';
 import type { SubAgentContext, SubAgentResult } from '@/lib/subagent';
 import { buildP1Failure } from '@/lib/subagent';
 import type { Agent10Input, DrafterPublisherResult, ResearchFinderResult } from '../types';
@@ -110,7 +111,9 @@ export async function runDrafterPublisher(
 
   try {
     const inputs = ctx.inputs as SubAgentBInputs;
-    const userPrompt = buildUserPrompt(inputs.agent10_input, research);
+    // Learned context from previous runs, filtered to this sub-agent's
+    // permitted memory keys by buildSubAgentContext.
+    const userPrompt = withMemoryContext(buildUserPrompt(inputs.agent10_input, research), ctx.memory_context);
     const fallback = await executeWithFallback(
       'content_drafting',
       {

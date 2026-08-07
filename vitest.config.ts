@@ -8,9 +8,15 @@ export default defineConfig({
         environment: 'jsdom',
         globals: true,
         setupFiles: ['./__tests__/setup.ts'],
+        // Offline tier by default: no network, no database, no API keys.
+        // The *.integration.test.ts suites make live provider calls that cost
+        // money and fail without keys — they are opt-in via `npm run
+        // test:integration`, so that a red default run means a real regression
+        // rather than a missing credential.
         include: ['__tests__/**/*.test.ts', '__tests__/**/*.test.tsx'],
-        testTimeout: 180000, // 3 minutes for real API calls
-        hookTimeout: 60000,
+        exclude: ['**/node_modules/**', '**/*.integration.test.ts'],
+        testTimeout: 20000,
+        hookTimeout: 20000,
         sequence: {
             concurrent: false, // Run sequentially to avoid rate limiting
         },

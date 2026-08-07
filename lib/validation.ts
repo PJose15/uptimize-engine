@@ -14,6 +14,18 @@ export const LeadInputSchema = z.object({
             (val) => !containsMaliciousPatterns(val),
             'Input contains potentially harmful patterns'
         ),
+
+    /**
+     * Industry vertical for this run, e.g. "fitness".
+     *
+     * No agent output carries one — Agent 3's sub-agent path takes it as input
+     * and the final outputs drop it — so without the caller stating it every
+     * learning is filed under 'unknown'. AgentLearning is unique on
+     * [vertical, agentId, learningType, key], so unrelated verticals would
+     * merge into one row and inflate its data-point count, promoting
+     * observations to "validated" on evidence from a different industry.
+     */
+    vertical: z.string().max(64).optional(),
 });
 
 // Template validation

@@ -1,21 +1,41 @@
 import { NextResponse } from 'next/server';
-import { checkRateLimit, getClientId, RATE_LIMITS, rateLimitResponse } from '@/lib/rate-limit';
+import { checkRateLimit, RATE_LIMITS, rateLimitResponse } from '@/lib/rate-limit';
 import { validateInput, WebhookTriggerSchema, validationErrorResponse } from '@/lib/validation';
 import { generateRunId } from '@/lib/history';
 
-// Store webhook API keys (in production, use database)
-const WEBHOOK_KEYS = new Set([
-    process.env.WEBHOOK_API_KEY || 'default-webhook-key',
-]);
+/**
+ * Constant-time comparison, so a caller cannot recover the key by timing
+ * responses against guesses.
+ */
+function keyMatches(provided: string, expected: string): boolean {
+    if (provided.length !== expected.length) return false;
+
+    let diff = 0;
+    for (let i = 0; i < provided.length; i++) {
+        diff |= provided.charCodeAt(i) ^ expected.charCodeAt(i);
+    }
+    return diff === 0;
+}
 
 /**
  * POST /api/webhooks/trigger - Trigger pipeline via webhook
  */
 export async function POST(request: Request) {
+    // Without a configured key the endpoint is closed. There is deliberately
+    // no default key — a shared well-known default is the same as no auth.
+    const expectedKey = process.env.WEBHOOK_API_KEY;
+    if (!expectedKey) {
+        console.error('[webhook] WEBHOOK_API_KEY is not configured — rejecting request');
+        return NextResponse.json(
+            { error: 'Webhook endpoint is not configured' },
+            { status: 503 }
+        );
+    }
+
     // Check API key
     const apiKey = request.headers.get('x-api-key') || request.headers.get('authorization')?.replace('Bearer ', '');
 
-    if (!apiKey || !WEBHOOK_KEYS.has(apiKey)) {
+    if (!apiKey || !keyMatches(apiKey, expectedKey)) {
         return NextResponse.json(
             { error: 'Invalid or missing API key' },
             { status: 401 }
