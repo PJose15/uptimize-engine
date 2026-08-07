@@ -432,6 +432,18 @@ export function IconTile({
     );
 }
 
+/** Marks a panel whose section has no live source yet. */
+export function DemoBadge() {
+    return (
+        <span
+            title="No live source for this section yet — showing configured sample data."
+            className="inline-flex items-center rounded-md border border-up-gold/35 bg-up-gold/12 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-up-gold"
+        >
+            Demo data
+        </span>
+    );
+}
+
 /** Compact metric tile used at the top of secondary pages. */
 export function StatTile({
     label,

@@ -18,7 +18,8 @@ import {
 } from '@/components/platform/ui';
 import { cn } from '@/lib/utils';
 import { count, percent } from '@/lib/platform/format';
-import { getScopedData, type PlatformSearchParams } from '@/lib/platform/scope';
+import { getScopedPayload } from '@/lib/platform/source';
+import type { PlatformSearchParams } from '@/lib/platform/scope';
 import { ScopeChips } from '@/components/platform/scope-chips';
 
 export const metadata: Metadata = {
@@ -31,7 +32,8 @@ export default async function AgentsPage({
     searchParams: Promise<PlatformSearchParams>;
 }) {
     const params = await searchParams;
-    const { agents } = getScopedData(params);
+    const { data: payload } = await getScopedPayload(params);
+    const { agents } = payload;
 
     const active = agents.filter((agent) => agent.status === 'active').length;
     const tasks = agents.reduce((sum, agent) => sum + agent.tasks, 0);

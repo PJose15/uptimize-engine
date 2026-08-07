@@ -8,9 +8,11 @@ import {
     PanelBody,
     PanelHeader,
     StatTile,
+    DemoBadge,
 } from '@/components/platform/ui';
 import { money, percent } from '@/lib/platform/format';
-import { getScopedData, type PlatformSearchParams } from '@/lib/platform/scope';
+import { getScopedPayload } from '@/lib/platform/source';
+import type { PlatformSearchParams } from '@/lib/platform/scope';
 import { ScopeChips } from '@/components/platform/scope-chips';
 
 export const metadata: Metadata = {
@@ -23,7 +25,9 @@ export default async function RoiPage({
     searchParams: Promise<PlatformSearchParams>;
 }) {
     const params = await searchParams;
-    const { roi, savingsBreakdown, trend, period } = getScopedData(params);
+    const { data: payload, sources, mode } = await getScopedPayload(params);
+    const demo = mode === 'live' && sources.roi === 'demo';
+    const { roi, savingsBreakdown, trend, period } = payload;
 
     const totalSavings = savingsBreakdown.reduce((sum, category) => sum + category.value, 0);
     const lift = ((roi.multiple - roi.previousMultiple) / roi.previousMultiple) * 100;
@@ -35,6 +39,7 @@ export default async function RoiPage({
                 subtitle={`Return on the automation program for ${period.label}`}
             >
                 <ScopeChips basePath="/roi" params={params} />
+                {demo && <DemoBadge />}
             </PageHeading>
 
             <div className="mb-4 grid grid-cols-1 gap-4 xl:grid-cols-12">

@@ -14,8 +14,9 @@ import {
     EmptyRow,
 } from '@/components/platform/ui';
 import { cn } from '@/lib/utils';
-import { currency } from '@/lib/platform/format';
-import { getScopedData, type PlatformSearchParams } from '@/lib/platform/scope';
+import { currency, currencyOrDash } from '@/lib/platform/format';
+import { getScopedPayload } from '@/lib/platform/source';
+import type { PlatformSearchParams } from '@/lib/platform/scope';
 import { ScopeChips } from '@/components/platform/scope-chips';
 import type { Approval, Tone } from '@/lib/platform/types';
 
@@ -35,7 +36,8 @@ export default async function ApprovalsPage({
     searchParams: Promise<PlatformSearchParams>;
 }) {
     const params = await searchParams;
-    const { approvals } = getScopedData(params);
+    const { data: payload } = await getScopedPayload(params);
+    const { approvals } = payload;
 
     const pendingValue = approvals.reduce((sum, approval) => sum + approval.amount, 0);
     const atRisk = approvals.filter((approval) => approval.urgency === 'critical').length;
@@ -103,7 +105,7 @@ export default async function ApprovalsPage({
                                         </td>
                                         <td className={cn(TD, 'text-up-dim')}>{approval.partner}</td>
                                         <td className={cn(TD, 'up-num text-right font-medium')}>
-                                            {currency(approval.amount)}
+                                            {currencyOrDash(approval.amount)}
                                         </td>
                                         <td className={cn(TD, 'up-num text-right text-up-faint')}>
                                             {approval.waiting}

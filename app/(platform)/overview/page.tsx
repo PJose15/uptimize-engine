@@ -22,10 +22,12 @@ import {
     TD,
     TH,
     TR,
+    DemoBadge,
 } from '@/components/platform/ui';
 import { cn } from '@/lib/utils';
 import { money, percent } from '@/lib/platform/format';
-import { getScopedData, type PlatformSearchParams } from '@/lib/platform/scope';
+import { getScopedPayload } from '@/lib/platform/source';
+import type { PlatformSearchParams } from '@/lib/platform/scope';
 import { ScopeChips } from '@/components/platform/scope-chips';
 
 export const metadata: Metadata = {
@@ -38,7 +40,9 @@ export default async function OverviewPage({
     searchParams: Promise<PlatformSearchParams>;
 }) {
     const params = await searchParams;
-    const data = getScopedData(params);
+    const { data: payload, sources, mode } = await getScopedPayload(params);
+    const demo = mode === 'live' && sources.leaks === 'demo';
+    const data = payload;
 
     const resolved = data.leaks.filter((leak) => leak.status === 'resolved').length;
     const investigating = data.leaks.filter((leak) => leak.status === 'investigating').length;
@@ -52,6 +56,7 @@ export default async function OverviewPage({
                 subtitle={`Outcome summary for ${data.period.label}`}
             >
                 <ScopeChips basePath="/overview" params={params} />
+                {demo && <DemoBadge />}
             </PageHeading>
 
             <KpiStrip kpis={data.kpis} className="mb-4" />

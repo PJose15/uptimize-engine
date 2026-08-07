@@ -14,7 +14,7 @@ import {
     type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { count, currency, money, percent } from '@/lib/platform/format';
+import { count, currencyOrDash, money, moneyOrDash, percent } from '@/lib/platform/format';
 import type {
     ActivityEvent,
     ActivityKind,
@@ -246,7 +246,7 @@ export function ApprovalsPanel({
                             </span>
                         </span>
                         <span className="up-num shrink-0 text-[13px] font-semibold text-up-text">
-                            {currency(approval.amount)}
+                            {currencyOrDash(approval.amount)}
                         </span>
                         <span className="flex w-11 shrink-0 items-center justify-end gap-1.5">
                             <span className="up-num text-[11px] text-up-faint">
@@ -412,7 +412,7 @@ export function PartnersPanel({
                                     </span>
                                 </td>
                                 <td className={cn(TD, 'up-num text-right font-medium')}>
-                                    {money(partner.revenueProtected)}
+                                    {moneyOrDash(partner.revenueProtected)}
                                 </td>
                                 <td className={cn(TD, 'text-right')}>
                                     <span className="inline-flex justify-end">

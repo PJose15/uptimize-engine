@@ -8,8 +8,10 @@ import {
     StatTile,
     TONE_HEX,
     EmptyState,
+    DemoBadge,
 } from '@/components/platform/ui';
-import { getScopedData, type PlatformSearchParams } from '@/lib/platform/scope';
+import { getScopedPayload } from '@/lib/platform/source';
+import type { PlatformSearchParams } from '@/lib/platform/scope';
 import { ScopeChips } from '@/components/platform/scope-chips';
 import type { Deliverable, Tone } from '@/lib/platform/types';
 
@@ -37,7 +39,9 @@ export default async function ReportsPage({
     searchParams: Promise<PlatformSearchParams>;
 }) {
     const params = await searchParams;
-    const { deliverables, period } = getScopedData(params);
+    const { data: payload, sources, mode } = await getScopedPayload(params);
+    const demo = mode === 'live' && sources.deliverables === 'demo';
+    const { deliverables, period } = payload;
 
     return (
         <>
@@ -46,6 +50,7 @@ export default async function ReportsPage({
                 subtitle="Everything the fleet published, and what is scheduled next."
             >
                 <ScopeChips basePath="/reports" params={params} />
+                {demo && <DemoBadge />}
             </PageHeading>
 
             <div className="mb-4 grid grid-cols-2 gap-4 lg:grid-cols-4">

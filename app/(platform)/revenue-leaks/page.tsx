@@ -14,10 +14,12 @@ import {
     TH,
     TR,
     EmptyRow,
+    DemoBadge,
 } from '@/components/platform/ui';
 import { cn } from '@/lib/utils';
 import { money } from '@/lib/platform/format';
-import { getScopedData, type PlatformSearchParams } from '@/lib/platform/scope';
+import { getScopedPayload } from '@/lib/platform/source';
+import type { PlatformSearchParams } from '@/lib/platform/scope';
 import { ScopeChips } from '@/components/platform/scope-chips';
 import type { RevenueLeak } from '@/lib/platform/types';
 
@@ -31,7 +33,9 @@ export default async function RevenueLeaksPage({
     searchParams: Promise<PlatformSearchParams>;
 }) {
     const params = await searchParams;
-    const data = getScopedData(params);
+    const { data: payload, sources, mode } = await getScopedPayload(params);
+    const demo = mode === 'live' && sources.leaks === 'demo';
+    const data = payload;
     const selected = data.leaks.find((leak) => leak.id === params.leak);
 
     const totalImpact = data.leaks.reduce((sum, leak) => sum + leak.impact, 0);
@@ -47,6 +51,7 @@ export default async function RevenueLeaksPage({
                 subtitle="Every dollar the fleet found leaving the business, and where it is going."
             >
                 <ScopeChips basePath="/revenue-leaks" params={params} />
+                {demo && <DemoBadge />}
             </PageHeading>
 
             <div className="mb-4 grid grid-cols-2 gap-4 lg:grid-cols-4">

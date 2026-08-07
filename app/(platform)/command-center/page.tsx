@@ -11,8 +11,9 @@ import {
     TrendPanel,
     WorkflowPerformancePanel,
 } from '@/components/platform/panels';
-import { PageHeading } from '@/components/platform/ui';
-import { getScopedData, type PlatformSearchParams } from '@/lib/platform/scope';
+import { DemoBadge, PageHeading } from '@/components/platform/ui';
+import { getScopedPayload } from '@/lib/platform/source';
+import type { PlatformSearchParams } from '@/lib/platform/scope';
 import { ScopeChips } from '@/components/platform/scope-chips';
 
 export const metadata: Metadata = {
@@ -25,7 +26,9 @@ export default async function CommandCenterPage({
     searchParams: Promise<PlatformSearchParams>;
 }) {
     const params = await searchParams;
-    const data = getScopedData(params);
+    const { data: payload, sources, mode } = await getScopedPayload(params);
+    const demo = mode === 'live' && sources.leaks === 'demo';
+    const data = payload;
 
     return (
         <>
@@ -34,6 +37,7 @@ export default async function CommandCenterPage({
                 subtitle="Real-time visibility into outcomes, operations, and opportunities."
             >
                 <ScopeChips basePath="/command-center" params={params} />
+                {demo && <DemoBadge />}
             </PageHeading>
 
             <KpiStrip kpis={data.kpis} className="mb-4" />

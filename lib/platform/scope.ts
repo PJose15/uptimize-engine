@@ -46,8 +46,10 @@ function scopeToPartner(data: CommandCenterData, partner: Partner): CommandCente
     const totalSaved = data.partners.reduce((sum, p) => sum + p.moneySaved, 0);
 
     // Portfolio-wide figures are apportioned by the partner's share of the book.
-    const protectedShare = partner.revenueProtected / totalProtected;
-    const savedShare = partner.moneySaved / totalSaved;
+    // With no money figures (live data has no source for them) the share is 1 so
+    // apportioned values simply pass through instead of collapsing to zero.
+    const protectedShare = totalProtected > 0 ? partner.revenueProtected / totalProtected : 1;
+    const savedShare = totalSaved > 0 ? partner.moneySaved / totalSaved : 1;
 
     const leaks = data.leaks.filter((leak) => leak.partner === partner.name);
     const approvals = data.approvals.filter((approval) => approval.partner === partner.name);
@@ -171,11 +173,6 @@ export interface PlatformSearchParams {
     partner?: string;
     q?: string;
     leak?: string;
-}
-
-/** Read the snapshot already narrowed to the URL's scope. */
-export function getScopedData(params: PlatformSearchParams = {}): CommandCenterData {
-    return scopeData(getCommandCenterData(), { partner: params.partner, query: params.q });
 }
 
 /** Human-readable label for the active scope, for page subtitles. */

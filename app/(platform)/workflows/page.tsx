@@ -16,7 +16,8 @@ import {
 } from '@/components/platform/ui';
 import { cn } from '@/lib/utils';
 import { count, percent } from '@/lib/platform/format';
-import { getScopedData, type PlatformSearchParams } from '@/lib/platform/scope';
+import { getScopedPayload } from '@/lib/platform/source';
+import type { PlatformSearchParams } from '@/lib/platform/scope';
 import { ScopeChips } from '@/components/platform/scope-chips';
 import type { Tone, Workflow } from '@/lib/platform/types';
 
@@ -37,7 +38,8 @@ export default async function WorkflowsPage({
     searchParams: Promise<PlatformSearchParams>;
 }) {
     const params = await searchParams;
-    const { workflows, workflowPerformance } = getScopedData(params);
+    const { data: payload } = await getScopedPayload(params);
+    const { workflows, workflowPerformance } = payload;
 
     const running = workflows.filter((workflow) => workflow.status === 'running').length;
     const runs = workflows.reduce((sum, workflow) => sum + workflow.runs, 0);

@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { ActivityPanel } from '@/components/platform/panels';
 import { PageHeading, Panel, PanelBody, PanelHeader, StatTile } from '@/components/platform/ui';
-import { getScopedData, type PlatformSearchParams } from '@/lib/platform/scope';
+import { getScopedPayload } from '@/lib/platform/source';
+import type { PlatformSearchParams } from '@/lib/platform/scope';
 import { ScopeChips } from '@/components/platform/scope-chips';
 
 export const metadata: Metadata = {
@@ -14,7 +15,8 @@ export default async function ActivityPage({
     searchParams: Promise<PlatformSearchParams>;
 }) {
     const params = await searchParams;
-    const { activity, systemStatus, agents, workflows } = getScopedData(params);
+    const { data: payload } = await getScopedPayload(params);
+    const { activity, systemStatus, agents, workflows } = payload;
 
     const byKind = activity.reduce<Record<string, number>>((acc, event) => {
         acc[event.kind] = (acc[event.kind] ?? 0) + 1;

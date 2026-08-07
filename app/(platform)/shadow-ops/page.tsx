@@ -12,10 +12,12 @@ import {
     TH,
     TR,
     EmptyRow,
+    DemoBadge,
 } from '@/components/platform/ui';
 import { cn } from '@/lib/utils';
 import { currency, money } from '@/lib/platform/format';
-import { getScopedData, type PlatformSearchParams } from '@/lib/platform/scope';
+import { getScopedPayload } from '@/lib/platform/source';
+import type { PlatformSearchParams } from '@/lib/platform/scope';
 import { ScopeChips } from '@/components/platform/scope-chips';
 import type { ShadowOp, Tone } from '@/lib/platform/types';
 
@@ -41,7 +43,9 @@ export default async function ShadowOpsPage({
     searchParams: Promise<PlatformSearchParams>;
 }) {
     const params = await searchParams;
-    const { shadowOps } = getScopedData(params);
+    const { data: payload, sources, mode } = await getScopedPayload(params);
+    const demo = mode === 'live' && sources.shadowOps === 'demo';
+    const { shadowOps } = payload;
 
     const hours = shadowOps.reduce((sum, op) => sum + op.hoursPerMonth, 0);
     const cost = shadowOps.reduce((sum, op) => sum + op.costPerMonth, 0);
@@ -54,6 +58,7 @@ export default async function ShadowOpsPage({
                 subtitle="Hidden manual work the fleet has surfaced behind the official process."
             >
                 <ScopeChips basePath="/shadow-ops" params={params} />
+                {demo && <DemoBadge />}
             </PageHeading>
 
             <div className="mb-4 grid grid-cols-2 gap-4 lg:grid-cols-4">

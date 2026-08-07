@@ -15,8 +15,9 @@ import {
     EmptyState,
 } from '@/components/platform/ui';
 import { cn } from '@/lib/utils';
-import { money } from '@/lib/platform/format';
-import { getScopedData, type PlatformSearchParams } from '@/lib/platform/scope';
+import { money, moneyOrDash } from '@/lib/platform/format';
+import { getScopedPayload } from '@/lib/platform/source';
+import type { PlatformSearchParams } from '@/lib/platform/scope';
 import { ScopeChips } from '@/components/platform/scope-chips';
 
 export const metadata: Metadata = {
@@ -29,7 +30,8 @@ export default async function PartnersPage({
     searchParams: Promise<PlatformSearchParams>;
 }) {
     const params = await searchParams;
-    const { partners, period } = getScopedData(params);
+    const { data: payload } = await getScopedPayload(params);
+    const { partners, period } = payload;
 
     const revenueProtected = partners.reduce((sum, partner) => sum + partner.revenueProtected, 0);
     const moneySaved = partners.reduce((sum, partner) => sum + partner.moneySaved, 0);
@@ -75,13 +77,13 @@ export default async function PartnersPage({
                             <div>
                                 <p className="up-label text-up-faint">Revenue Protected</p>
                                 <p className="up-num mt-1 text-lg font-semibold text-up-text">
-                                    {money(partner.revenueProtected)}
+                                    {moneyOrDash(partner.revenueProtected)}
                                 </p>
                             </div>
                             <div>
                                 <p className="up-label text-up-faint">Money Saved</p>
                                 <p className="up-num mt-1 text-lg font-semibold text-up-gold">
-                                    {money(partner.moneySaved)}
+                                    {moneyOrDash(partner.moneySaved)}
                                 </p>
                             </div>
                         </div>
@@ -142,10 +144,10 @@ export default async function PartnersPage({
                                         </span>
                                     </td>
                                     <td className={cn(TD, 'up-num text-right')}>
-                                        {money(partner.revenueProtected)}
+                                        {moneyOrDash(partner.revenueProtected)}
                                     </td>
                                     <td className={cn(TD, 'up-num text-right')}>
-                                        {money(partner.moneySaved)}
+                                        {moneyOrDash(partner.moneySaved)}
                                     </td>
                                     <td className={cn(TD, 'up-num text-right')}>
                                         {partner.leaksDetected}

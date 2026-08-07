@@ -11,9 +11,19 @@ export function money(value: number): string {
     return `$${value.toLocaleString('en-US')}`;
 }
 
+/** Compact money, or an em dash when the figure has no source yet. */
+export function moneyOrDash(value: number): string {
+    return value > 0 ? money(value) : '—';
+}
+
 /** Exact currency with separators: $5,850 */
 export function currency(value: number): string {
     return `$${value.toLocaleString('en-US')}`;
+}
+
+/** Exact currency, or an em dash when the figure has no source yet. */
+export function currencyOrDash(value: number): string {
+    return value > 0 ? currency(value) : '—';
 }
 
 /** 1,248 */

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { getCommandCenterData } from '@/lib/platform/data';
-import { getScopedData, partnerName, scopeData, scopeLabel } from '@/lib/platform/scope';
+import { partnerName, scopeData, scopeLabel } from '@/lib/platform/scope';
+import { getScopedData } from '@/lib/platform/source';
 
 const data = getCommandCenterData();
 const partner = data.partners[0];
@@ -95,9 +96,9 @@ describe('scopeData — query scope', () => {
 });
 
 describe('helpers', () => {
-    it('reads scope straight off search params', () => {
-        expect(getScopedData({ partner: partner.id }).partners).toEqual([partner]);
-        expect(getScopedData({}).partners).toHaveLength(data.partners.length);
+    it('reads scope straight off search params', async () => {
+        expect((await getScopedData({ partner: partner.id })).partners).toEqual([partner]);
+        expect((await getScopedData({})).partners).toHaveLength(data.partners.length);
     });
 
     it('resolves partner display names', () => {
