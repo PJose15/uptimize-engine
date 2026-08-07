@@ -11,17 +11,25 @@ import {
     TD,
     TH,
     TR,
+    EmptyRow,
+    EmptyState,
 } from '@/components/platform/ui';
 import { cn } from '@/lib/utils';
 import { money } from '@/lib/platform/format';
-import { getCommandCenterData } from '@/lib/platform/data';
+import { getScopedData, type PlatformSearchParams } from '@/lib/platform/scope';
+import { ScopeChips } from '@/components/platform/scope-chips';
 
 export const metadata: Metadata = {
     title: 'Partners & Accounts — UPTIMAIZE',
 };
 
-export default function PartnersPage() {
-    const { partners, period } = getCommandCenterData();
+export default async function PartnersPage({
+    searchParams,
+}: {
+    searchParams: Promise<PlatformSearchParams>;
+}) {
+    const params = await searchParams;
+    const { partners, period } = getScopedData(params);
 
     const revenueProtected = partners.reduce((sum, partner) => sum + partner.revenueProtected, 0);
     const moneySaved = partners.reduce((sum, partner) => sum + partner.moneySaved, 0);
@@ -32,7 +40,9 @@ export default function PartnersPage() {
             <PageHeading
                 title="Partners & Accounts"
                 subtitle="Portfolio health, protected revenue, and coverage per account."
-            />
+            >
+                <ScopeChips basePath="/partners" params={params} />
+            </PageHeading>
 
             <div className="mb-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
                 <StatTile label="Active Partners" value={String(partners.length)} hint="Under management" />
@@ -42,6 +52,11 @@ export default function PartnersPage() {
             </div>
 
             <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {partners.length === 0 && (
+                    <div className="xl:col-span-3 md:col-span-2">
+                        <EmptyState message="No partners match the current scope." />
+                    </div>
+                )}
                 {partners.map((partner) => (
                     <Panel key={partner.id} className="p-4">
                         <div className="flex items-start justify-between gap-3">
@@ -115,6 +130,9 @@ export default function PartnersPage() {
                             </tr>
                         </thead>
                         <tbody>
+                            {partners.length === 0 && (
+                                <EmptyRow colSpan={8} message="No partners match the current scope." />
+                            )}
                             {partners.map((partner) => (
                                 <tr key={partner.id} className={TR}>
                                     <td className={cn(TD, 'font-medium')}>{partner.name}</td>

@@ -51,12 +51,21 @@ const SECONDARY_NAV: NavItem[] = [
     { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
-function NavLink({ item, active }: { item: NavItem; active: boolean }) {
+function NavLink({
+    item,
+    active,
+    onNavigate,
+}: {
+    item: NavItem;
+    active: boolean;
+    onNavigate?: () => void;
+}) {
     const Icon = item.icon;
 
     return (
         <Link
             href={item.href}
+            onClick={onNavigate}
             aria-current={active ? 'page' : undefined}
             className={cn(
                 'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-colors',
@@ -90,9 +99,12 @@ function NavLink({ item, active }: { item: NavItem; active: boolean }) {
 export function Sidebar({
     approvalCount = 0,
     alertCount = 0,
+    onNavigate,
 }: {
     approvalCount?: number;
     alertCount?: number;
+    /** Called when a nav item is clicked, so the mobile drawer can close. */
+    onNavigate?: () => void;
 }) {
     const pathname = usePathname();
     const { user } = useAuth();
@@ -120,14 +132,19 @@ export function Sidebar({
     return (
         <aside className="up-scroll flex h-screen w-[236px] shrink-0 flex-col overflow-y-auto border-r border-up-line bg-up-deep">
             <div className="px-5 pb-5 pt-6">
-                <Link href="/command-center" aria-label="UPTIMAIZE home">
+                <Link href="/command-center" aria-label="UPTIMAIZE home" onClick={onNavigate}>
                     <UptimaizeLogo />
                 </Link>
             </div>
 
             <nav className="space-y-1 px-3">
                 {PRIMARY_NAV.map((item) => (
-                    <NavLink key={item.href} item={withCount(item)} active={isActive(item.href)} />
+                    <NavLink
+                        key={item.href}
+                        item={withCount(item)}
+                        active={isActive(item.href)}
+                        onNavigate={onNavigate}
+                    />
                 ))}
             </nav>
 
@@ -135,7 +152,12 @@ export function Sidebar({
 
             <nav className="space-y-1 px-3">
                 {SECONDARY_NAV.map((item) => (
-                    <NavLink key={item.href} item={withCount(item)} active={isActive(item.href)} />
+                    <NavLink
+                        key={item.href}
+                        item={withCount(item)}
+                        active={isActive(item.href)}
+                        onNavigate={onNavigate}
+                    />
                 ))}
             </nav>
 

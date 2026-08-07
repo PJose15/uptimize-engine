@@ -32,6 +32,8 @@ import type {
 import { DonutChart, TrendChart } from './charts';
 import {
     AgentStatusTag,
+    EmptyRow,
+    EmptyState,
     Delta,
     HealthDot,
     LeakStatusPill,
@@ -89,6 +91,7 @@ export function AgentsPanel({
                         </tr>
                     </thead>
                     <tbody>
+                        {agents.length === 0 && <EmptyRow colSpan={5} message="No agents match." />}
                         {agents.slice(0, limit).map((agent) => (
                             <tr key={agent.id} className={TR}>
                                 <td className={TD}>
@@ -158,6 +161,7 @@ export function LeaksPanel({
                         </tr>
                     </thead>
                     <tbody>
+                        {leaks.length === 0 && <EmptyRow colSpan={5} message="No leaks match." />}
                         {leaks.slice(0, limit).map((leak) => (
                             <tr key={leak.id} className={TR}>
                                 <td className={TD}>
@@ -223,6 +227,7 @@ export function ApprovalsPanel({
                 }
             />
             <PanelBody className="space-y-1">
+                {approvals.length === 0 && <EmptyState message="Nothing pending." />}
                 {approvals.slice(0, limit).map((approval) => (
                     <Link
                         key={approval.id}
@@ -388,6 +393,9 @@ export function PartnersPanel({
                         </tr>
                     </thead>
                     <tbody>
+                        {partners.length === 0 && (
+                            <EmptyRow colSpan={4} message="No partners match." />
+                        )}
                         {partners.map((partner) => (
                             <tr key={partner.id} className={TR}>
                                 <td className={TD}>
@@ -448,6 +456,7 @@ export function ActivityPanel({
         <Panel className={className}>
             <PanelHeader title={title} action="View all activity" actionHref="/activity" />
             <PanelBody className="space-y-0.5">
+                {activity.length === 0 && <EmptyState message="No activity in scope." />}
                 {activity.slice(0, limit).map((event) => {
                     const cfg = ACTIVITY_ICON[event.kind];
                     const Icon = cfg.icon;
@@ -509,6 +518,7 @@ export function DeliverablesPanel({
         <Panel className={className}>
             <PanelHeader title="Reports & Deliverables" action="View all reports" actionHref="/reports" />
             <PanelBody className="space-y-0.5">
+                {deliverables.length === 0 && <EmptyState message="No reports match." />}
                 {deliverables.slice(0, limit).map((item) => {
                     const tone = FORMAT_TONE[item.format];
 
@@ -572,6 +582,7 @@ export function AlertsPanel({
         <Panel className={className}>
             <PanelHeader title="Alerts & Notifications" action="View all alerts" actionHref="/alerts" />
             <PanelBody className="space-y-0.5">
+                {alerts.length === 0 && <EmptyState message="No alerts in scope." />}
                 {alerts.slice(0, limit).map((alert) => {
                     const cfg = ALERT_STYLE[alert.level];
                     const Icon = cfg.icon;

@@ -12,10 +12,12 @@ import {
     TD,
     TH,
     TR,
+    EmptyRow,
 } from '@/components/platform/ui';
 import { cn } from '@/lib/utils';
 import { count, percent } from '@/lib/platform/format';
-import { getCommandCenterData } from '@/lib/platform/data';
+import { getScopedData, type PlatformSearchParams } from '@/lib/platform/scope';
+import { ScopeChips } from '@/components/platform/scope-chips';
 import type { Tone, Workflow } from '@/lib/platform/types';
 
 export const metadata: Metadata = {
@@ -29,8 +31,13 @@ const STATUS_TONE: Record<Workflow['status'], Tone> = {
     draft: 'pink',
 };
 
-export default function WorkflowsPage() {
-    const { workflows, workflowPerformance } = getCommandCenterData();
+export default async function WorkflowsPage({
+    searchParams,
+}: {
+    searchParams: Promise<PlatformSearchParams>;
+}) {
+    const params = await searchParams;
+    const { workflows, workflowPerformance } = getScopedData(params);
 
     const running = workflows.filter((workflow) => workflow.status === 'running').length;
     const runs = workflows.reduce((sum, workflow) => sum + workflow.runs, 0);
@@ -41,7 +48,9 @@ export default function WorkflowsPage() {
             <PageHeading
                 title="Workflows"
                 subtitle="Automations running across every partner account, with live throughput."
-            />
+            >
+                <ScopeChips basePath="/workflows" params={params} />
+            </PageHeading>
 
             <div className="mb-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
                 <StatTile label="Running Now" value={String(running)} tone="green" hint={`${workflows.length} total workflows`} />
@@ -68,7 +77,10 @@ export default function WorkflowsPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {workflows.map((workflow) => (
+                                {workflows.length === 0 && (
+                                <EmptyRow colSpan={8} message="No workflows match the current scope." />
+                            )}
+                            {workflows.map((workflow) => (
                                     <tr key={workflow.id} className={TR}>
                                         <td className={cn(TD, 'font-medium')}>{workflow.name}</td>
                                         <td className={cn(TD, 'text-up-dim')}>{workflow.partner}</td>

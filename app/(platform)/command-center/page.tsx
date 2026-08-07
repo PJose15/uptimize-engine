@@ -12,21 +12,29 @@ import {
     WorkflowPerformancePanel,
 } from '@/components/platform/panels';
 import { PageHeading } from '@/components/platform/ui';
-import { getCommandCenterData } from '@/lib/platform/data';
+import { getScopedData, type PlatformSearchParams } from '@/lib/platform/scope';
+import { ScopeChips } from '@/components/platform/scope-chips';
 
 export const metadata: Metadata = {
     title: 'Executive Command Center — UPTIMAIZE',
 };
 
-export default function CommandCenterPage() {
-    const data = getCommandCenterData();
+export default async function CommandCenterPage({
+    searchParams,
+}: {
+    searchParams: Promise<PlatformSearchParams>;
+}) {
+    const params = await searchParams;
+    const data = getScopedData(params);
 
     return (
         <>
             <PageHeading
                 title="Executive Command Center"
                 subtitle="Real-time visibility into outcomes, operations, and opportunities."
-            />
+            >
+                <ScopeChips basePath="/command-center" params={params} />
+            </PageHeading>
 
             <KpiStrip kpis={data.kpis} className="mb-4" />
 

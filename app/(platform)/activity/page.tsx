@@ -1,14 +1,20 @@
 import type { Metadata } from 'next';
 import { ActivityPanel } from '@/components/platform/panels';
 import { PageHeading, Panel, PanelBody, PanelHeader, StatTile } from '@/components/platform/ui';
-import { getCommandCenterData } from '@/lib/platform/data';
+import { getScopedData, type PlatformSearchParams } from '@/lib/platform/scope';
+import { ScopeChips } from '@/components/platform/scope-chips';
 
 export const metadata: Metadata = {
     title: 'Activity — UPTIMAIZE',
 };
 
-export default function ActivityPage() {
-    const { activity, systemStatus, agents, workflows } = getCommandCenterData();
+export default async function ActivityPage({
+    searchParams,
+}: {
+    searchParams: Promise<PlatformSearchParams>;
+}) {
+    const params = await searchParams;
+    const { activity, systemStatus, agents, workflows } = getScopedData(params);
 
     const byKind = activity.reduce<Record<string, number>>((acc, event) => {
         acc[event.kind] = (acc[event.kind] ?? 0) + 1;
@@ -20,7 +26,9 @@ export default function ActivityPage() {
             <PageHeading
                 title="Activity"
                 subtitle="Every action the fleet took, newest first."
-            />
+            >
+                <ScopeChips basePath="/activity" params={params} />
+            </PageHeading>
 
             <div className="mb-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
                 <StatTile label="Events (24h)" value={String(activity.length)} hint="Across all partners" />

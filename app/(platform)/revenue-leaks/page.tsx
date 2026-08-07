@@ -13,10 +13,12 @@ import {
     TD,
     TH,
     TR,
+    EmptyRow,
 } from '@/components/platform/ui';
 import { cn } from '@/lib/utils';
 import { money } from '@/lib/platform/format';
-import { getCommandCenterData } from '@/lib/platform/data';
+import { getScopedData, type PlatformSearchParams } from '@/lib/platform/scope';
+import { ScopeChips } from '@/components/platform/scope-chips';
 import type { RevenueLeak } from '@/lib/platform/types';
 
 export const metadata: Metadata = {
@@ -26,11 +28,11 @@ export const metadata: Metadata = {
 export default async function RevenueLeaksPage({
     searchParams,
 }: {
-    searchParams: Promise<{ leak?: string }>;
+    searchParams: Promise<PlatformSearchParams>;
 }) {
-    const { leak: leakId } = await searchParams;
-    const data = getCommandCenterData();
-    const selected = data.leaks.find((leak) => leak.id === leakId);
+    const params = await searchParams;
+    const data = getScopedData(params);
+    const selected = data.leaks.find((leak) => leak.id === params.leak);
 
     const totalImpact = data.leaks.reduce((sum, leak) => sum + leak.impact, 0);
     const openImpact = data.leaks
@@ -43,7 +45,9 @@ export default async function RevenueLeaksPage({
             <PageHeading
                 title="Revenue Leaks"
                 subtitle="Every dollar the fleet found leaving the business, and where it is going."
-            />
+            >
+                <ScopeChips basePath="/revenue-leaks" params={params} />
+            </PageHeading>
 
             <div className="mb-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
                 <StatTile label="Leaks Detected" value={String(data.leaks.length)} hint={data.period.label} />
@@ -69,7 +73,10 @@ export default async function RevenueLeaksPage({
                                 </tr>
                             </thead>
                             <tbody>
-                                {data.leaks.map((leak) => (
+                                {data.leaks.length === 0 && (
+                                <EmptyRow colSpan={7} message="No leaks match the current scope." />
+                            )}
+                            {data.leaks.map((leak) => (
                                     <tr
                                         key={leak.id}
                                         className={cn(
@@ -79,7 +86,7 @@ export default async function RevenueLeaksPage({
                                     >
                                         <td className={TD}>
                                             <Link
-                                                href={`/revenue-leaks?leak=${leak.id}`}
+                                                href={`/revenue-leaks?${leakHref(params, leak.id)}`}
                                                 scroll={false}
                                                 className="block"
                                             >
@@ -112,13 +119,32 @@ export default async function RevenueLeaksPage({
                     </PanelBody>
                 </Panel>
 
-                {selected && <LeakDrawer leak={selected} className="xl:col-span-4" />}
+                {selected && (
+                    <LeakDrawer leak={selected} params={params} className="xl:col-span-4" />
+                )}
             </div>
         </>
     );
 }
 
-function LeakDrawer({ leak, className }: { leak: RevenueLeak; className?: string }) {
+/** Preserve the active scope when opening or closing an investigation. */
+function leakHref(params: PlatformSearchParams, leakId?: string): string {
+    const next = new URLSearchParams();
+    if (params.partner) next.set('partner', params.partner);
+    if (params.q) next.set('q', params.q);
+    if (leakId) next.set('leak', leakId);
+    return next.toString();
+}
+
+function LeakDrawer({
+    leak,
+    params,
+    className,
+}: {
+    leak: RevenueLeak;
+    params: PlatformSearchParams;
+    className?: string;
+}) {
     return (
         <Panel className={className}>
             <div className="flex items-start justify-between gap-3 border-b border-up-line-soft px-4 py-3">
@@ -126,7 +152,7 @@ function LeakDrawer({ leak, className }: { leak: RevenueLeak; className?: string
                     Leak #{leak.id}
                 </span>
                 <Link
-                    href="/revenue-leaks"
+                    href={`/revenue-leaks${leakHref(params) ? `?${leakHref(params)}` : ''}`}
                     scroll={false}
                     aria-label="Close investigation"
                     className="text-up-faint transition-colors hover:text-up-text"

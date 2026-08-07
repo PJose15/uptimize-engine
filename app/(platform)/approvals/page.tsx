@@ -11,10 +11,12 @@ import {
     TD,
     TH,
     TR,
+    EmptyRow,
 } from '@/components/platform/ui';
 import { cn } from '@/lib/utils';
 import { currency } from '@/lib/platform/format';
-import { getCommandCenterData } from '@/lib/platform/data';
+import { getScopedData, type PlatformSearchParams } from '@/lib/platform/scope';
+import { ScopeChips } from '@/components/platform/scope-chips';
 import type { Approval, Tone } from '@/lib/platform/types';
 
 export const metadata: Metadata = {
@@ -27,8 +29,13 @@ const URGENCY: Record<Approval['urgency'], { label: string; tone: Tone }> = {
     normal: { label: 'On track', tone: 'green' },
 };
 
-export default function ApprovalsPage() {
-    const { approvals } = getCommandCenterData();
+export default async function ApprovalsPage({
+    searchParams,
+}: {
+    searchParams: Promise<PlatformSearchParams>;
+}) {
+    const params = await searchParams;
+    const { approvals } = getScopedData(params);
 
     const pendingValue = approvals.reduce((sum, approval) => sum + approval.amount, 0);
     const atRisk = approvals.filter((approval) => approval.urgency === 'critical').length;
@@ -38,7 +45,9 @@ export default function ApprovalsPage() {
             <PageHeading
                 title="Approvals"
                 subtitle="Decisions the agents escalated to a human, ordered by urgency."
-            />
+            >
+                <ScopeChips basePath="/approvals" params={params} />
+            </PageHeading>
 
             <div className="mb-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
                 <StatTile label="Pending" value={String(approvals.length)} tone="gold" hint="Awaiting review" />
@@ -69,6 +78,9 @@ export default function ApprovalsPage() {
                             </tr>
                         </thead>
                         <tbody>
+                            {approvals.length === 0 && (
+                                <EmptyRow colSpan={6} message="No approvals match the current scope." />
+                            )}
                             {approvals.map((approval) => {
                                 const urgency = URGENCY[approval.urgency];
 

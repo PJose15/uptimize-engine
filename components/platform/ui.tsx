@@ -453,6 +453,17 @@ export function StatTile({
     );
 }
 
+/** Full-width placeholder row for a table whose body filtered down to nothing. */
+export function EmptyRow({ colSpan, message }: { colSpan: number; message: string }) {
+    return (
+        <tr>
+            <td colSpan={colSpan} className="px-3 py-10 text-center text-[13px] text-up-faint">
+                {message}
+            </td>
+        </tr>
+    );
+}
+
 export function EmptyState({ message }: { message: string }) {
     return (
         <div className="rounded-lg border border-dashed border-up-line px-4 py-10 text-center text-sm text-up-faint">

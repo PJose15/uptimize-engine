@@ -7,8 +7,10 @@ import {
     PanelHeader,
     StatTile,
     TONE_HEX,
+    EmptyState,
 } from '@/components/platform/ui';
-import { getCommandCenterData } from '@/lib/platform/data';
+import { getScopedData, type PlatformSearchParams } from '@/lib/platform/scope';
+import { ScopeChips } from '@/components/platform/scope-chips';
 import type { Deliverable, Tone } from '@/lib/platform/types';
 
 export const metadata: Metadata = {
@@ -29,15 +31,22 @@ const SCHEDULE = [
     { name: 'Agent Activity Summary', cadence: 'Every Friday · 17:00', recipients: 'Internal ops' },
 ];
 
-export default function ReportsPage() {
-    const { deliverables, period } = getCommandCenterData();
+export default async function ReportsPage({
+    searchParams,
+}: {
+    searchParams: Promise<PlatformSearchParams>;
+}) {
+    const params = await searchParams;
+    const { deliverables, period } = getScopedData(params);
 
     return (
         <>
             <PageHeading
                 title="Reports & Deliverables"
                 subtitle="Everything the fleet published, and what is scheduled next."
-            />
+            >
+                <ScopeChips basePath="/reports" params={params} />
+            </PageHeading>
 
             <div className="mb-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
                 <StatTile label="Published" value={String(deliverables.length)} hint={period.label} />
@@ -48,6 +57,11 @@ export default function ReportsPage() {
 
             <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:col-span-8">
+                    {deliverables.length === 0 && (
+                        <div className="sm:col-span-2">
+                            <EmptyState message="No reports match the current scope." />
+                        </div>
+                    )}
                     {deliverables.map((item) => {
                         const tone = FORMAT_TONE[item.format];
 

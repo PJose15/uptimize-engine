@@ -11,10 +11,12 @@ import {
     TD,
     TH,
     TR,
+    EmptyRow,
 } from '@/components/platform/ui';
 import { cn } from '@/lib/utils';
 import { currency, money } from '@/lib/platform/format';
-import { getCommandCenterData } from '@/lib/platform/data';
+import { getScopedData, type PlatformSearchParams } from '@/lib/platform/scope';
+import { ScopeChips } from '@/components/platform/scope-chips';
 import type { ShadowOp, Tone } from '@/lib/platform/types';
 
 export const metadata: Metadata = {
@@ -33,8 +35,13 @@ const STATUS_LABEL: Record<ShadowOp['status'], string> = {
     eliminated: 'Eliminated',
 };
 
-export default function ShadowOpsPage() {
-    const { shadowOps } = getCommandCenterData();
+export default async function ShadowOpsPage({
+    searchParams,
+}: {
+    searchParams: Promise<PlatformSearchParams>;
+}) {
+    const params = await searchParams;
+    const { shadowOps } = getScopedData(params);
 
     const hours = shadowOps.reduce((sum, op) => sum + op.hoursPerMonth, 0);
     const cost = shadowOps.reduce((sum, op) => sum + op.costPerMonth, 0);
@@ -45,7 +52,9 @@ export default function ShadowOpsPage() {
             <PageHeading
                 title="Shadow Ops"
                 subtitle="Hidden manual work the fleet has surfaced behind the official process."
-            />
+            >
+                <ScopeChips basePath="/shadow-ops" params={params} />
+            </PageHeading>
 
             <div className="mb-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
                 <StatTile label="Processes Found" value={String(shadowOps.length)} tone="pink" hint="Across 6 partners" />
@@ -71,6 +80,9 @@ export default function ShadowOpsPage() {
                             </tr>
                         </thead>
                         <tbody>
+                            {shadowOps.length === 0 && (
+                                <EmptyRow colSpan={8} message="No shadow ops match the current scope." />
+                            )}
                             {shadowOps.map((op) => (
                                 <tr key={op.id} className={TR}>
                                     <td className={TD}>

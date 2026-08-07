@@ -10,14 +10,20 @@ import {
     StatTile,
 } from '@/components/platform/ui';
 import { money, percent } from '@/lib/platform/format';
-import { getCommandCenterData } from '@/lib/platform/data';
+import { getScopedData, type PlatformSearchParams } from '@/lib/platform/scope';
+import { ScopeChips } from '@/components/platform/scope-chips';
 
 export const metadata: Metadata = {
     title: 'ROI — UPTIMAIZE',
 };
 
-export default function RoiPage() {
-    const { roi, savingsBreakdown, trend, period } = getCommandCenterData();
+export default async function RoiPage({
+    searchParams,
+}: {
+    searchParams: Promise<PlatformSearchParams>;
+}) {
+    const params = await searchParams;
+    const { roi, savingsBreakdown, trend, period } = getScopedData(params);
 
     const totalSavings = savingsBreakdown.reduce((sum, category) => sum + category.value, 0);
     const lift = ((roi.multiple - roi.previousMultiple) / roi.previousMultiple) * 100;
@@ -27,7 +33,9 @@ export default function RoiPage() {
             <PageHeading
                 title="ROI Analyzer"
                 subtitle={`Return on the automation program for ${period.label}`}
-            />
+            >
+                <ScopeChips basePath="/roi" params={params} />
+            </PageHeading>
 
             <div className="mb-4 grid grid-cols-1 gap-4 xl:grid-cols-12">
                 <Panel className="xl:col-span-4">

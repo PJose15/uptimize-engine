@@ -7,8 +7,10 @@ import {
     PanelHeader,
     StatTile,
     TONE_HEX,
+    EmptyState,
 } from '@/components/platform/ui';
-import { getCommandCenterData } from '@/lib/platform/data';
+import { getScopedData, type PlatformSearchParams } from '@/lib/platform/scope';
+import { ScopeChips } from '@/components/platform/scope-chips';
 import type { PlatformAlert, Tone } from '@/lib/platform/types';
 
 export const metadata: Metadata = {
@@ -22,8 +24,13 @@ const LEVEL: Record<PlatformAlert['level'], { icon: LucideIcon; tone: Tone; labe
     success: { icon: CheckCircle2, tone: 'green', label: 'Resolved' },
 };
 
-export default function AlertsPage() {
-    const { alerts } = getCommandCenterData();
+export default async function AlertsPage({
+    searchParams,
+}: {
+    searchParams: Promise<PlatformSearchParams>;
+}) {
+    const params = await searchParams;
+    const { alerts } = getScopedData(params);
 
     const tally = (level: PlatformAlert['level']) =>
         alerts.filter((alert) => alert.level === level).length;
@@ -33,7 +40,9 @@ export default function AlertsPage() {
             <PageHeading
                 title="Alerts & Notifications"
                 subtitle="What needs a human eye, ranked by how loudly it is asking."
-            />
+            >
+                <ScopeChips basePath="/alerts" params={params} />
+            </PageHeading>
 
             <div className="mb-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
                 <StatTile label="Critical" value={String(tally('critical'))} tone="red" hint="Immediate action" />
@@ -45,6 +54,7 @@ export default function AlertsPage() {
             <Panel>
                 <PanelHeader title="All Alerts" />
                 <PanelBody className="space-y-1">
+                    {alerts.length === 0 && <EmptyState message="No alerts match the current scope." />}
                     {alerts.map((alert) => {
                         const cfg = LEVEL[alert.level];
                         const Icon = cfg.icon;

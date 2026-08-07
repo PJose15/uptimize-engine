@@ -2,37 +2,60 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
     Bell,
+    Building2,
     Calendar,
     ChevronDown,
     Download,
     LogOut,
+    Menu,
     Search,
     Settings,
-    Building2,
+    X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth-context';
 
-const SCOPES = [
-    'All Partners',
-    'SouthRex Solutions',
-    'AutoPro Motors',
-    'Elite Trim Pros',
-    'PowerGrid Energy',
-    'NextLevel Services',
-    'Triple S Solar',
-];
+export interface ScopeOption {
+    id: string;
+    name: string;
+}
 
-export function Topbar({ period, alertCount = 12 }: { period: string; alertCount?: number }) {
+export function Topbar({
+    partners,
+    period,
+    alertCount = 0,
+    onOpenNav,
+}: {
+    partners: ScopeOption[];
+    period: string;
+    alertCount?: number;
+    onOpenNav?: () => void;
+}) {
     const { user, logout } = useAuth();
-    const [scope, setScope] = useState(SCOPES[0]);
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
+    const activePartner = searchParams.get('partner') ?? '';
+    const activeQuery = searchParams.get('q') ?? '';
+
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
     const searchRef = useRef<HTMLInputElement>(null);
 
-    // ⌘K / Ctrl+K focuses search, matching the hint rendered in the field.
+    /** Rewrite one search param, dropping page-local state like `?leak=`. */
+    const applyParam = (key: 'partner' | 'q', value: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete('leak');
+        if (value) params.set(key, value);
+        else params.delete(key);
+        const search = params.toString();
+        router.push(search ? `${pathname}?${search}` : pathname);
+    };
+
     useEffect(() => {
         const onKey = (event: KeyboardEvent) => {
             if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
@@ -66,19 +89,31 @@ export function Topbar({ period, alertCount = 12 }: { period: string; alertCount
         .join('');
 
     return (
-        <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-up-line bg-up-canvas/85 px-6 backdrop-blur">
+        <header className="sticky top-0 z-30 flex h-16 items-center gap-2 border-b border-up-line bg-up-canvas/85 px-4 backdrop-blur sm:gap-3 sm:px-6">
+            <button
+                type="button"
+                onClick={onOpenNav}
+                aria-label="Open navigation"
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-up-line bg-up-panel text-up-dim transition-colors hover:text-up-text xl:hidden"
+            >
+                <Menu className="h-[18px] w-[18px]" />
+            </button>
+
             {/* Partner scope */}
             <label className="relative hidden items-center md:inline-flex">
                 <Building2 className="pointer-events-none absolute left-3 h-4 w-4 text-up-faint" />
                 <select
-                    value={scope}
-                    onChange={(event) => setScope(event.target.value)}
+                    value={activePartner}
+                    onChange={(event) => applyParam('partner', event.target.value)}
                     aria-label="Partner scope"
                     className="h-9 w-[200px] appearance-none rounded-lg border border-up-line bg-up-panel pl-9 pr-8 text-[13px] font-medium text-up-text outline-none transition-colors hover:border-up-primary/40 focus:border-up-primary"
                 >
-                    {SCOPES.map((option) => (
-                        <option key={option} value={option} className="bg-up-panel">
-                            {option}
+                    <option value="" className="bg-up-panel">
+                        All Partners
+                    </option>
+                    {partners.map((partner) => (
+                        <option key={partner.id} value={partner.id} className="bg-up-panel">
+                            {partner.name}
                         </option>
                     ))}
                 </select>
@@ -86,18 +121,42 @@ export function Topbar({ period, alertCount = 12 }: { period: string; alertCount
             </label>
 
             {/* Search */}
-            <div className="relative hidden min-w-0 flex-1 lg:block">
+            <form
+                role="search"
+                onSubmit={(event) => {
+                    event.preventDefault();
+                    const value = new FormData(event.currentTarget).get('q');
+                    applyParam('q', String(value ?? '').trim());
+                }}
+                className="relative hidden min-w-0 flex-1 lg:block"
+            >
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-up-faint" />
                 <input
                     ref={searchRef}
-                    type="search"
+                    // Re-keyed on the URL value so back/forward resets the field
+                    // without an effect writing state on every navigation.
+                    key={activeQuery}
+                    type="text"
+                    name="q"
+                    defaultValue={activeQuery}
                     placeholder="Search partners, agents, workflows, leaks..."
                     className="h-9 w-full rounded-lg border border-up-line bg-up-panel pl-9 pr-16 text-[13px] text-up-text outline-none transition-colors placeholder:text-up-faint hover:border-up-primary/40 focus:border-up-primary"
                 />
-                <kbd className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded border border-up-line bg-up-raise px-1.5 py-0.5 text-[10px] font-medium text-up-faint">
-                    ⌘K
-                </kbd>
-            </div>
+                {activeQuery ? (
+                    <button
+                        type="button"
+                        aria-label="Clear search"
+                        onClick={() => applyParam('q', '')}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-up-faint transition-colors hover:text-up-text"
+                    >
+                        <X className="h-4 w-4" />
+                    </button>
+                ) : (
+                    <kbd className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded border border-up-line bg-up-raise px-1.5 py-0.5 text-[10px] font-medium text-up-faint">
+                        ⌘K
+                    </kbd>
+                )}
+            </form>
 
             <div className="ml-auto flex items-center gap-2">
                 {/* Period */}

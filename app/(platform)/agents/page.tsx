@@ -14,30 +14,40 @@ import {
     TD,
     TH,
     TR,
+    EmptyRow,
 } from '@/components/platform/ui';
 import { cn } from '@/lib/utils';
 import { count, percent } from '@/lib/platform/format';
-import { getCommandCenterData } from '@/lib/platform/data';
+import { getScopedData, type PlatformSearchParams } from '@/lib/platform/scope';
+import { ScopeChips } from '@/components/platform/scope-chips';
 
 export const metadata: Metadata = {
     title: 'AI Agents — UPTIMAIZE',
 };
 
-export default function AgentsPage() {
-    const { agents } = getCommandCenterData();
+export default async function AgentsPage({
+    searchParams,
+}: {
+    searchParams: Promise<PlatformSearchParams>;
+}) {
+    const params = await searchParams;
+    const { agents } = getScopedData(params);
 
     const active = agents.filter((agent) => agent.status === 'active').length;
     const tasks = agents.reduce((sum, agent) => sum + agent.tasks, 0);
     const approvals = agents.reduce((sum, agent) => sum + agent.approvals, 0);
-    const avgPerformance =
-        agents.reduce((sum, agent) => sum + agent.performance, 0) / agents.length;
+    const avgPerformance = agents.length
+        ? agents.reduce((sum, agent) => sum + agent.performance, 0) / agents.length
+        : 0;
 
     return (
         <>
             <PageHeading
                 title="AI Agents"
                 subtitle="Every deployed agent, what it is doing, and how well it is doing it."
-            />
+            >
+                <ScopeChips basePath="/agents" params={params} />
+            </PageHeading>
 
             <div className="mb-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
                 <StatTile label="Agents Active" value={`${active} / ${agents.length}`} hint="Deployed across 6 partners" />
@@ -64,6 +74,9 @@ export default function AgentsPage() {
                             </tr>
                         </thead>
                         <tbody>
+                            {agents.length === 0 && (
+                                <EmptyRow colSpan={9} message="No agents match the current scope." />
+                            )}
                             {agents.map((agent) => (
                                 <tr key={agent.id} className={TR}>
                                     <td className={TD}>

@@ -25,14 +25,20 @@ import {
 } from '@/components/platform/ui';
 import { cn } from '@/lib/utils';
 import { money, percent } from '@/lib/platform/format';
-import { getCommandCenterData } from '@/lib/platform/data';
+import { getScopedData, type PlatformSearchParams } from '@/lib/platform/scope';
+import { ScopeChips } from '@/components/platform/scope-chips';
 
 export const metadata: Metadata = {
     title: 'Overview — UPTIMAIZE',
 };
 
-export default function OverviewPage() {
-    const data = getCommandCenterData();
+export default async function OverviewPage({
+    searchParams,
+}: {
+    searchParams: Promise<PlatformSearchParams>;
+}) {
+    const params = await searchParams;
+    const data = getScopedData(params);
 
     const resolved = data.leaks.filter((leak) => leak.status === 'resolved').length;
     const investigating = data.leaks.filter((leak) => leak.status === 'investigating').length;
@@ -44,7 +50,9 @@ export default function OverviewPage() {
             <PageHeading
                 title="Overview"
                 subtitle={`Outcome summary for ${data.period.label}`}
-            />
+            >
+                <ScopeChips basePath="/overview" params={params} />
+            </PageHeading>
 
             <KpiStrip kpis={data.kpis} className="mb-4" />
 
