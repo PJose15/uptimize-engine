@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Uptimize Engine",
-  description: "5-Agent AI Pipeline",
+  title: "UPTIMAIZE — Aligned Intelligence",
+  description: "Real-time visibility into outcomes, operations, and opportunities.",
 };
 
 export default function RootLayout({

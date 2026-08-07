@@ -8,7 +8,7 @@
 @theme inline {
   --color-background: oklch(from var(--background) l c h);
   --color-foreground: oklch(from var(--foreground) l c h);
-  --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 @media (prefers-color-scheme: dark) {
@@ -18,10 +18,79 @@
   }
 }
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
+/* ==========================================================================
+   UPTIMAIZE — Aligned Intelligence
+   Platform design tokens. Dark-only surface language used by the command
+   center shell (`app/(platform)`) and every component under
+   `components/platform`.
+   ========================================================================== */
+@theme {
+  /* Surfaces */
+  --color-up-deep: #07060d;
+  --color-up-canvas: #0a0912;
+  --color-up-panel: #121020;
+  --color-up-raise: #1a1730;
+  --color-up-hover: #1d1934;
+
+  /* Lines */
+  --color-up-line: #241f38;
+  --color-up-line-soft: #1b1830;
+
+  /* Type */
+  --color-up-text: #eceaf6;
+  --color-up-dim: #9d98b5;
+  --color-up-faint: #6b6684;
+
+  /* Accents */
+  --color-up-primary: #7c5cff;
+  --color-up-primary-deep: #5b3be8;
+  --color-up-gold: #f5b301;
+  --color-up-green: #2bd07c;
+  --color-up-red: #f0526b;
+  --color-up-blue: #4c9bff;
+  --color-up-pink: #e362d8;
+}
+
+/* Uppercase micro-label used on panel headers and KPI captions */
+.up-label {
+  font-size: 11px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Tabular figures for every metric so columns line up */
+.up-num {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* Ambient glow behind the command-center canvas */
+.up-canvas {
+  background-color: var(--color-up-canvas);
+  background-image:
+    radial-gradient(900px 420px at 18% -8%, rgba(124, 92, 255, 0.1), transparent 70%),
+    radial-gradient(720px 380px at 96% 4%, rgba(91, 59, 232, 0.07), transparent 72%);
+}
+
+.up-scroll::-webkit-scrollbar-thumb {
+  background: #2b2544;
+}
+
+.up-scroll::-webkit-scrollbar-thumb:hover {
+  background: #3a3159;
+}
+
+/* Tailwind v4 emits utilities inside `@layer utilities`, and unlayered rules win
+   over layered ones regardless of specificity — so this reset has to live inside
+   `@layer base` or it silently cancels every padding and margin utility. */
+@layer base {
+  * {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+  }
 }
 
 html,

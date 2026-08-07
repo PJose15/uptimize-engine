@@ -125,6 +125,7 @@ export function isProtectedRoute(pathname: string): boolean {
         '/templates',
         '/compare',
         '/settings',
+        '/engine',
         '/api/pipeline',
         '/api/history',
         '/api/templates',
