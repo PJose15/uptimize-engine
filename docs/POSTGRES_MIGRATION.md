@@ -69,10 +69,18 @@ ADMIN_USERNAME=admin ADMIN_PASSWORD='<at least 12 characters>' npx prisma db see
 
 There are no default credentials; the seed refuses to run without these.
 
-### 6. Verify the behaviour that changes with the engine
+### 6. Verify
 
-These differ between SQLite and Postgres and are worth checking explicitly
-rather than assuming:
+```bash
+npx tsx scripts/smoke-test.ts
+```
+
+Checks the wiring that has never executed against a real database — approval
+round trip and action scoping, SubAgentRun writes, the learning-memory query,
+portfolio loading, and whether the cron endpoint is open. Read-only apart from
+rows it creates and removes itself; makes no provider calls.
+
+Then check the behaviours that differ between the two engines:
 
 | Check | How | Why it matters |
 |-------|-----|----------------|

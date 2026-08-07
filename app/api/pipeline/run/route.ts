@@ -520,7 +520,12 @@ export async function POST(request: NextRequest) {
                 }
 
                 const agent5Duration = Date.now() - agent5Start;
-                const agent5Cost = estimateCost('anthropic', 'claude-sonnet-4-20250514', agent5Result.metadata?.tokensUsed || 2500, 700);
+                // agent5Result is assembled locally as { success, data } with no
+                // metadata, so the estimate below always used its hardcoded
+                // 2500/700 token guess. Read the measured cost off the package
+                // when the sub-agent path produced one.
+                const agent5Cost = actualCostOf(agent5Result.data)
+                    ?? estimateCost('anthropic', 'claude-sonnet-4-20250514', agent5Result.metadata?.tokensUsed || 2500, 700);
                 const agent5Validation = validateAgentOutput(5, agent5Result.data);
 
                 totalCost += agent5Cost;

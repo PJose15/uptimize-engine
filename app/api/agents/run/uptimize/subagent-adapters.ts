@@ -314,6 +314,14 @@ export async function runAgent2ViaSubAgents(
         target_pack: context.targetPack,
         channels: context.channels ?? ['email', 'linkedin'],
         offer_positioning: context.offerPositioning,
+        // Previously dropped: 2B books meetings and needs the operator's real
+        // windows, or it invents slots — which then flow into Agent 3's
+        // qualified lead via bookings[0].
+        calendar_availability: context.calendarAvailability,
+        timezone: context.timezone,
+        proof_points: context.proofPoints,
+        volume_targets: context.volumeTargets,
+        notes: context.notes,
     };
 
     const memory = await loadMemory('agent-2-outbound-appointment', options);
@@ -446,7 +454,7 @@ export async function runAgent5ViaSubAgents(
     config: Agent5Config,
     input: Agent5Input,
     options: SubAgentRunOptions = {},
-): Promise<Agent5ClientSuccessPackage> {
+): Promise<WithTelemetry<Agent5ClientSuccessPackage>> {
     const memory = await loadMemory('agent-5-client-success', options);
 
     const synthesis = await runAgent5SubAgent(input, {
@@ -464,7 +472,19 @@ export async function runAgent5ViaSubAgents(
         );
     }
 
-    return synthesis.final_output;
+    // Telemetry is attached to the returned package rather than discarded.
+    // Agent 5 was the one agent whose cost stayed a hardcoded token guess,
+    // because this adapter returned the bare package and the route had nothing
+    // to read. Non-enumerable so it cannot leak into output validation or a
+    // JSON.stringify of the package.
+    const output = synthesis.final_output as WithTelemetry<Agent5ClientSuccessPackage>;
+    Object.defineProperty(output, 'sub_agent_telemetry', {
+        value: buildTelemetry(synthesis),
+        enumerable: false,
+        configurable: true,
+    });
+
+    return output;
 }
 
 // ============================================================================
@@ -483,7 +503,7 @@ export interface PipelineAgentRunners {
     runAgent2(task: string, context?: Agent2Context & { vertical?: string }, mode?: AgentMode, options?: SubAgentRunOptions): Promise<WithTelemetry<Agent2Result>>;
     runAgent3(task: string, context?: Agent3Context & { vertical?: string }, mode?: AgentMode, options?: SubAgentRunOptions): Promise<WithTelemetry<Agent3Result>>;
     runAgent4(task: string, context?: Agent4Context, mode?: AgentMode, options?: SubAgentRunOptions): Promise<WithTelemetry<Agent4Result>>;
-    runAgent5(config: Agent5Config, input: Agent5Input, options?: SubAgentRunOptions): Promise<Agent5ClientSuccessPackage>;
+    runAgent5(config: Agent5Config, input: Agent5Input, options?: SubAgentRunOptions): Promise<WithTelemetry<Agent5ClientSuccessPackage>>;
 }
 
 /**

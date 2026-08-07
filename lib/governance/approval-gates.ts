@@ -76,6 +76,9 @@ export class ApprovalGateEngine {
     private auditLog: AuditRecord[] = [];
     private approvalTimeoutMs: number;
 
+    /** getAuditLog only ever slices the tail; keep enough for that and no more. */
+    private static readonly MAX_IN_MEMORY_AUDIT = 500;
+
     constructor(approvalTimeoutMs: number = 24 * 60 * 60 * 1000) {
         this.permissionChecker = getPermissionChecker();
         this.approvalTimeoutMs = approvalTimeoutMs;
@@ -323,6 +326,13 @@ export class ApprovalGateEngine {
         const now = Date.now();
         const expired: ApprovalRequest[] = [];
 
+        // Decided and expired entries are dropped rather than kept with a
+        // status flag: the ApprovalItem row is authoritative, and this map only
+        // exists for in-process introspection.
+        for (const [id, request] of this.pendingApprovals) {
+            if (request.status !== "pending") this.pendingApprovals.delete(id);
+        }
+
         for (const [, request] of this.pendingApprovals) {
             if (request.status === "pending" && new Date(request.expires_at).getTime() < now) {
                 request.status = "expired";
@@ -459,7 +469,15 @@ export class ApprovalGateEngine {
             rollback_id: null,
         };
 
+        // Bounded ring buffer. This array is in-process debugging state — the
+        // durable trail is the AuditEntry table written just below — and
+        // checkGate now runs on every MCP call and every Agent 1 search batch,
+        // so an unbounded array would grow for the life of the process with
+        // nothing ever reading past the tail.
         this.auditLog.push(record);
+        if (this.auditLog.length > ApprovalGateEngine.MAX_IN_MEMORY_AUDIT) {
+            this.auditLog.splice(0, this.auditLog.length - ApprovalGateEngine.MAX_IN_MEMORY_AUDIT);
+        }
 
         // Also write to portal DB
         logAuditEntry({

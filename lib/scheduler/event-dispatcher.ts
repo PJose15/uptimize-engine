@@ -35,6 +35,18 @@ export function onAgent2NurtureQueue(
   fireAndForget('agent2-nurture', async () => {
     const delayDays: Record<string, number> = { hot: 7, warm: 14, cold: 30, lost_deal: 60 };
     for (const entry of entries) {
+      // NurtureRecord has no unique constraint on leadId, and this route is
+      // re-invokable (/api/pipeline/batch, /api/webhooks/trigger). Without this
+      // check a second run over the same leads parks each one twice, and Agent 7
+      // then sends the same dormant lead two nurture messages. The learning
+      // collectors got a duplication guard in the same change; this queue writes
+      // to real people and needs one more.
+      const alreadyQueued = await prisma.nurtureRecord.findFirst({
+        where: { leadId: entry.leadId, clientId: context.clientId, archived: false },
+        select: { id: true },
+      });
+      if (alreadyQueued) continue;
+
       const nextTouch = new Date();
       nextTouch.setDate(nextTouch.getDate() + (delayDays[entry.category] ?? 14));
       await prisma.nurtureRecord.create({
