@@ -49,7 +49,7 @@ at least 12 characters; there are no default credentials.
 
 ### Two test tiers
 
-**Offline (default)** — 25 suites, 243 tests, no network, no database, no API
+**Offline (default)** — 26 suites, 256 tests, no network, no database, no API
 keys, ~4s. `__tests__/setup.ts` stubs the Prisma client for every suite, since
 `lib/prisma` constructs a client at module load and would otherwise take down
 suites that never meant to touch a database. A suite needing real database
@@ -157,7 +157,10 @@ an external scheduler pointed at the same endpoints.
 Observations flow through four stages. All four are wired:
 
 1. **Collect** — the pipeline route dispatches `onAgentNComplete()` for Agents
-   2–5 as each finishes, writing `LearningEvent` rows. Collection is idempotent
+   2–5 as each finishes, writing `LearningEvent` rows. `lib/learning/extract.ts`
+   maps each agent's real output onto what its collector reads — the collectors
+   were written against *sub-agent* result shapes, and dispatching the final
+   output past a cast collected nothing. Collection is idempotent
    per `(sourceAgentId, sourceRunId)`: agent retries and Agent 3's own inline
    collector would otherwise double-count, and confidence scoring treats
    duplicates as independent corroboration.

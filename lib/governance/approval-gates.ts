@@ -180,6 +180,20 @@ export class ApprovalGateEngine {
                     };
                 }
 
+                // 'not_found' means the id does not name a real row — reusing
+                // it as existingApprovalId would skip creating one, leaving the
+                // action queued forever against an id nothing can approve. Fall
+                // through and create a fresh request instead.
+                if (decision === "not_found") {
+                    logAuditEntry({
+                        action: `approval_request: ${agentId} → ${toolName}`,
+                        tool: toolName,
+                        status: 'failed',
+                        costUsd: 0,
+                        details: `Unknown approval id ${approvalId}; queuing a new request`,
+                    }).catch(() => {});
+                }
+
                 // Still pending — fall through and report the same request back.
             }
 
@@ -191,7 +205,10 @@ export class ApprovalGateEngine {
                 estimatedCostUsd,
                 batchSize,
                 inputSummary,
-                existingApprovalId: approvalId,
+                // Only reuse an id that names a row we actually found pending.
+                existingApprovalId: approvalId && (await getApprovalDecision(approvalId)) === "pending"
+                    ? approvalId
+                    : undefined,
                 clientId,
             });
 

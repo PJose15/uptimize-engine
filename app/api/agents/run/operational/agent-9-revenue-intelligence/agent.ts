@@ -30,7 +30,12 @@ export async function runAgent9Revenue(
   config: { mode?: 'fast' | 'balanced' | 'quality' } = {},
 ): Promise<AgentSynthesisResult<RevenueIntelligenceOutput>> {
   // Learnings distributed to this agent, delivered into sub-agent memory.
-  const memory = await loadAgentMemory('agent-9-revenue-intelligence');
+  // Never fatal: a learning-store failure must degrade to no memory
+  // rather than fail a run the agent could otherwise complete.
+  const memory = await loadAgentMemory('agent-9-revenue-intelligence').catch(err => {
+    console.error('[agent-9-revenue-intelligence] could not load memory:', err);
+    return { entries: {}, noticeIds: [], keysRead: [] };
+  });
 
   const baseCtx = buildSubAgentContext({
     parentAgentId: 'agent-9-revenue-intelligence',

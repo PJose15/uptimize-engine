@@ -73,7 +73,12 @@ export async function runAgent6Closer(
   const mode = config.mode ?? 'quality';
 
   // Learnings distributed to this agent, delivered into sub-agent memory.
-  const memory = await loadAgentMemory('agent-6-closer');
+  // Never fatal: a learning-store failure must degrade to no memory
+  // rather than fail a run the agent could otherwise complete.
+  const memory = await loadAgentMemory('agent-6-closer').catch(err => {
+    console.error('[agent-6-closer] could not load memory:', err);
+    return { entries: {}, noticeIds: [], keysRead: [] };
+  });
 
   const baseCtx = buildSubAgentContext({
     parentAgentId: 'agent-6-closer',

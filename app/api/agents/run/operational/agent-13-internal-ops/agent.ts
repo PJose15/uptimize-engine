@@ -54,7 +54,12 @@ export async function runAgent13InternalOperations(
   const mode = config.mode ?? 'balanced';
 
   // Learnings distributed to this agent, delivered into sub-agent memory.
-  const memory = await loadAgentMemory('agent-13-internal-ops');
+  // Never fatal: a learning-store failure must degrade to no memory
+  // rather than fail a run the agent could otherwise complete.
+  const memory = await loadAgentMemory('agent-13-internal-ops').catch(err => {
+    console.error('[agent-13-internal-ops] could not load memory:', err);
+    return { entries: {}, noticeIds: [], keysRead: [] };
+  });
 
   const baseCtx = buildSubAgentContext({
     parentAgentId: 'agent-13-internal-ops',

@@ -30,7 +30,12 @@ export async function runAgent11BusinessDevelopment(
   config: { mode?: 'fast' | 'balanced' | 'quality' } = {},
 ): Promise<AgentSynthesisResult<BusinessDevelopmentOutput>> {
   // Learnings distributed to this agent, delivered into sub-agent memory.
-  const memory = await loadAgentMemory('agent-11-business-development');
+  // Never fatal: a learning-store failure must degrade to no memory
+  // rather than fail a run the agent could otherwise complete.
+  const memory = await loadAgentMemory('agent-11-business-development').catch(err => {
+    console.error('[agent-11-business-development] could not load memory:', err);
+    return { entries: {}, noticeIds: [], keysRead: [] };
+  });
 
   const baseCtx = buildSubAgentContext({
     parentAgentId: 'agent-11-business-development',

@@ -59,7 +59,12 @@ export async function runAgent7Nurture(
   const mode = config.mode ?? 'balanced';
 
   // Learnings distributed to this agent, delivered into sub-agent memory.
-  const memory = await loadAgentMemory('agent-7-nurture');
+  // Never fatal: a learning-store failure must degrade to no memory
+  // rather than fail a run the agent could otherwise complete.
+  const memory = await loadAgentMemory('agent-7-nurture').catch(err => {
+    console.error('[agent-7-nurture] could not load memory:', err);
+    return { entries: {}, noticeIds: [], keysRead: [] };
+  });
 
   const baseCtx = buildSubAgentContext({
     parentAgentId: 'agent-7-nurture',

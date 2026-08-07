@@ -1196,7 +1196,12 @@ export async function runAgent1FromQuery(
           targetSystem: "brave_search",
           actionDescription: `Agent 1 searching for ${count} ${intent.industry} businesses in ${intent.location}`,
           inputSummary: `${intent.industry} / ${intent.location}`,
-          batchSize: count,
+          // One search call, whatever `count` results it asks for. Passing the
+          // requested result count here made "find 100 gyms" exceed agent1's
+          // max_batch_size of 50 and fail the whole agent — batch size is meant
+          // to bound how many external actions are taken, not how many rows
+          // come back from one of them.
+          batchSize: 1,
           reversible: true,
         },
         () => findBusinessesInArea(intent.industry, intent.location, count),

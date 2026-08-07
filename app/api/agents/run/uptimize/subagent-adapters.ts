@@ -237,7 +237,12 @@ async function commitMemory(
     synthesis: AgentSynthesisResult<unknown>,
 ): Promise<void> {
     if (!loaded) return;
-    if (!synthesis.sub_agent_results.some(r => r.task_completed)) return;
+
+    // Acknowledge only when every sub-agent completed. Memory is filtered per
+    // sub-agent, so a key belonging to one that failed (shared:money_leak_map
+    // reaches 1B only) was never actually read — marking it delivered would
+    // consume it for a run that could not use it, and it is never redelivered.
+    if (!synthesis.sub_agent_results.every(r => r.task_completed)) return;
 
     await commitAgentMemory(loaded, {
         clientId: options.clientId ?? 'unknown',

@@ -85,6 +85,13 @@ export async function persistPatterns(
     const fresh = patterns.filter(p => !seen.has(`${p.week_of}:${p.pattern_type}`));
 
     for (const pattern of fresh) {
+        // Two patterns of the same type can appear in one detection pass (a 2/2
+        // vertical split trips vertical_concentration twice at exactly 50%), so
+        // the set has to grow as rows are written, not only from what preceded.
+        const dedupeKey = `${pattern.week_of}:${pattern.pattern_type}`;
+        if (seen.has(dedupeKey)) continue;
+        seen.add(dedupeKey);
+
         await prisma.portfolioPattern.create({
             data: {
                 weekOf: pattern.week_of,
@@ -97,5 +104,6 @@ export async function persistPatterns(
         });
     }
 
-    return fresh.length;
+    // Count rows actually written, not candidates.
+    return fresh.filter(p => seen.has(`${p.week_of}:${p.pattern_type}`)).length;
 }

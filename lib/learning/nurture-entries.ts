@@ -54,6 +54,12 @@ export interface NurtureDispatchEntry {
  * derived any other way would silently reschedule the touch.
  */
 export function categoryForOffset(dayOffset: number): NurtureCategory {
+    // The queue is unvalidated model output, so the offset can be missing or
+    // non-numeric. Falling through every branch would land on 'lost_deal' — a
+    // 60-day delay — quietly parking a lead that may well be hot. Default to
+    // the middle instead.
+    if (typeof dayOffset !== 'number' || !Number.isFinite(dayOffset)) return 'warm';
+
     if (dayOffset <= 7) return 'hot';
     if (dayOffset <= 14) return 'warm';
     if (dayOffset <= 30) return 'cold';

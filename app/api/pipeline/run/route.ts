@@ -17,6 +17,12 @@ import {
     onAgent5Complete,
 } from '@/lib/scheduler/event-dispatcher';
 import { buildNurtureEntries } from '@/lib/learning/nurture-entries';
+import {
+    extractAgent3Learning,
+    extractAgent4Learning,
+    extractAgent5Learning,
+    extractAgent5Portfolio,
+} from '@/lib/learning/extract';
 
 // Agent runners — legacy single-call path or v2 sub-agent path, per USE_SUBAGENTS
 import { resolvePipelineAgents, actualCostOf } from '../../agents/run/uptimize/subagent-adapters';
@@ -342,8 +348,11 @@ export async function POST(request: NextRequest) {
                 logAuditEntry({ action: 'Sales engineering proposal', tool: 'Analytics', status: agent3Result.success ? 'success' : 'failed', costUsd: agent3Cost, details: `Duration: ${agent3Duration}ms, Run: ${runId}` }).catch(() => {});
 
                 if (agent3Result.success && agent3Result.data) {
+                    // Collectors read the sub-agent result shape, not the final
+                    // output — extract rather than casting and collecting nothing.
+                    const { vertical } = withVertical(agent3Result.data);
                     onAgent3Complete(
-                        withVertical(agent3Result.data),
+                        extractAgent3Learning(agent3Result.data as Parameters<typeof extractAgent3Learning>[0], vertical),
                         dispatchContext,
                     );
                 }
@@ -423,8 +432,9 @@ export async function POST(request: NextRequest) {
                 logAuditEntry({ action: 'Systems delivery build', tool: 'Internal', status: agent4Result.success ? 'success' : 'failed', costUsd: agent4Cost, details: `Duration: ${agent4Duration}ms, Run: ${runId}` }).catch(() => {});
 
                 if (agent4Result.success && agent4Result.data) {
+                    const { vertical } = withVertical(agent4Result.data);
                     onAgent4Complete(
-                        withVertical(agent4Result.data),
+                        extractAgent4Learning(agent4Result.data as Parameters<typeof extractAgent4Learning>[0], vertical),
                         dispatchContext,
                     );
                 }
@@ -532,7 +542,13 @@ export async function POST(request: NextRequest) {
                 logAuditEntry({ action: 'Client success analysis', tool: 'Analytics', status: agent5Result.success ? 'success' : 'failed', costUsd: agent5Cost, details: `Duration: ${agent5Duration}ms, Run: ${runId}` }).catch(() => {});
 
                 if (agent5Result.success && agent5Result.data) {
-                    onAgent5Complete(withVertical(agent5Result.data), dispatchContext);
+                    const { vertical } = withVertical(agent5Result.data);
+                    const agent5Package = agent5Result.data as Parameters<typeof extractAgent5Learning>[0];
+                    onAgent5Complete(
+                        extractAgent5Learning(agent5Package, vertical),
+                        dispatchContext,
+                        extractAgent5Portfolio(agent5Package),
+                    );
                 }
 
                 // Complete
