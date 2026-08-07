@@ -59,15 +59,12 @@ function NavLink({ item, active }: { item: NavItem; active: boolean }) {
             href={item.href}
             aria-current={active ? 'page' : undefined}
             className={cn(
-                'group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-colors',
+                'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-colors',
                 active
-                    ? 'bg-up-primary/12 text-up-text'
-                    : 'text-up-dim hover:bg-up-raise/60 hover:text-up-text'
+                    ? 'bg-up-primary/16 text-up-text'
+                    : 'text-up-dim hover:bg-up-raise/70 hover:text-up-text'
             )}
         >
-            {active && (
-                <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-up-primary" />
-            )}
             <Icon
                 className={cn(
                     'h-[17px] w-[17px] shrink-0',
@@ -162,16 +159,25 @@ export function Sidebar({
                     </Link>
                     <svg
                         viewBox="0 0 200 40"
-                        className="pointer-events-none mt-3 h-8 w-full opacity-70"
+                        className="pointer-events-none mt-3 h-8 w-full"
                         fill="none"
                         aria-hidden="true"
                     >
                         {[0, 1, 2, 3, 4].map((i) => (
                             <path
-                                key={i}
+                                key={`amethyst-${i}`}
                                 d={`M0 ${34 - i * 2} C 50 ${28 - i * 4}, 120 ${14 + i * 2}, 200 ${4 + i * 3}`}
-                                stroke="#7c5cff"
-                                strokeOpacity={0.5 - i * 0.07}
+                                stroke="#7B5CFF"
+                                strokeOpacity={0.55 - i * 0.08}
+                                strokeWidth="1"
+                            />
+                        ))}
+                        {[0, 1, 2].map((i) => (
+                            <path
+                                key={`citrine-${i}`}
+                                d={`M0 ${38 - i * 2} C 60 ${34 - i * 3}, 130 ${22 + i * 2}, 200 ${12 + i * 3}`}
+                                stroke="#FFCD4A"
+                                strokeOpacity={0.45 - i * 0.1}
                                 strokeWidth="1"
                             />
                         ))}

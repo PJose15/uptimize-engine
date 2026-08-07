@@ -15,8 +15,11 @@ import {
 import { money } from '@/lib/platform/format';
 import type { TrendPoint } from '@/lib/platform/types';
 
-const AXIS = { fill: '#6b6684', fontSize: 11 };
-const GRID = '#1b1830';
+const AXIS = { fill: '#6e6e7a', fontSize: 11 };
+const GRID = '#1d1d23';
+const AMETHYST = '#7b5cff';
+const CITRINE = '#ffcd4a';
+const OBSIDIAN = '#0e0e11';
 
 /* -------------------------------------------------------------------------- */
 /* Tooltip                                                                     */
@@ -92,7 +95,7 @@ export function TrendChart({ data, height = 220 }: { data: TrendPoint[]; height?
                         tickFormatter={(value: number) => `$${value.toFixed(1)}M`}
                     />
                     <Tooltip
-                        cursor={{ stroke: '#3a3159', strokeWidth: 1 }}
+                        cursor={{ stroke: '#3b3b45', strokeWidth: 1 }}
                         content={
                             <DarkTooltip format={(value) => `$${Number(value).toFixed(2)}M`} />
                         }
@@ -101,19 +104,19 @@ export function TrendChart({ data, height = 220 }: { data: TrendPoint[]; height?
                         type="monotone"
                         dataKey="revenueProtected"
                         name="Revenue Protected"
-                        stroke="#7c5cff"
+                        stroke={AMETHYST}
                         strokeWidth={2.2}
-                        dot={{ r: 3, fill: '#7c5cff', strokeWidth: 0 }}
-                        activeDot={{ r: 5, fill: '#7c5cff', stroke: '#0a0912', strokeWidth: 2 }}
+                        dot={{ r: 3, fill: AMETHYST, strokeWidth: 0 }}
+                        activeDot={{ r: 5, fill: AMETHYST, stroke: OBSIDIAN, strokeWidth: 2 }}
                     />
                     <Line
                         type="monotone"
                         dataKey="moneySaved"
                         name="Money Saved"
-                        stroke="#f5b301"
+                        stroke={CITRINE}
                         strokeWidth={2.2}
-                        dot={{ r: 3, fill: '#f5b301', strokeWidth: 0 }}
-                        activeDot={{ r: 5, fill: '#f5b301', stroke: '#0a0912', strokeWidth: 2 }}
+                        dot={{ r: 3, fill: CITRINE, strokeWidth: 0 }}
+                        activeDot={{ r: 5, fill: CITRINE, stroke: OBSIDIAN, strokeWidth: 2 }}
                     />
                 </LineChart>
             </ResponsiveContainer>

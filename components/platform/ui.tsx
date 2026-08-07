@@ -9,8 +9,8 @@ import type { AgentStatus, Health, LeakStatus, Severity, Tone, Trend } from '@/l
 /* -------------------------------------------------------------------------- */
 
 export const TONE_HEX: Record<Tone, string> = {
-    primary: '#7c5cff',
-    gold: '#f5b301',
+    primary: '#7b5cff',
+    gold: '#ffcd4a',
     green: '#2bd07c',
     red: '#f0526b',
     blue: '#4c9bff',
@@ -388,10 +388,19 @@ export const TH =
 export const TD = 'whitespace-nowrap px-2 py-2.5 text-[12.5px] text-up-text';
 export const TR = 'border-t border-up-line-soft transition-colors hover:bg-up-raise/40';
 
-export function TableShell({ children }: { children: React.ReactNode }) {
+export function TableShell({
+    children,
+    fixed = false,
+}: {
+    children: React.ReactNode;
+    /** Fixed layout + <colgroup> widths, for panels too narrow to auto-size. */
+    fixed?: boolean;
+}) {
     return (
         <div className="up-scroll overflow-x-auto">
-            <table className="w-full min-w-full border-collapse">{children}</table>
+            <table className={cn('w-full min-w-full border-collapse', fixed && 'table-fixed')}>
+                {children}
+            </table>
         </div>
     );
 }

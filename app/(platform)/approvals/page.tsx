@@ -83,7 +83,7 @@ export default function ApprovalsPage() {
                                                     <span className="block font-medium text-up-text">
                                                         {approval.title}
                                                     </span>
-                                                    <span className="up-num block text-[11px] text-up-faint">
+                                                    <span className="up-code block text-[11px] text-up-faint">
                                                         #{approval.id}
                                                     </span>
                                                 </span>

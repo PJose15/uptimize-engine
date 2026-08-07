@@ -86,7 +86,7 @@ export default async function RevenueLeaksPage({
                                                 <span className="block font-medium text-up-text">
                                                     {leak.name}
                                                 </span>
-                                                <span className="up-num block text-[11px] text-up-faint">
+                                                <span className="up-code block text-[11px] text-up-faint">
                                                     #{leak.id}
                                                 </span>
                                             </Link>
@@ -122,7 +122,9 @@ function LeakDrawer({ leak, className }: { leak: RevenueLeak; className?: string
     return (
         <Panel className={className}>
             <div className="flex items-start justify-between gap-3 border-b border-up-line-soft px-4 py-3">
-                <span className="up-num up-label text-up-faint">Leak #{leak.id}</span>
+                <span className="up-code text-[11px] font-semibold uppercase tracking-[0.06em] text-up-faint">
+                    Leak #{leak.id}
+                </span>
                 <Link
                     href="/revenue-leaks"
                     scroll={false}
@@ -179,7 +181,7 @@ function LeakDrawer({ leak, className }: { leak: RevenueLeak; className?: string
                                 className="flex items-center gap-2 rounded-lg border border-up-line bg-up-raise/50 px-2.5 py-1.5"
                             >
                                 <FileText className="h-3.5 w-3.5 text-up-primary" />
-                                <span className="text-[11px] text-up-text">{item.name}</span>
+                                <span className="up-code text-[11px] text-up-text">{item.name}</span>
                                 <span className="up-num text-[10px] text-up-faint">{item.size}</span>
                             </li>
                         ))}

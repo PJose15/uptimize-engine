@@ -140,7 +140,14 @@ export function LeaksPanel({
         <Panel className={className}>
             <PanelHeader title="Revenue Leaks Detected" action="View all leaks" actionHref="/revenue-leaks" />
             <PanelBody className="px-1">
-                <TableShell>
+                <TableShell fixed>
+                    <colgroup>
+                        <col className="w-[30%]" />
+                        <col className="w-[12%]" />
+                        <col className="w-[20%]" />
+                        <col className="w-[16%]" />
+                        <col className="w-[22%]" />
+                    </colgroup>
                     <thead>
                         <tr>
                             <th className={TH}>Leak</th>
@@ -156,7 +163,7 @@ export function LeaksPanel({
                                 <td className={TD}>
                                     <Link
                                         href={`/revenue-leaks?leak=${leak.id}`}
-                                        className="block max-w-[150px] truncate font-medium text-up-text hover:text-up-primary"
+                                        className="block truncate font-medium text-up-text hover:text-up-primary"
                                     >
                                         {leak.name}
                                     </Link>
@@ -165,7 +172,7 @@ export function LeaksPanel({
                                     {money(leak.impact)}
                                 </td>
                                 <td className={TD}>
-                                    <span className="block max-w-[130px] truncate text-up-dim">
+                                    <span className="block truncate text-up-dim">
                                         {leak.source}
                                     </span>
                                 </td>

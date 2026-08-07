@@ -8,7 +8,8 @@
 @theme inline {
   --color-background: oklch(from var(--background) l c h);
   --color-foreground: oklch(from var(--foreground) l c h);
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -25,26 +26,28 @@
    `components/platform`.
    ========================================================================== */
 @theme {
-  /* Surfaces */
-  --color-up-deep: #07060d;
-  --color-up-canvas: #0a0912;
-  --color-up-panel: #121020;
-  --color-up-raise: #1a1730;
-  --color-up-hover: #1d1934;
+  /* Core neutrals — Obsidian #0B0B0D and Quartz #F5F5F7 from the brand sheet */
+  --color-up-deep: #0b0b0d;
+  --color-up-canvas: #0e0e11;
+  --color-up-panel: #141418;
+  --color-up-raise: #1c1c21;
+  --color-up-hover: #23232a;
 
   /* Lines */
-  --color-up-line: #241f38;
-  --color-up-line-soft: #1b1830;
+  --color-up-line: #26262e;
+  --color-up-line-soft: #1d1d23;
 
   /* Type */
-  --color-up-text: #eceaf6;
-  --color-up-dim: #9d98b5;
-  --color-up-faint: #6b6684;
+  --color-up-text: #f5f5f7;
+  --color-up-dim: #a1a1ac;
+  --color-up-faint: #6e6e7a;
 
-  /* Accents */
-  --color-up-primary: #7c5cff;
-  --color-up-primary-deep: #5b3be8;
-  --color-up-gold: #f5b301;
+  /* Brand accents — Amethyst and Citrine */
+  --color-up-primary: #7b5cff;
+  --color-up-primary-deep: #6244e6;
+  --color-up-gold: #ffcd4a;
+
+  /* Status */
   --color-up-green: #2bd07c;
   --color-up-red: #f0526b;
   --color-up-blue: #4c9bff;
@@ -66,20 +69,23 @@
   letter-spacing: -0.02em;
 }
 
-/* Ambient glow behind the command-center canvas */
+/* Flat obsidian canvas — the brand surfaces carry no ambient gradient */
 .up-canvas {
   background-color: var(--color-up-canvas);
-  background-image:
-    radial-gradient(900px 420px at 18% -8%, rgba(124, 92, 255, 0.1), transparent 70%),
-    radial-gradient(720px 380px at 96% 4%, rgba(91, 59, 232, 0.07), transparent 72%);
+}
+
+/* IBM Plex Mono for identifiers, file names, and raw system output */
+.up-code {
+  font-family: var(--font-mono);
+  letter-spacing: -0.01em;
 }
 
 .up-scroll::-webkit-scrollbar-thumb {
-  background: #2b2544;
+  background: #2c2c34;
 }
 
 .up-scroll::-webkit-scrollbar-thumb:hover {
-  background: #3a3159;
+  background: #3b3b45;
 }
 
 /* Tailwind v4 emits utilities inside `@layer utilities`, and unlayered rules win

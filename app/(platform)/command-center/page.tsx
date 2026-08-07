@@ -31,8 +31,8 @@ export default function CommandCenterPage() {
             <KpiStrip kpis={data.kpis} className="mb-4" />
 
             <div className="mb-4 grid grid-cols-1 gap-4 xl:grid-cols-12">
-                <AgentsPanel agents={data.agents} className="xl:col-span-5" />
-                <LeaksPanel leaks={data.leaks} className="xl:col-span-4" />
+                <AgentsPanel agents={data.agents} className="xl:col-span-4" />
+                <LeaksPanel leaks={data.leaks} className="xl:col-span-5" />
                 <ApprovalsPanel approvals={data.approvals} className="xl:col-span-3" />
             </div>
 

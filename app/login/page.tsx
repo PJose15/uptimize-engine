@@ -9,10 +9,14 @@ import { UptimaizeLogo } from '@/components/platform/logo';
 const FIELD =
     'h-10 w-full rounded-lg border border-up-line bg-up-canvas px-3 text-[13px] text-up-text outline-none transition-colors placeholder:text-up-faint focus:border-up-primary';
 
+/** Brand loading state: an amethyst arc chasing a citrine one. */
 function Splash() {
     return (
         <div className="up-canvas flex min-h-screen items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-up-primary" />
+            <span
+                className="h-9 w-9 animate-spin rounded-full border-[3px] border-transparent"
+                style={{ borderTopColor: '#7B5CFF', borderRightColor: '#7B5CFF', borderBottomColor: '#FFCD4A', borderLeftColor: '#FFCD4A' }}
+            />
         </div>
     );
 }
@@ -65,7 +69,7 @@ function LoginForm() {
         <div className="up-canvas flex min-h-screen items-center justify-center p-4 text-up-text">
             <div className="w-full max-w-sm">
                 <div className="flex justify-center">
-                    <UptimaizeLogo />
+                    <UptimaizeLogo stacked size={18} />
                 </div>
 
                 <div className="mt-8 rounded-2xl border border-up-line bg-up-panel/90 p-6 shadow-2xl">
