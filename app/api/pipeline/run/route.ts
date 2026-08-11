@@ -186,7 +186,7 @@ export async function POST(request: NextRequest) {
                 ) as AgentResult;
 
                 const agent2Duration = Date.now() - agent2Start;
-                const agent2Cost = estimateCost('anthropic', 'claude-sonnet-4-20250514', agent2Result.metadata?.tokensUsed || 3000, 800);
+                const agent2Cost = estimateCost('anthropic', 'claude-sonnet-4-6', agent2Result.metadata?.tokensUsed || 3000, 800);
                 const agent2Validation = validateAgentOutput(2, agent2Result.data);
 
                 totalCost += agent2Cost;
@@ -421,7 +421,7 @@ export async function POST(request: NextRequest) {
                 }
 
                 const agent5Duration = Date.now() - agent5Start;
-                const agent5Cost = estimateCost('anthropic', 'claude-sonnet-4-20250514', agent5Result.metadata?.tokensUsed || 2500, 700);
+                const agent5Cost = estimateCost('anthropic', 'claude-sonnet-4-6', agent5Result.metadata?.tokensUsed || 2500, 700);
                 const agent5Validation = validateAgentOutput(5, agent5Result.data);
 
                 totalCost += agent5Cost;

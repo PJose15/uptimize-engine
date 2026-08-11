@@ -13,8 +13,8 @@ export type ModelTier = 'FAST' | 'BALANCED' | 'QUALITY' | 'MINI' | 'RESEARCH';
 
 export const MODELS: Record<ModelTier, string> = {
   FAST:     process.env.MODEL_FAST     || 'gemini-2.0-flash',
-  BALANCED: process.env.MODEL_BALANCED || 'claude-sonnet-4-20250514',
-  QUALITY:  process.env.MODEL_QUALITY  || 'claude-opus-4-20250514',
+  BALANCED: process.env.MODEL_BALANCED || 'claude-sonnet-4-6',
+  QUALITY:  process.env.MODEL_QUALITY  || 'claude-opus-4-8',
   MINI:     process.env.MODEL_MINI     || 'gpt-4o-mini',
   RESEARCH: process.env.MODEL_RESEARCH || 'sonar-pro',
 };
@@ -77,10 +77,10 @@ export type TaskProfile = keyof typeof TASK_PROFILES;
 // ============================================================================
 
 export const FALLBACK_CHAINS: Record<ModelTier, string[]> = {
-  FAST:     ['gemini-2.0-flash', 'llama-3.1-8b-instant', 'gpt-4o-mini', 'claude-3-5-haiku-20241022'],
-  BALANCED: ['claude-sonnet-4-20250514', 'gpt-4o', 'gemini-2.5-pro', 'mistral-large-latest'],
-  QUALITY:  ['claude-opus-4-20250514', 'gpt-4o', 'gemini-2.5-pro', 'mistral-large-latest'],
-  MINI:     ['gpt-4o-mini', 'llama-3.1-70b-versatile', 'gemini-2.0-flash', 'claude-3-5-haiku-20241022'],
+  FAST:     ['gemini-2.0-flash', 'llama-3.1-8b-instant', 'gpt-4o-mini', 'claude-haiku-4-5'],
+  BALANCED: ['claude-sonnet-4-6', 'gpt-4o', 'gemini-2.5-pro', 'mistral-large-latest'],
+  QUALITY:  ['claude-opus-4-8', 'gpt-4o', 'gemini-2.5-pro', 'mistral-large-latest'],
+  MINI:     ['gpt-4o-mini', 'llama-3.1-70b-versatile', 'gemini-2.0-flash', 'claude-haiku-4-5'],
   RESEARCH: ['sonar-pro'],
 };
 
@@ -92,9 +92,9 @@ export type V2ProviderName = 'anthropic' | 'openai' | 'gemini' | 'groq' | 'mistr
 
 export const MODEL_TO_PROVIDER: Record<string, V2ProviderName> = {
   // Anthropic
-  'claude-opus-4-20250514':     'anthropic',
-  'claude-sonnet-4-20250514':   'anthropic',
-  'claude-3-5-haiku-20241022':  'anthropic',
+  'claude-opus-4-8':            'anthropic',
+  'claude-sonnet-4-6':          'anthropic',
+  'claude-haiku-4-5':           'anthropic',
 
   // OpenAI
   'gpt-4o':      'openai',
@@ -128,9 +128,9 @@ export interface ModelPricing {
 }
 
 export const MODEL_PRICING: Record<string, ModelPricing> = {
-  'claude-opus-4-20250514':     { input: 15.0,   output: 75.0 },
-  'claude-sonnet-4-20250514':   { input: 3.0,    output: 15.0 },
-  'claude-3-5-haiku-20241022':  { input: 0.80,   output: 4.0 },
+  'claude-opus-4-8':            { input: 5.0,    output: 25.0 },
+  'claude-sonnet-4-6':          { input: 3.0,    output: 15.0 },
+  'claude-haiku-4-5':           { input: 1.0,    output: 5.0 },
   'gpt-4o':                     { input: 2.50,   output: 10.0 },
   'gpt-4o-mini':                { input: 0.15,   output: 0.60 },
   'gemini-2.0-flash':           { input: 0.075,  output: 0.30 },

@@ -278,7 +278,7 @@ export class Agent5ClientSuccess {
 
   constructor(config: Agent5Config) {
     this.config = {
-      model: config.model || 'claude-sonnet-4-20250514',
+      model: config.model || 'claude-sonnet-4-6',
       maxTokens: config.maxTokens || 8000,
       temperature: config.temperature || 0.7,
       ...config,

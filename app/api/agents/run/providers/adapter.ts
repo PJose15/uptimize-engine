@@ -141,7 +141,7 @@ export const MODEL_REGISTRY: Record<ProviderName, ModelSpec[]> = {
     ],
     anthropic: [
         {
-            id: "claude-sonnet-4-20250514",
+            id: "claude-sonnet-4-6",
             strengths: ["reasoning", "analysis", "json_compliance", "code_generation"],
             cost_per_1m_input: 3.0,
             cost_per_1m_output: 15.0,
@@ -152,10 +152,10 @@ export const MODEL_REGISTRY: Record<ProviderName, ModelSpec[]> = {
             supports_web_search: false,
         },
         {
-            id: "claude-3-5-haiku-20241022",
+            id: "claude-haiku-4-5",
             strengths: ["speed", "cost_efficient", "summarization"],
-            cost_per_1m_input: 0.80,
-            cost_per_1m_output: 4.0,
+            cost_per_1m_input: 1.0,
+            cost_per_1m_output: 5.0,
             max_tokens: 200_000,
             avg_latency_ms: 1200,
             json_reliability: 0.85,

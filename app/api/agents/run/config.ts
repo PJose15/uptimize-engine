@@ -31,7 +31,7 @@ export const CONFIG = {
         } as ProviderConfig,
         ANTHROPIC: {
             name: ProviderName.ANTHROPIC,
-            model: "claude-3-5-sonnet-20241022", // Dec 2024: Latest version
+            model: "claude-sonnet-4-6", // Claude Sonnet 4.6
             timeoutMs: 120000,
             maxTokens: 4096,
             temperature: 0.7,

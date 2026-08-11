@@ -15,7 +15,7 @@ const PRICING = {
         output: 0.60,   // $0.60 per 1M output tokens
     },
     [ProviderName.ANTHROPIC]: {
-        input: 3.00,    // $3.00 per 1M input tokens (claude-3-5-sonnet)
+        input: 3.00,    // $3.00 per 1M input tokens (claude-sonnet-4-6)
         output: 15.00,  // $15.00 per 1M output tokens
     },
     [ProviderName.PERPLEXITY]: {

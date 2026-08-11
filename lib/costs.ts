@@ -11,9 +11,9 @@ export const PRICING = {
         'gemini-1.5-flash': { input: 0.075, output: 0.30 },
     },
     anthropic: {
-        'claude-sonnet-4-20250514': { input: 3.00, output: 15.00 },
-        'claude-3-5-sonnet-20241022': { input: 3.00, output: 15.00 },
-        'claude-3-opus-20240229': { input: 15.00, output: 75.00 },
+        'claude-sonnet-4-6': { input: 3.00, output: 15.00 },
+        'claude-opus-4-8': { input: 5.00, output: 25.00 },
+        'claude-haiku-4-5': { input: 1.00, output: 5.00 },
     },
     openai: {
         'gpt-4o': { input: 2.50, output: 10.00 },

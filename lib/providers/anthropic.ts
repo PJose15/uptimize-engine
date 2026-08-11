@@ -7,7 +7,7 @@ import type { ProviderClient, LLMRequest, LLMResponse } from './types';
 import { classifyProviderError } from './types';
 import { estimateModelCost } from '@/lib/config/models';
 
-const ANTHROPIC_MODELS = ['claude-opus-4-20250514', 'claude-sonnet-4-20250514', 'claude-3-5-haiku-20241022'];
+const ANTHROPIC_MODELS = ['claude-opus-4-8', 'claude-sonnet-4-6', 'claude-haiku-4-5'];
 
 export const anthropicClient: ProviderClient = {
   name: 'anthropic',
