@@ -36,13 +36,32 @@ export class GeminiProvider implements Provider {
             logger.info("Executing Gemini request", { provider: ProviderName.GEMINI });
 
             const genAI = new GoogleGenerativeAI(apiKey);
-            const model = genAI.getGenerativeModel({ model: config.model });
+            const model = genAI.getGenerativeModel({
+                model: config.model,
+                // Cap output explicitly so large agent JSON isn't silently limited
+                // by the model default.
+                generationConfig: { maxOutputTokens: config.maxTokens },
+            });
 
             // Note: Google SDK doesn't support AbortSignal yet, so we still use timeout
             const result = await model.generateContent(task);
             clearTimeout(timeoutId);
 
             const response = await result.response;
+
+            // MAX_TOKENS finish reason means the output was cut off — incomplete JSON.
+            // Fail so the waterfall tries the next provider.
+            if (response.candidates?.[0]?.finishReason === "MAX_TOKENS") {
+                logger.warn("Gemini response truncated at max output tokens", {
+                    provider: ProviderName.GEMINI,
+                }, { maxTokens: config.maxTokens });
+                return createErrorResponse(
+                    ProviderName.GEMINI,
+                    ErrorType.MODEL_ERROR,
+                    `Response truncated: hit maxOutputTokens (${config.maxTokens}). Output incomplete.`
+                );
+            }
+
             const text = response.text();
 
             logger.info("Gemini request successful", {

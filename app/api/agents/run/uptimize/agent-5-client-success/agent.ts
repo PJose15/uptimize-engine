@@ -279,7 +279,7 @@ export class Agent5ClientSuccess {
   constructor(config: Agent5Config) {
     this.config = {
       model: config.model || 'claude-sonnet-4-6',
-      maxTokens: config.maxTokens || 8000,
+      maxTokens: config.maxTokens || 16000,
       temperature: config.temperature || 0.7,
       ...config,
     };
@@ -307,6 +307,15 @@ export class Agent5ClientSuccess {
         },
       ],
     });
+
+    // A truncated response (hit max_tokens) yields incomplete JSON — surface it
+    // clearly instead of failing with a cryptic JSON.parse error downstream.
+    if (response.stop_reason === 'max_tokens') {
+      throw new Error(
+        `Agent 5 response truncated: hit max_tokens (${this.config.maxTokens}). ` +
+          `Increase maxTokens or reduce the requested output.`
+      );
+    }
 
     const textContent = response.content.find((c) => c.type === 'text');
     if (!textContent || textContent.type !== 'text') {

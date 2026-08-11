@@ -18,7 +18,9 @@ export const CONFIG = {
             name: ProviderName.GEMINI,
             model: "gemini-2.5-flash", // Using 2.5 flash for better availability
             timeoutMs: 120000,
-            maxTokens: 8192,
+            // Agents emit large structured-JSON payloads; 16K is the safe
+            // non-streaming ceiling (above ~16K the SDK risks HTTP timeouts).
+            maxTokens: 16000,
             temperature: 0.7,
         } as ProviderConfig,
         // Placeholders for future providers
@@ -26,14 +28,14 @@ export const CONFIG = {
             name: ProviderName.OPENAI,
             model: "gpt-4o", // Dec 2024: Main multimodal model
             timeoutMs: 120000,
-            maxTokens: 4096,
+            maxTokens: 16000,
             temperature: 0.7,
         } as ProviderConfig,
         ANTHROPIC: {
             name: ProviderName.ANTHROPIC,
             model: "claude-sonnet-4-6", // Claude Sonnet 4.6
             timeoutMs: 120000,
-            maxTokens: 4096,
+            maxTokens: 16000,
             temperature: 0.7,
         } as ProviderConfig,
     },

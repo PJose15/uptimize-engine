@@ -50,7 +50,7 @@ describe('Agent 4: Systems Builder', () => {
             const firstWorkflow = typedResult.data.workflow_specs[0];
             expect(firstWorkflow.workflow_name).toBeDefined();
         }
-    }, 120000);
+    }, 300000);
 
     it('should include exception paths', async () => {
         const result = await runAgent4SystemsDelivery(
@@ -80,7 +80,7 @@ describe('Agent 4: Systems Builder', () => {
         if (typedResult.data?.workflow_specs?.[0]?.exception_paths) {
             expect(Array.isArray(typedResult.data.workflow_specs[0].exception_paths)).toBe(true);
         }
-    }, 120000);
+    }, 300000);
 
     it('should create client handoff kit', async () => {
         const result = await runAgent4SystemsDelivery(
@@ -115,7 +115,7 @@ describe('Agent 4: Systems Builder', () => {
                 (kit.exception_sop?.length || 0) > 0;
             expect(hasSOPs || kit !== undefined).toBe(true);
         }
-    }, 120000);
+    }, 300000);
 
     it('should specify fallback modes', async () => {
         const result = await runAgent4SystemsDelivery(
@@ -143,5 +143,5 @@ describe('Agent 4: Systems Builder', () => {
         if (typedResult.data?.fallback_modes) {
             expect(Array.isArray(typedResult.data.fallback_modes)).toBe(true);
         }
-    }, 120000);
+    }, 300000);
 });

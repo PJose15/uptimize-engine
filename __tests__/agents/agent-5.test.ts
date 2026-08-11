@@ -90,7 +90,7 @@ describe('Agent 5: Client Success', () => {
                 (day_7?.length || 0) > 0;
             expect(hasTasks || typedResult.onboarding_plan !== undefined).toBe(true);
         }
-    }, 180000);
+    }, 300000);
 
     it('should generate shadow ops reduction report', async () => {
         if (!apiKey) {
@@ -118,7 +118,7 @@ describe('Agent 5: Client Success', () => {
             expect(typedResult.shadow_ops_reduction_report.before_list).toBeDefined();
             expect(typedResult.shadow_ops_reduction_report.after_list).toBeDefined();
         }
-    }, 180000);
+    }, 300000);
 
     it('should calculate client health score', async () => {
         if (!apiKey) {
@@ -156,7 +156,7 @@ describe('Agent 5: Client Success', () => {
                 expect(risk_level.length).toBeGreaterThan(0);
             }
         }
-    }, 180000);
+    }, 300000);
 
     it('should identify expansion opportunities', async () => {
         if (!apiKey) {
@@ -187,5 +187,5 @@ describe('Agent 5: Client Success', () => {
                 (upsell_opportunities?.length || 0) > 0;
             expect(hasExpansion || typedResult.expansion_map !== undefined).toBe(true);
         }
-    }, 180000);
+    }, 300000);
 });

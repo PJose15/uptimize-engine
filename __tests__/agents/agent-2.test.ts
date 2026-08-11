@@ -51,7 +51,7 @@ describe('Agent 2: Outbound & Appointment', () => {
         // Check message library
         expect(typedResult.data?.message_library).toBeDefined();
         expect(Array.isArray(typedResult.data?.message_library)).toBe(true);
-    }, 120000);
+    }, 300000);
 
     it('should produce multi-track messages', async () => {
         const result = await runAgent2OutboundAppointment(
@@ -92,7 +92,7 @@ describe('Agent 2: Outbound & Appointment', () => {
                 tracks?.authority_play;
             expect(hasContent).toBeTruthy();
         }
-    }, 120000);
+    }, 300000);
 
     it('should create booking entries when available', async () => {
         const result = await runAgent2OutboundAppointment(
@@ -120,5 +120,5 @@ describe('Agent 2: Outbound & Appointment', () => {
         const hasOutput = (typedResult.data?.bookings?.length || 0) > 0 ||
             (typedResult.data?.nurture_queue?.length || 0) > 0;
         expect(hasOutput || typedResult.data?.bookings !== undefined).toBe(true);
-    }, 120000);
+    }, 300000);
 });

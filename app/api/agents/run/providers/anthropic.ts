@@ -48,6 +48,20 @@ export class AnthropicProvider implements Provider {
 
             const text = message.content[0]?.type === "text" ? message.content[0].text : "";
 
+            // A truncated response (hit max_tokens) yields incomplete JSON that
+            // fails downstream parsing. Treat it as a failure so the waterfall
+            // falls through to the next provider instead of returning partial output.
+            if (message.stop_reason === "max_tokens") {
+                logger.warn("Anthropic response truncated at max_tokens", {
+                    provider: ProviderName.ANTHROPIC,
+                }, { maxTokens: config.maxTokens });
+                return createErrorResponse(
+                    ProviderName.ANTHROPIC,
+                    ErrorType.MODEL_ERROR,
+                    `Response truncated: hit max_tokens (${config.maxTokens}). Output incomplete.`
+                );
+            }
+
             logger.info("Anthropic request successful", {
                 provider: ProviderName.ANTHROPIC,
             });

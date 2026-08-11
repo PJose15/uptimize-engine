@@ -183,7 +183,7 @@ export async function POST(
                             {
                                 apiKey: process.env.ANTHROPIC_API_KEY!,
                                 model: 'claude-sonnet-4-6',
-                                maxTokens: 8000,
+                                maxTokens: 16000,
                             },
                             context as unknown as Parameters<typeof runAgent5>[1]
                         ),

@@ -50,6 +50,19 @@ export class OpenAIProvider implements Provider {
 
             const text = completion.choices[0]?.message?.content || "";
 
+            // finish_reason "length" means the output was cut off at the token
+            // cap — the JSON is incomplete. Fail so the waterfall tries the next provider.
+            if (completion.choices[0]?.finish_reason === "length") {
+                logger.warn("OpenAI response truncated at max tokens", {
+                    provider: ProviderName.OPENAI,
+                }, { maxTokens: config.maxTokens });
+                return createErrorResponse(
+                    ProviderName.OPENAI,
+                    ErrorType.MODEL_ERROR,
+                    `Response truncated: hit max_completion_tokens (${config.maxTokens}). Output incomplete.`
+                );
+            }
+
             logger.info("OpenAI request successful", {
                 provider: ProviderName.OPENAI,
             });
