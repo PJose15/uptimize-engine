@@ -4,6 +4,7 @@
  */
 
 import { executeWithFallback } from "../../fallback";
+import { SCHEMA_STRICT_PROVIDER_ORDER } from "../../config";
 import type { AgentMode } from "../../types";
 import type { Agent2Context, Agent2Result, OutboundAndBookingOutput } from "./types";
 
@@ -233,6 +234,27 @@ function validateOutput(data: any): { valid: boolean; missing: string[] } {
   };
 }
 
+export function validateAgent2FallbackResponse(message: string): {
+  valid: boolean;
+  details?: string;
+} {
+  try {
+    const data = JSON.parse(stripMarkdownCodeFences(message));
+    const validation = validateOutput(data);
+    return {
+      valid: validation.valid,
+      details: validation.valid
+        ? undefined
+        : `Missing required fields: ${validation.missing.join(", ")}`,
+    };
+  } catch (error) {
+    return {
+      valid: false,
+      details: error instanceof Error ? error.message : "Invalid JSON",
+    };
+  }
+}
+
 // ============================================================================
 // MAIN AGENT FUNCTION
 // ============================================================================
@@ -257,7 +279,15 @@ export async function runAgent2OutboundAppointment(
     const prompt = buildPrompt(task, context);
 
     // Execute with fallback system
-    const result = await executeWithFallback(prompt, mode);
+    // Schema-strict output — prefer Anthropic (most reliable JSON adherence).
+    const result = await executeWithFallback(
+      prompt,
+      mode,
+      undefined,
+      undefined,
+      SCHEMA_STRICT_PROVIDER_ORDER,
+      validateAgent2FallbackResponse,
+    );
 
     if (!result.success) {
       return {

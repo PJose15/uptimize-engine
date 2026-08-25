@@ -11,6 +11,7 @@
  */
 
 import { executeWithFallback } from "../../fallback";
+import { SCHEMA_STRICT_PROVIDER_ORDER } from "../../config";
 import { AgentMode } from "../../types";
 import { Agent1Context, Agent1Result, Agent1Input, TargetPackOutput, LeadRecord } from "./types";
 import { MCPClient } from "../../mcp/mcp-client";
@@ -849,7 +850,8 @@ export async function runAgent1MarketIntelligence(
     const strictPrompt = prompt + "\n\nCRITICAL: Return ONLY valid JSON. No markdown code fences. No trailing commas. Check your JSON validity before outputting.";
 
     // Execute with fallback system
-    const result = await executeWithFallback(strictPrompt, mode);
+    // Schema-strict output — prefer Anthropic (most reliable JSON adherence).
+    const result = await executeWithFallback(strictPrompt, mode, undefined, undefined, SCHEMA_STRICT_PROVIDER_ORDER);
 
     // If the request failed, return the error
     if (!result.success) {
@@ -1202,7 +1204,8 @@ export async function runAgent1FromQuery(
       + "\n\nCRITICAL: Return ONLY valid JSON. No markdown code fences.";
 
     // Step 4: Execute with fallback
-    const result = await executeWithFallback(enhancedPrompt, input.mode);
+    // Schema-strict output — prefer Anthropic (most reliable JSON adherence).
+    const result = await executeWithFallback(enhancedPrompt, input.mode, undefined, undefined, SCHEMA_STRICT_PROVIDER_ORDER);
 
     if (!result.success) {
       return {

@@ -97,3 +97,15 @@ export const MODE_ROUTING: Record<AgentMode, ProviderName[]> = {
 export function getProviderPriority(mode: AgentMode = "balanced"): ProviderName[] {
     return MODE_ROUTING[mode] || MODE_ROUTING.balanced;
 }
+
+/**
+ * Provider order for schema-strict agents (large, required-field-validated JSON).
+ * Anthropic (Sonnet 4.6) adheres to output schemas most reliably, so it is tried
+ * first regardless of mode. OpenAI and
+ * Gemini remain as fallbacks if Anthropic is unavailable or fails.
+ */
+export const SCHEMA_STRICT_PROVIDER_ORDER: ProviderName[] = [
+    ProviderName.ANTHROPIC,
+    ProviderName.OPENAI,
+    ProviderName.GEMINI,
+];

@@ -6,6 +6,7 @@
  */
 
 import { executeWithFallback } from "../../fallback";
+import { SCHEMA_STRICT_PROVIDER_ORDER } from "../../config";
 import { logger } from "../../logger";
 import type { AgentMode } from "../../types";
 import type {
@@ -142,253 +143,47 @@ Do not change scope without change request. Ship only after QA.
 
 Style: crisp, engineering-grade, minimal fluff.`;
 
-// ========================================
-// JSON SCHEMA (for validation)
-// ========================================
+/**
+ * The TypeScript interfaces define the canonical contract. This compact prompt
+ * mirrors the required shape while bounding cardinality and prose length so a
+ * complete package reliably fits within the 16K response budget.
+ */
+export const AGENT_4_COMPACT_OUTPUT_CONTRACT = `
+Return one JSON object with exactly these top-level keys:
+build_plan, data_model, workflow_specs, agent_spec_sheets,
+qa_plan_and_results, fallback_modes, client_handoff_kit,
+post_launch_monitoring, audit_trail_spec.
 
-const JSON_SCHEMA_SPEC = `
-{
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "UptimizeAI_Agent4_DeliveryPackage",
-  "type": "object",
-  "required": [
-    "build_plan",
-    "data_model",
-    "workflow_specs",
-    "agent_spec_sheets",
-    "qa_plan_and_results",
-    "fallback_modes",
-    "client_handoff_kit",
-    "post_launch_monitoring",
-    "audit_trail_spec"
-  ],
-  "properties": {
-    "build_plan": {
-      "type": "object",
-      "required": ["phase_1", "phase_2_optional", "milestones", "dependencies", "change_request_linkage"],
-      "properties": {
-        "phase_1": { "$ref": "#/definitions/phase_plan" },
-        "phase_2_optional": { "$ref": "#/definitions/phase_plan" },
-        "milestones": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "required": ["milestone_name", "deliverables", "eta_days", "acceptance_criteria"],
-            "properties": {
-              "milestone_name": { "type": "string" },
-              "deliverables": { "type": "array", "items": { "type": "string" } },
-              "eta_days": { "type": "integer" },
-              "acceptance_criteria": { "type": "array", "items": { "type": "string" } }
-            }
-          }
-        },
-        "dependencies": { "type": "array", "items": { "type": "string" } },
-        "change_request_linkage": { "type": "string" }
-      }
-    },
-    "data_model": {
-      "type": "object",
-      "required": ["entities", "fields", "logging_fields", "pipeline_stages"],
-      "properties": {
-        "entities": { "type": "array", "items": { "type": "string" } },
-        "fields": { "type": "array", "items": { "type": "string" } },
-        "logging_fields": { "type": "array", "items": { "type": "string" } },
-        "pipeline_stages": { "type": "array", "items": { "type": "string" } }
-      }
-    },
-    "workflow_specs": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": ["workflow_name", "goal", "inputs", "outputs", "tools", "happy_path_steps", "exception_paths", "kpis_affected"],
-        "properties": {
-          "workflow_name": { "type": "string" },
-          "goal": { "type": "string" },
-          "inputs": { "type": "array", "items": { "type": "string" } },
-          "outputs": { "type": "array", "items": { "type": "string" } },
-          "tools": { "type": "array", "items": { "type": "string" } },
-          "happy_path_steps": { "type": "array", "items": { "type": "string" } },
-          "exception_paths": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "required": ["exception_name", "trigger", "behavior", "escalation"],
-              "properties": {
-                "exception_name": { "type": "string" },
-                "trigger": { "type": "string" },
-                "behavior": { "type": "string" },
-                "escalation": { "type": "string" }
-              }
-            }
-          },
-          "kpis_affected": { "type": "array", "items": { "type": "string" } }
-        }
-      }
-    },
-    "agent_spec_sheets": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": ["agent_name", "agent_role", "agent_persona", "system_prompt", "context_documents", "memory_config", "allowed_tools", "tool_configs", "allowed_actions", "requires_approval", "never_do", "data_sources", "output_destinations", "escalation_rules", "fallback_behaviors", "success_metrics", "alert_conditions", "pillars_addressed", "money_leaks_resolved"],
-        "properties": {
-          "agent_name": { "type": "string" },
-          "agent_role": { "type": "string" },
-          "agent_persona": { "type": "string" },
-          "system_prompt": { "type": "string" },
-          "context_documents": { "type": "array", "items": { "type": "string" } },
-          "memory_config": {
-            "type": "object",
-            "required": ["short_term", "long_term", "shared"],
-            "properties": {
-              "short_term": { "type": "string" },
-              "long_term": { "type": "string" },
-              "shared": { "type": "string" }
-            }
-          },
-          "allowed_tools": { "type": "array", "items": { "type": "string" } },
-          "tool_configs": { "type": "object" },
-          "allowed_actions": { "type": "array", "items": { "type": "string" } },
-          "requires_approval": { "type": "array", "items": { "type": "string" } },
-          "never_do": { "type": "array", "items": { "type": "string" } },
-          "data_sources": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "required": ["name", "type", "access_method", "fields_used"],
-              "properties": {
-                "name": { "type": "string" },
-                "type": { "type": "string" },
-                "access_method": { "type": "string" },
-                "fields_used": { "type": "array", "items": { "type": "string" } }
-              }
-            }
-          },
-          "output_destinations": { "type": "array", "items": { "type": "string" } },
-          "escalation_rules": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "required": ["trigger", "action", "notify"],
-              "properties": {
-                "trigger": { "type": "string" },
-                "action": { "type": "string" },
-                "notify": { "type": "string" }
-              }
-            }
-          },
-          "fallback_behaviors": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "required": ["condition", "behavior"],
-              "properties": {
-                "condition": { "type": "string" },
-                "behavior": { "type": "string" }
-              }
-            }
-          },
-          "success_metrics": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "required": ["metric_name", "target", "measurement_method"],
-              "properties": {
-                "metric_name": { "type": "string" },
-                "target": { "type": "string" },
-                "measurement_method": { "type": "string" }
-              }
-            }
-          },
-          "alert_conditions": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "required": ["condition", "severity", "action"],
-              "properties": {
-                "condition": { "type": "string" },
-                "severity": { "type": "string" },
-                "action": { "type": "string" }
-              }
-            }
-          },
-          "pillars_addressed": { "type": "array", "items": { "type": "string" } },
-          "money_leaks_resolved": { "type": "array", "items": { "type": "string" } }
-        }
-      }
-    },
-    "qa_plan_and_results": {
-      "type": "object",
-      "required": ["qa_checklist", "test_cases", "results_summary", "open_issues"],
-      "properties": {
-        "qa_checklist": { "type": "array", "items": { "type": "string" } },
-        "test_cases": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "required": ["test_name", "type", "steps", "expected_result", "status"],
-            "properties": {
-              "test_name": { "type": "string" },
-              "type": { "type": "string", "enum": ["happy_path", "missing_input", "wrong_input", "tool_failure", "safety"] },
-              "steps": { "type": "array", "items": { "type": "string" } },
-              "expected_result": { "type": "string" },
-              "status": { "type": "string", "enum": ["pass", "fail", "blocked"] }
-            }
-          }
-        },
-        "results_summary": { "type": "string" },
-        "open_issues": { "type": "array", "items": { "type": "string" } }
-      }
-    },
-    "fallback_modes": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": ["workflow_name", "failure_mode", "fallback_behavior", "human_action_required", "logging"],
-        "properties": {
-          "workflow_name": { "type": "string" },
-          "failure_mode": { "type": "string" },
-          "fallback_behavior": { "type": "string" },
-          "human_action_required": { "type": "string" },
-          "logging": { "type": "string" }
-        }
-      }
-    },
-    "client_handoff_kit": {
-      "type": "object",
-      "required": ["quickstart_5min", "daily_sop", "weekly_sop", "exception_sop", "training_plan", "admin_notes"],
-      "properties": {
-        "quickstart_5min": { "type": "array", "items": { "type": "string" } },
-        "daily_sop": { "type": "array", "items": { "type": "string" } },
-        "weekly_sop": { "type": "array", "items": { "type": "string" } },
-        "exception_sop": { "type": "array", "items": { "type": "string" } },
-        "training_plan": { "type": "array", "items": { "type": "string" } },
-        "admin_notes": { "type": "array", "items": { "type": "string" } }
-      }
-    },
-    "post_launch_monitoring": {
-      "type": "object",
-      "required": ["kpis", "alerts", "support_process", "weekly_review_format"],
-      "properties": {
-        "kpis": { "type": "array", "items": { "type": "string" } },
-        "alerts": { "type": "array", "items": { "type": "string" } },
-        "support_process": { "type": "array", "items": { "type": "string" } },
-        "weekly_review_format": { "type": "array", "items": { "type": "string" } }
-      }
-    }
-  },
-  "definitions": {
-    "phase_plan": {
-      "type": "object",
-      "required": ["goal", "deliverables", "time_to_value", "dependencies"],
-      "properties": {
-        "goal": { "type": "string" },
-        "deliverables": { "type": "array", "items": { "type": "string" } },
-        "time_to_value": { "type": "string" },
-        "dependencies": { "type": "array", "items": { "type": "string" } }
-      }
-    }
-  }
-}
+Required shapes:
+- build_plan: phase_1, phase_2_optional, milestones, dependencies, change_request_linkage.
+  Each phase: goal, deliverables, time_to_value, dependencies.
+  Each milestone: milestone_name, deliverables, eta_days, acceptance_criteria.
+- data_model: entities, fields, logging_fields, pipeline_stages, exception_tags.
+- workflow_specs[]: workflow_name, goal, inputs, outputs, tools,
+  happy_path_steps, exception_paths, audit_events_emitted, kpis_affected.
+  Each exception: exception_name, trigger, behavior, escalation, logging.
+- agent_spec_sheets[]: agent_name, agent_role, agent_persona, system_prompt,
+  context_documents, memory_config {short_term,long_term,shared}, allowed_tools,
+  tool_configs, allowed_actions, requires_approval, never_do, data_sources,
+  output_destinations, escalation_rules, fallback_behaviors, success_metrics,
+  alert_conditions, pillars_addressed, money_leaks_resolved.
+- qa_plan_and_results: qa_checklist, test_cases, results_summary, open_issues.
+  Each test: test_name, type, steps, expected_result, status.
+- fallback_modes[]: workflow_name, failure_mode, fallback_behavior,
+  human_action_required, logging.
+- client_handoff_kit: quickstart_5min, daily_sop, weekly_sop, exception_sop,
+  training_plan, admin_notes.
+- post_launch_monitoring: kpis, alerts, support_process, weekly_review_format.
+- audit_trail_spec: audit_fields, audit_event_types, retention_policy, where_logs_live.
+
+Hard output limits (do not exceed):
+- At most 3 workflows, 3 agent specs, and 4 milestones.
+- At most 5 items in any other array; at most 5 happy-path steps.
+- Exactly 5 QA tests: one per type (happy_path, missing_input, wrong_input,
+  tool_failure, safety).
+- Ordinary strings <= 240 characters. Each system_prompt <= 1200 characters.
+- Be concrete but terse. Do not repeat requirements or explain the JSON.
+- Return raw valid JSON only; no Markdown fences or commentary.
 `;
 
 // ========================================
@@ -398,7 +193,7 @@ const JSON_SCHEMA_SPEC = `
 /**
  * Builds the complete prompt for Agent 4
  */
-function buildPrompt(task: string, context: Agent4Context = {}): string {
+export function buildPrompt(task: string, context: Agent4Context = {}): string {
   let prompt = `${SYSTEM_PROMPT}\n\n`;
 
   // Add handoff specification from Agent 3
@@ -477,11 +272,9 @@ function buildPrompt(task: string, context: Agent4Context = {}): string {
   // Add task
   prompt += `TASK:\n${task}\n\n`;
 
-  // Add JSON schema requirement
+  // Add the bounded output contract; TypeScript interfaces remain canonical.
   prompt += `OUTPUT REQUIREMENTS:\n`;
-  prompt += `You must return a valid JSON object matching this schema:\n`;
-  prompt += `${JSON_SCHEMA_SPEC}\n\n`;
-  prompt += `Return ONLY the JSON object, with no additional commentary.\n`;
+  prompt += `${AGENT_4_COMPACT_OUTPUT_CONTRACT}\n`;
 
   return prompt;
 }
@@ -564,6 +357,25 @@ function validateDeliveryPackage(data: any): { valid: boolean; errors: string[] 
   };
 }
 
+export function validateAgent4FallbackResponse(message: string): {
+  valid: boolean;
+  details?: string;
+} {
+  try {
+    const data = JSON.parse(stripMarkdownCodeFences(message));
+    const validation = validateDeliveryPackage(data);
+    return {
+      valid: validation.valid,
+      details: validation.valid ? undefined : validation.errors.join("; "),
+    };
+  } catch (error) {
+    return {
+      valid: false,
+      details: error instanceof Error ? error.message : "Invalid JSON",
+    };
+  }
+}
+
 // ========================================
 // MAIN AGENT FUNCTION
 // ========================================
@@ -598,7 +410,15 @@ export async function runAgent4SystemsDelivery(
     const prompt = buildPrompt(task, context);
 
     // Execute with fallback across providers
-    const result = await executeWithFallback(prompt, mode);
+    // Schema-strict output — prefer Anthropic (most reliable JSON adherence).
+    const result = await executeWithFallback(
+      prompt,
+      mode,
+      undefined,
+      undefined,
+      SCHEMA_STRICT_PROVIDER_ORDER,
+      validateAgent4FallbackResponse,
+    );
 
     if (!result.success) {
       return {

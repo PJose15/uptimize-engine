@@ -6,6 +6,7 @@
  */
 
 import { executeWithFallback } from "../../fallback";
+import { SCHEMA_STRICT_PROVIDER_ORDER } from "../../config";
 import { AgentMode } from "../../types";
 import { Agent3Context, Agent3Result, Agent3Output } from "./types";
 
@@ -678,7 +679,8 @@ export async function runAgent3SalesEngineer(
     const prompt = buildPrompt(task, context);
 
     // Execute with fallback system
-    const result = await executeWithFallback(prompt, mode);
+    // Schema-strict output — prefer Anthropic (most reliable JSON adherence).
+    const result = await executeWithFallback(prompt, mode, undefined, undefined, SCHEMA_STRICT_PROVIDER_ORDER);
 
     // If the request failed, return the error
     if (!result.success) {
