@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-10-28",
+  "providers": [
+    {
+      "id": "claude",
+      "name": "Anthropic",
+      "client": "Claude Code",
+      "access_note": "Use the official Claude Code client with an authorized account. Verify its active sign-in and allowance locally. This packet does not authenticate, launch a model, or promise subscription capacity."
+    },
+    {
+      "id": "codex",
+      "name": "OpenAI",
+      "client": "Codex",
+      "access_note": "Use an official Codex client with the intended supported sign-in. Subscription and API-key routes have separate usage rules. This packet does not authenticate, launch a model, or read account state."
+    },
+    {
+      "id": "google",
+      "name": "Google",
+      "client": "Antigravity",
+      "access_note": "Use the official Antigravity app or agy client with an authorized account. Current Google documentation directs consumer Gemini CLI users to Antigravity. This packet does not automate Google login or invoke an API."
+    }
+  ],
+  "capabilities": [
+    {
+      "id": "opportunity-discovery",
+      "name": "Opportunity and workflow discovery",
+      "path": "capabilities/opportunity-discovery.md",
+      "status": "draft"
+    },
+    {
+      "id": "cross-provider-review",
+      "name": "Independent review and handoff",
+      "path": "capabilities/cross-provider-review.md",
+      "status": "draft"
+    }
+  ],
+  "projects": [
+    {
+      "id": "sample-service",
+      "name": "Sample service",
+      "area": "consulting",
+      "repository": null,
+      "purpose": "Exercise a synthetic workflow brief and handoff.",
+      "source_status": "Synthetic example; no real implementation or acceptance.",
+      "brief": "briefs/sample-service.md",
+      "next_packet": "packets/sample-service.md",
+      "capabilities": [
+        "opportunity-discovery",
+        "cross-provider-review"
+      ]
+    }
+  ]
+}
